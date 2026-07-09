@@ -1,0 +1,15 @@
+#!/bin/bash
+# Tiempo restante de batería en formato compacto (ej. "2h 15m", "45m").
+# Output: string vacío si no hay estimación disponible.
+upower -i "$(upower -e | grep BAT)" | awk '/time to (empty|full)/ {
+    value = $4; unit = $5
+    if (unit ~ /^minute/) {
+        printf "%dm", int(value)
+    } else {
+        hours = int(value)
+        minutes = int((value - hours) * 60)
+        if (minutes > 0) printf "%dh %dm", hours, minutes
+        else             printf "%dh", hours
+    }
+    exit
+}'

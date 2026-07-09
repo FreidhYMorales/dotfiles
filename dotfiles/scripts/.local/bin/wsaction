@@ -1,0 +1,35 @@
+#!/usr/bin/env fish
+# Navegación de workspaces agrupados — extraído de Caelestia.
+# Extiende Hyprland con el concepto de "grupos de 10":
+#   workspaces 1-10 = grupo 1
+#   workspaces 11-20 = grupo 2, etc.
+#
+# Usage:
+#   wsaction <dispatcher> <workspace>      — navegar dentro del grupo actual
+#   wsaction -g <dispatcher> <workspace>   — saltar entre grupos
+#
+# Ejemplos en bindings.conf de Hyprland:
+#   bind = SUPER, 1, exec, wsaction workspace 1
+#   bind = SUPER CTRL, right, exec, wsaction -g workspace 1
+#
+# Deps: fish, hyprctl, jq
+
+if test "$argv[1]" = '-g'
+    set group
+    set -e argv[1]
+end
+
+if test (count $argv) -ne 2
+    echo 'Usage: wsaction [-g] <dispatcher> <workspace>'
+    exit 1
+end
+
+set -l active_ws (hyprctl activeworkspace -j | jq -r '.id')
+
+if set -q group
+    # Saltar al mismo slot en el grupo N
+    hyprctl dispatch $argv[1] (math "($argv[2] - 1) * 10 + $active_ws % 10")
+else
+    # Ir al workspace N dentro del grupo actual
+    hyprctl dispatch $argv[1] (math "floor(($active_ws - 1) / 10) * 10 + $argv[2]")
+end

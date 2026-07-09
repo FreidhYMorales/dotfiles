@@ -1,0 +1,1 @@
+/home/deadlock/Files/Configuraciones/caelestia/scripts/obsidian-theme-reload.sh

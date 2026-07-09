@@ -1,0 +1,30 @@
+#!/bin/bash
+# Launch a URL as a standalone web app using the default Chromium-based browser.
+# Usage: webapp-launch <url> [extra-flags...]
+#
+# The --app flag strips the browser UI (address bar, tabs) so it behaves like
+# a native app. Falls back to chromium if the default browser isn't Chromium-based.
+
+set -e
+
+if [[ -z $1 ]]; then
+  echo "Usage: webapp-launch <url> [extra-flags...]"
+  exit 1
+fi
+
+browser=$(xdg-settings get default-web-browser 2>/dev/null)
+
+case $browser in
+  google-chrome* | brave* | microsoft-edge* | opera* | vivaldi* | helium* | chromium*) ;;
+  *) browser="chromium.desktop" ;;
+esac
+
+binary=$(sed -n 's/^Exec=\([^ ]*\).*/\1/p' \
+  {~/.local,~/.nix-profile,/usr}/share/applications/"$browser" 2>/dev/null | head -1)
+
+if [[ -z $binary ]]; then
+  echo "Could not find browser binary for: $browser"
+  exit 1
+fi
+
+exec setsid uwsm-app -- "$binary" --app="$1" "${@:2}"

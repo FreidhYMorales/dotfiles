@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Windows
+Exec=windows-launch
+Terminal=false
+Type=Application
+Icon=/home/deadlock/winapps/install/windows.svg
+StartupWMClass=Microsoft Windows
+Comment=Windows Remote Desktop Session
+Categories=WinApps;System;

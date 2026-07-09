@@ -1,0 +1,37 @@
+#!/bin/bash
+# Install all web apps declared in ./apps.
+# Run this on a fresh system after symlinking the scripts to PATH.
+# Skips apps that already have a .desktop file.
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APPS_FILE="$SCRIPT_DIR/apps"
+DESKTOP_DIR="$HOME/.local/share/applications"
+
+if [[ ! -f $APPS_FILE ]]; then
+  echo "apps file not found: $APPS_FILE"
+  exit 1
+fi
+
+while IFS='|' read -r name url icon; do
+  name="${name// /}"   # trim leading/trailing spaces
+  name="${name##*( )}"; name="${name%%*( )}"
+  url="${url##*( )}";  url="${url%%*( )}"
+  icon="${icon##*( )}"; icon="${icon%%*( )}"
+
+  [[ -z $name || $name == \#* ]] && continue
+
+  if [[ -f "$DESKTOP_DIR/$name.desktop" ]]; then
+    echo "Skip (exists): $name"
+    continue
+  fi
+
+  if [[ -n $icon ]]; then
+    webapp-install "$name" "$url" "$icon"
+  else
+    webapp-install "$name" "$url"
+  fi
+done <"$APPS_FILE"
+
+echo "Done."

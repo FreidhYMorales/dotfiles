@@ -1,0 +1,115 @@
+# ============================================================
+#  yazi.toml — Manager options, openers, previewer, tasks
+#  Yazi 26.x — Terminal-native / Kitty-aware
+# ============================================================
+
+[manager]
+ratio          = [1, 3, 4]   # panel widths: parent / current / preview
+sort_by        = "natural"
+sort_sensitive = false
+sort_reverse   = false
+sort_dir_first = true
+linemode       = "none"      # swap to "size" or "mtime" if desired
+show_hidden    = false
+show_symlink   = true
+scrolloff      = 5
+
+[preview]
+tab_size       = 2
+max_width      = 1000
+max_height     = 1000
+cache_dir      = ""          # default (~/.cache/yazi)
+# Kitty Graphics Protocol — native image rendering
+image_filter   = "triangle"
+image_quality  = 75
+sixel_fraction = 15
+ueberzug_scale = 1
+ueberzug_offset = [0, 0, 0, 0]
+
+[opener]
+edit = [
+  { run = 'nvim "$@"', block = true, desc = "Neovim" },
+]
+open = [
+  { run = 'xdg-open "$@"', desc = "xdg-open" },
+]
+extract = [
+  { run = 'ouch decompress -y "$@"', desc = "Extract with ouch" },
+]
+reveal = [
+  { run = 'xdg-open "$(dirname "$1")"', desc = "Reveal in file manager" },
+]
+
+[open]
+rules = [
+  # Archives → descomprimir con ouch
+  { mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}", use = ["extract"] },
+  # Text & code → Neovim
+  { mime = "text/*",                   use = ["edit", "open"] },
+  { mime = "application/json",         use = ["edit", "open"] },
+  { mime = "application/toml",         use = ["edit", "open"] },
+  { mime = "application/x-shellscript", use = ["edit", "open"] },
+  # Images → xdg-open
+  { mime = "image/*",                  use = ["open"] },
+  # Video/Audio → xdg-open
+  { mime = "video/*",                  use = ["open"] },
+  { mime = "audio/*",                  use = ["open"] },
+  # PDF → xdg-open
+  { mime = "application/pdf",          use = ["open"] },
+  # Fallback
+  { mime = "*",                        use = ["edit", "open"] },
+]
+
+[tasks]
+micro_workers    = 10
+macro_workers    = 5
+bizarre_retry    = 5
+image_alloc      = 134217728  # 128 MiB — suficiente para ~33 Mpx RGBA
+image_bound      = [0, 0]
+suppress_preload = false
+
+[log]
+enabled = false
+
+# ============================================================
+#  Plugin preloaders / previewers
+#  Plugins de preview se añaden aquí (gvfs, rich-preview, glow, hexyl, mediainfo, ouch)
+# ============================================================
+[plugin]
+prepend_preloaders = [
+  # gvfs — evitar que Yazi intente precargar archivos en puntos de montaje GVFS
+  # { url = "/run/user/1000/gvfs/**/*",   run = "noop" },
+  { url = "/run/media/deadlock/**/*",   run = "noop" },
+  # simple-mtp — evitar precarga en montajes FUSE de simple-mtpfs
+  { url = "/run/user/1000/mtp/**/*",    run = "noop" },
+  # [mediainfo] — precargar audio, video e imagen
+  { mime = "audio/*", run = "mediainfo" },
+  { mime = "video/*", run = "mediainfo" },
+  { mime = "image/*", run = "mediainfo" },
+]
+
+prepend_previewers = [
+  # gvfs — noop en puntos de montaje para evitar errores de preview
+  { url = "/run/user/1000/gvfs/**/*",   run = "noop" },
+  { url = "/run/media/deadlock/**/*",   run = "noop" },
+  # simple-mtp — noop en montajes FUSE de simple-mtpfs
+  { url = "/run/user/1000/mtp/**/*",    run = "noop" },
+  # [mediainfo] — audio, video e imagen con toggle thumbnail/metadata (keybind: I)
+  { mime = "audio/*", run = "mediainfo" },
+  { mime = "video/*", run = "mediainfo" },
+  { mime = "image/*", run = "mediainfo" },
+  # [glow via piper] — CLICOLOR_FORCE=1 necesario para ANSI en no-TTY
+  { url = "*.md",    run = 'piper -- CLICOLOR_FORCE=1 glow -w=$w -s dark "$1"' },
+  # [rich-preview] — Otros formatos de texto estructurado
+  { url = "*.csv",   run = "rich-preview" },
+  { url = "*.rst",   run = "rich-preview" },
+  { url = "*.ipynb", run = "rich-preview" },
+  # *.json → built-in bat (instantáneo vs ~150ms Python startup de rich)
+  # [ouch] — preview de contenido de archivos comprimidos
+  { mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}", run = "ouch" },
+]
+
+# append_previewers = [
+#   # [hexyl via piper] — Hex dump como fallback final para binarios sin previewer
+#   { url = "*",       run = 'piper -- hexyl --border=none --terminal-width=$w --length 4096 "$1"' },
+# ]

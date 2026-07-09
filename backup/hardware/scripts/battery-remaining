@@ -1,0 +1,4 @@
+#!/bin/bash
+# Porcentaje de batería como entero (para widgets de Quickshell/Waybar).
+# Output: número entre 0 y 100
+upower -i "$(upower -e | grep BAT)" | awk '/percentage/ { print int($2); exit }'

@@ -1,0 +1,225 @@
+/* caelestia — Obsidian theme
+   Auto-generated — do not edit manually
+   Template: ~/.config/caelestia/templates/obsidian-theme.css */
+
+/* ── Variables sin color — independientes del modo ───────────────── */
+body {
+  --font-text-theme:      "IosevkaTerm Nerd Font", monospace;
+  --font-interface-theme: "IosevkaTerm Nerd Font", monospace;
+  --font-monospace-theme: "IosevkaTerm Nerd Font Mono", monospace;
+  --font-text-size: 16px;
+
+  --radius-s:  4px;
+  --radius-m:  8px;
+  --radius-l:  12px;
+  --radius-xl: 20px;
+
+  --scrollbar-bg:  transparent;
+
+  --tag-border-width: 1px;
+  --tag-padding-x:    0.5em;
+  --tag-padding-y:    0.15em;
+  --tag-radius:       20px;
+}
+
+/* ── Variables de color — siguen el modo activo ───────────────────── */
+.theme-{{ mode }} {
+  /* Superficies */
+  --background-primary:               #{{ surface.hex }};
+  --background-primary-alt:           #{{ surfaceContainerLow.hex }};
+  --background-secondary:             #{{ surfaceContainerLow.hex }};
+  --background-secondary-alt:         #{{ surfaceContainer.hex }};
+  --background-modifier-border:       #{{ outlineVariant.hex }};
+  --background-modifier-border-hover: #{{ outline.hex }};
+  --background-modifier-hover:        #{{ surfaceContainerHigh.hex }};
+  --background-modifier-form-field:             #{{ surfaceContainer.hex }};
+  --background-modifier-form-field-highlighted: #{{ surfaceContainerHigh.hex }};
+  --background-modifier-box-shadow:   rgba(0,0,0,0.5);
+  --background-modifier-success:      #{{ success.hex }}26;
+  --background-modifier-error:        #{{ error.hex }}26;
+  --background-modifier-error-hover:  #{{ error.hex }}40;
+  --background-modifier-cover:        #{{ surface.hex }}d9;
+
+  /* Texto */
+  --text-normal:              #{{ onSurface.hex }};
+  --text-muted:               #{{ onSurfaceVariant.hex }};
+  --text-faint:               #{{ outline.hex }};
+  --text-on-accent:           #{{ onPrimary.hex }};
+  --text-on-accent-inverted:  #{{ primary.hex }};
+  --text-error:               #{{ error.hex }};
+  --text-success:             #{{ success.hex }};
+  --text-selection:           #{{ primary.hex }}33;
+  --text-accent:              #{{ primary.hex }};
+  --text-accent-hover:        #{{ onPrimaryContainer.hex }};
+  --text-highlight-bg:        #{{ primary.hex }}2e;
+
+  /* Interactivos */
+  --interactive-normal:       #{{ surfaceContainer.hex }};
+  --interactive-hover:        #{{ surfaceContainerHigh.hex }};
+  --interactive-accent:       #{{ primary.hex }};
+  --interactive-accent-hover: #{{ onPrimaryContainer.hex }};
+  --interactive-success:      #{{ success.hex }};
+
+  /* Cursor del editor */
+  --caret-color: #{{ primary.hex }};
+
+  /* Scrollbar */
+  --scrollbar-thumb-bg:        #{{ outlineVariant.hex }};
+  --scrollbar-active-thumb-bg: #{{ outline.hex }};
+
+  /* Divisores */
+  --divider-color:       #{{ outlineVariant.hex }};
+  --divider-color-hover: #{{ outline.hex }};
+
+  /* Código */
+  --code-background:  #{{ surfaceContainerLow.hex }};
+  --code-normal:      #{{ onSurface.hex }};
+  --code-comment:     #{{ outline.hex }};
+  --code-function:    #{{ primary.hex }};
+  --code-important:   #{{ error.hex }};
+  --code-keyword:     #{{ tertiary.hex }};
+  --code-operator:    #{{ secondary.hex }};
+  --code-property:    #{{ secondary.hex }};
+  --code-punctuation: #{{ onSurfaceVariant.hex }};
+  --code-string:      #{{ term3.hex }};
+  --code-tag:         #{{ primary.hex }};
+  --code-value:       #{{ tertiary.hex }};
+
+  /* Encabezados */
+  --h1-color: #{{ primary.hex }};
+  --h2-color: #{{ secondary.hex }};
+  --h3-color: #{{ tertiary.hex }};
+  --h4-color: #{{ onPrimaryContainer.hex }};
+  --h5-color: #{{ secondaryFixed.hex }};
+  --h6-color: #{{ onSurfaceVariant.hex }};
+
+  /* Tags */
+  --tag-background:       #{{ primary.hex }}1f;
+  --tag-background-hover: #{{ primary.hex }}38;
+  --tag-border-color:     #{{ outlineVariant.hex }};
+  --tag-color:            #{{ primary.hex }};
+  --tag-color-hover:      #{{ onPrimaryContainer.hex }};
+}
+
+/* ── Overrides de elementos — referencian variables ──────────────── */
+
+.titlebar { background-color: var(--background-primary); }
+
+.workspace-leaf.mod-active .workspace-leaf-content {
+  background-color: var(--background-secondary);
+}
+
+.nav-file-title:hover,
+.nav-folder-title:hover { background-color: var(--background-modifier-hover); }
+
+.nav-file-title.is-active {
+  background-color: var(--background-modifier-form-field-highlighted);
+  color: var(--text-accent);
+}
+
+.workspace-leaf-resize-handle { background-color: var(--divider-color); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-bg);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-active-thumb-bg); }
+
+.cm-cursor { border-left-color: var(--interactive-accent); }
+
+code {
+  background-color: var(--code-background);
+  color: var(--code-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+pre code { border: none; padding: 0; }
+.cm-s-obsidian .HyperMD-codeblock { background-color: var(--code-background); }
+
+th {
+  background-color: var(--interactive-hover);
+  color: var(--text-accent);
+}
+tr:nth-child(even) td { background-color: var(--background-primary-alt); }
+
+.modal-bg { background-color: var(--background-modifier-cover); }
+.modal-container .modal {
+  background-color: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+}
+
+.prompt {
+  background-color: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+}
+.prompt-input {
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+}
+.prompt-results .suggestion-item.is-selected {
+  background-color: var(--interactive-hover);
+  color: var(--text-accent);
+}
+
+.status-bar {
+  background-color: var(--background-primary);
+  border-top: 1px solid var(--background-modifier-border);
+  color: var(--text-faint);
+}
+
+.side-dock-ribbon {
+  background-color: var(--background-primary);
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+/* ── Callouts ─────────────────────────────────────────────────────── */
+.callout[data-callout="note"],
+.callout[data-callout="info"],
+.callout[data-callout="abstract"],
+.callout[data-callout="summary"],
+.callout[data-callout="tldr"] {
+  background-color: #{{ primary.hex }}1a;
+  border-color: #{{ primary.hex }};
+}
+.callout[data-callout="todo"] {
+  background-color: #{{ secondary.hex }}1a;
+  border-color: #{{ secondary.hex }};
+}
+.callout[data-callout="tip"],
+.callout[data-callout="hint"],
+.callout[data-callout="important"],
+.callout[data-callout="success"],
+.callout[data-callout="check"],
+.callout[data-callout="done"] {
+  background-color: #{{ success.hex }}1a;
+  border-color: #{{ success.hex }};
+}
+.callout[data-callout="question"],
+.callout[data-callout="help"],
+.callout[data-callout="faq"],
+.callout[data-callout="example"] {
+  background-color: #{{ tertiary.hex }}1a;
+  border-color: #{{ tertiary.hex }};
+}
+.callout[data-callout="warning"],
+.callout[data-callout="caution"],
+.callout[data-callout="attention"],
+.callout[data-callout="failure"],
+.callout[data-callout="fail"],
+.callout[data-callout="missing"],
+.callout[data-callout="danger"],
+.callout[data-callout="error"],
+.callout[data-callout="bug"] {
+  background-color: #{{ error.hex }}1a;
+  border-color: #{{ error.hex }};
+}
+.callout[data-callout="quote"],
+.callout[data-callout="cite"] {
+  background-color: var(--background-modifier-form-field);
+  border-color: var(--background-modifier-border);
+}

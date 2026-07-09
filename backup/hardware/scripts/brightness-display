@@ -1,0 +1,39 @@
+#!/bin/bash
+# Ajustar brillo de pantalla con pasos no uniformes (1% cuando < 5%, 5% en adelante).
+# Usage: brightness-display [+5%|5%-|N%|off|on]
+# Deps: brightnessctl, swayosd-client (para el OSD visual)
+
+step="${1:-+5%}"
+
+# Detectar dispositivo de brillo (intel_backlight tiene prioridad)
+device="$(ls -1 /sys/class/backlight 2>/dev/null | head -n1)"
+for candidate in intel_backlight amdgpu_bl* acpi_video*; do
+  if [[ -e /sys/class/backlight/$candidate ]]; then
+    device="$candidate"
+    break
+  fi
+done
+
+if [[ $step == "off" ]]; then
+  hyprctl dispatch dpms off >/dev/null 2>&1; exit 0
+elif [[ $step == "on" ]]; then
+  hyprctl dispatch dpms on >/dev/null 2>&1; exit 0
+fi
+
+current=$(brightnessctl -d "$device" -m | cut -d',' -f4 | tr -d '%')
+
+if [[ $step == "+5%" ]]; then
+  (( current < 5 )) && (( target = current + 1 )) || (( target = current + 5 ))
+  (( target > 100 )) && target=100
+  step="$target%"
+elif [[ $step == "5%-" ]]; then
+  (( current <= 5 )) && (( target = current - 1 )) || (( target = current - 5 ))
+  (( target < 1 )) && target=1
+  step="$target%"
+fi
+
+brightnessctl -d "$device" set "$step" >/dev/null
+
+# OSD visual via SwayOSD
+new_pct=$(brightnessctl -d "$device" -m | cut -d',' -f4 | tr -d '%')
+swayosd-client --brightness-device "$device" --brightness "$new_pct" 2>/dev/null || true

@@ -1,0 +1,60 @@
+#!/bin/bash
+# Create a .desktop launcher for a web app.
+# Usage (interactive): webapp-install
+# Usage (scripted):    webapp-install <name> <url> [icon-url]
+#
+# Icons are downloaded to ~/.local/share/applications/icons/.
+# The launcher uses webapp-launch (must be on PATH) to open the URL in app mode.
+
+set -e
+
+ICON_DIR="$HOME/.local/share/applications/icons"
+DESKTOP_DIR="$HOME/.local/share/applications"
+FAVICON_SERVICE="https://www.google.com/s2/favicons?domain=%s&sz=128"
+
+mkdir -p "$ICON_DIR"
+
+if (($# < 2)); then
+  if command -v gum &>/dev/null; then
+    echo "Creating a new web app launcher."
+    APP_NAME=$(gum input --prompt "Name> " --placeholder "My App")
+    APP_URL=$(gum input --prompt "URL> " --placeholder "https://example.com")
+  else
+    read -rp "Name: " APP_NAME
+    read -rp "URL: " APP_URL
+  fi
+  ICON_URL=""
+else
+  APP_NAME="$1"
+  APP_URL="$2"
+  ICON_URL="${3:-}"
+fi
+
+[[ $APP_URL =~ ^[a-zA-Z][a-zA-Z0-9+.-]*: ]] || APP_URL="https://$APP_URL"
+
+if [[ -z $ICON_URL ]]; then
+  ICON_URL=$(printf "$FAVICON_SERVICE" "$APP_URL")
+fi
+
+ICON_PATH="$ICON_DIR/$APP_NAME.png"
+
+if ! curl -fsSL -o "$ICON_PATH" "$ICON_URL" || [[ ! -s $ICON_PATH ]]; then
+  echo "Warning: could not download icon from $ICON_URL"
+  ICON_PATH="application-x-executable"
+fi
+
+DESKTOP_FILE="$DESKTOP_DIR/$APP_NAME.desktop"
+cat >"$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Version=1.0
+Name=$APP_NAME
+Comment=$APP_NAME
+Exec=webapp-launch $APP_URL
+Terminal=false
+Type=Application
+Icon=$ICON_PATH
+StartupNotify=true
+EOF
+
+chmod +x "$DESKTOP_FILE"
+echo "Installed: $APP_NAME ($APP_URL)"

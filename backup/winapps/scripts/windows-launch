@@ -1,0 +1,40 @@
+#!/bin/bash
+# Launch WinApps Windows desktop with dynamic RDP scale based on Hyprland monitor DPI.
+# Updates RDP_SCALE in winapps.conf before connecting, so all apps launched after
+# also inherit the correct scale for the current monitor.
+
+WINAPPS_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/winapps/winapps.conf"
+
+detect_scale() {
+    local hypr_scale
+    hypr_scale=$(hyprctl monitors -j 2>/dev/null \
+        | jq -r '.[] | select(.focused == true) | .scale' 2>/dev/null)
+
+    [[ -z "$hypr_scale" ]] && { echo 100; return; }
+
+    local scale_pct
+    scale_pct=$(echo "$hypr_scale" | awk '{print int($1 * 100)}')
+
+    if (( scale_pct >= 170 )); then
+        echo 180
+    elif (( scale_pct >= 130 )); then
+        echo 140
+    else
+        echo 100
+    fi
+}
+
+update_rdp_scale() {
+    local scale="$1"
+    [[ -f "$WINAPPS_CONF" ]] || return
+    sd 'RDP_SCALE=\d+' "RDP_SCALE=$scale" "$WINAPPS_CONF"
+}
+
+main() {
+    local scale
+    scale=$(detect_scale)
+    update_rdp_scale "$scale"
+    exec winapps windows
+}
+
+main

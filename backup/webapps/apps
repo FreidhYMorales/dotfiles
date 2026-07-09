@@ -1,0 +1,20 @@
+# Web apps declarative list
+# Format: name | url
+# Icons are auto-fetched from Google's favicon service (128px).
+# To use a custom icon, add a third column: name | url | https://icon-url.png
+# See https://dashboardicons.com for high-quality icons.
+
+Basecamp       | https://launchpad.37signals.com
+ChatGPT        | https://chatgpt.com/
+Discord        | https://discord.com/channels/@me
+Figma          | https://figma.com/
+Fizzy          | https://app.fizzy.do/
+GitHub         | https://github.com/
+Google Contacts| https://contacts.google.com/
+Google Maps    | https://maps.google.com
+Google Messages| https://messages.google.com/web/conversations
+Google Photos  | https://photos.google.com/
+Notion         | https://www.notion.so/
+WhatsApp       | https://web.whatsapp.com/
+X              | https://x.com/
+YouTube        | https://youtube.com/

@@ -1,0 +1,5 @@
+{
+  "theme": {
+    "postHook": "~/.config/caelestia/scripts/obsidian-theme-reload.sh"
+  }
+}

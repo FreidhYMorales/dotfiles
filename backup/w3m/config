@@ -1,0 +1,46 @@
+# w3m user configuration
+# Docs: w3m -help, o presiona 'H' dentro de w3m
+
+# --- Apariencia ---
+color                   1
+use_dark_bg             1
+mark_color              6
+display_link_number     1
+
+# --- Comportamiento general ---
+follow_redirection      10
+save_history            1
+history                 500
+confirm_qq              1
+wrap_search             1
+
+# --- Mouse ---
+use_mouse               1
+
+# --- Cookies ---
+accept_cookie           1
+accept_bad_cookie       0
+
+# --- Busqueda ---
+ignore_case             1
+incremental_search      1
+
+# --- Red ---
+connect_timeout         15
+transfer_timeout        60
+
+# --- Visualizacion ---
+table_width             0
+show_url_bar            1
+display_bold            1
+display_underline       1
+show_lnum               1
+display_image           1
+
+# --- Pagina de inicio ---
+homepage                https://lite.duckduckgo.com/lite
+
+# --- Externo ---
+editor                  $EDITOR
+mailer                  mutt
+pager                   less
