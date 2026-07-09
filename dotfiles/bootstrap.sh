@@ -184,7 +184,27 @@ sudo pacman -S --needed --noconfirm bluez bluez-utils
 yay -S --needed --noconfirm bluetui
 sudo systemctl enable bluetooth
 
-# ── 23. GRUB theme + dual boot ───────────────────────────────────────────────
+# ── 23. Programming languages & dev tools ────────────────────────────────────
+# nodejs/npm, python, go, rust/cargo already installed in step 7 (Neovim runtimes)
+
+step "Languages: Lua"
+sudo pacman -S --needed --noconfirm lua
+
+step "Languages: Java"
+sudo pacman -S --needed --noconfirm jdk-openjdk maven
+
+step "Languages: C++"
+# gcc is in base-devel (step 1); add clang, cmake, debugger
+sudo pacman -S --needed --noconfirm clang cmake gdb
+
+step "Languages: Python extras"
+sudo pacman -S --needed --noconfirm python-virtualenv
+yay -S --needed --noconfirm uv
+
+step "Languages: JavaScript extras"
+sudo pacman -S --needed --noconfirm pnpm
+
+# ── 24. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
   step "GRUB: packages"
   sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
