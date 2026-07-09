@@ -29,7 +29,7 @@ step() { echo ""; echo "==> $*"; }
 
 # ── 1. Pre-AUR bootstrap ─────────────────────────────────────────────────────
 step "Base tools"
-sudo pacman -S --needed --noconfirm git base-devel stow
+sudo pacman -S --needed --noconfirm git base-devel stow unzip
 
 # ── 2. AUR helper ────────────────────────────────────────────────────────────
 step "yay"
@@ -101,7 +101,7 @@ yay -S --needed --noconfirm rich-cli
 step "Audio (PipeWire + MPD)"
 sudo pacman -S --needed --noconfirm \
   pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
-  mpd ncmpcpp wiremix
+  mpd ncmpcpp wiremix sof-firmware
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
 step "Screenshot tools"
@@ -128,29 +128,36 @@ yay -S --needed --noconfirm gpu-screen-recorder-git
 step "Theming (matugen + spicetify)"
 yay -S --needed --noconfirm matugen spicetify-cli spotify
 
-# ── 16. Quickshell ────────────────────────────────────────────────────────────
+# ── 16. Apps ─────────────────────────────────────────────────────────────────
+step "Apps"
+yay -S --needed --noconfirm vesktop
+sudo pacman -S --needed --noconfirm mpv
+
+# ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
 yay -S --needed --noconfirm quickshell-git
 sudo pacman -S --needed --noconfirm \
-  qt6-base qt6-declarative qt6-wayland qt6-multimedia qt6-svg
+  qt6-base qt6-declarative qt6-wayland qt6-multimedia qt6-svg qt5-wayland
 
-# ── 17. System utils ──────────────────────────────────────────────────────────
+# ── 18. System utils ──────────────────────────────────────────────────────────
 step "System utils"
-sudo pacman -S --needed --noconfirm upower curl xdg-utils xdg-user-dirs
+sudo pacman -S --needed --noconfirm \
+  upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon
 yay -S --needed --noconfirm gum
+sudo systemctl enable power-profiles-daemon
 
-# ── 18. Fonts ─────────────────────────────────────────────────────────────────
+# ── 19. Fonts ─────────────────────────────────────────────────────────────────
 step "Fonts"
 sudo pacman -S --needed --noconfirm \
   ttf-iosevkaterm-nerd noto-fonts noto-fonts-emoji noto-fonts-cjk \
   ttf-nerd-fonts-symbols
 yay -S --needed --noconfirm ttf-redhat-fonts
 
-# ── 19. System info ───────────────────────────────────────────────────────────
+# ── 20. System info ───────────────────────────────────────────────────────────
 step "System info"
 sudo pacman -S --needed --noconfirm btop fastfetch htop
 
-# ── 20. SDDM ─────────────────────────────────────────────────────────────────
+# ── 21. SDDM ─────────────────────────────────────────────────────────────────
 step "SDDM (display manager)"
 sudo pacman -S --needed --noconfirm sddm qt6-virtualkeyboard
 
@@ -169,11 +176,11 @@ sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/the_hyde_project.conf" /etc/sddm.con
 step "SDDM: enable service"
 sudo systemctl enable sddm
 
-# ── 21. XDG portal — term file chooser ───────────────────────────────────────
+# ── 22. XDG portal — term file chooser ───────────────────────────────────────
 step "xdg-desktop-portal-termfilechooser"
 yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git
 
-# ── 22. Network & Bluetooth TUIs ─────────────────────────────────────────────
+# ── 23. Network & Bluetooth TUIs ─────────────────────────────────────────────
 step "Network (iwd + impala)"
 sudo pacman -S --needed --noconfirm iwd
 yay -S --needed --noconfirm impala
@@ -184,7 +191,7 @@ sudo pacman -S --needed --noconfirm bluez bluez-utils
 yay -S --needed --noconfirm bluetui
 sudo systemctl enable bluetooth
 
-# ── 23. Programming languages & dev tools ────────────────────────────────────
+# ── 24. Programming languages & dev tools ────────────────────────────────────
 # nodejs/npm, python, go, rust/cargo already installed in step 7 (Neovim runtimes)
 
 step "Languages: Lua"
@@ -204,7 +211,7 @@ yay -S --needed --noconfirm uv
 step "Languages: JavaScript extras"
 sudo pacman -S --needed --noconfirm pnpm
 
-# ── 24. GRUB theme + dual boot ───────────────────────────────────────────────
+# ── 25. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
   step "GRUB: packages"
   sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
