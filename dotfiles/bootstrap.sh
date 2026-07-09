@@ -157,7 +157,7 @@ step "Fonts"
 sudo pacman -S --needed --noconfirm \
   ttf-iosevkaterm-nerd noto-fonts noto-fonts-emoji noto-fonts-cjk \
   ttf-nerd-fonts-symbols
-yay -S --needed --noconfirm ttf-redhat-fonts
+yay -S --needed --noconfirm redhat-fonts
 
 # ── 20. System info ───────────────────────────────────────────────────────────
 step "System info"
