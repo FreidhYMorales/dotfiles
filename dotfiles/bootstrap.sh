@@ -27,6 +27,12 @@ done
 
 step() { echo ""; echo "==> $*"; }
 
+# Cache sudo credentials once and keep them alive for the full run
+sudo -v
+while true; do sudo -n true; sleep 60; kill -0 "$$" 2>/dev/null || exit; done &
+SUDO_KEEPALIVE_PID=$!
+trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
+
 # ── 1. Pre-AUR bootstrap ─────────────────────────────────────────────────────
 step "Base tools"
 sudo pacman -S --needed --noconfirm git base-devel stow unzip
@@ -57,7 +63,7 @@ step "Shell & terminal"
 sudo pacman -S --needed --noconfirm zsh kitty fish zoxide
 
 if [[ "$SHELL" != "$(which zsh)" ]]; then
-  chsh -s "$(which zsh)"
+  sudo usermod --shell "$(which zsh)" "$USER"
 fi
 
 step "Oh My Zsh"
