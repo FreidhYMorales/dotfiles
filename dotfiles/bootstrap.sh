@@ -99,7 +99,7 @@ sudo pacman -S --needed --noconfirm \
 # ── 8. Yazi ───────────────────────────────────────────────────────────────────
 step "Yazi"
 sudo pacman -S --needed --noconfirm \
-  yazi gvfs gvfs-mtp gvfs-backends udisks2 util-linux \
+  yazi gvfs gvfs-mtp udisks2 util-linux \
   glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard
 yay -S --needed --noconfirm rich-cli
 
