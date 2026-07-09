@@ -171,7 +171,7 @@ fi
 
 step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
-sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/the_hyde_project.conf" /etc/sddm.conf.d/
+sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
 
 step "SDDM: enable service"
 sudo systemctl enable sddm
