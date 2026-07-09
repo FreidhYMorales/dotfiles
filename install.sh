@@ -17,7 +17,7 @@
 set -euo pipefail
 
 # ── Config ───────────────────────────────────────────────────────────────────
-REPO_URL="https://github.com/deadlock/Configuraciones.git"   # TODO: update with real URL
+REPO_URL="https://github.com/FreidhYMorales/dotfiles.git"
 DEFAULT_CLONE_DIR="$HOME/Mio/Configuraciones"
 
 # ── Flags ────────────────────────────────────────────────────────────────────

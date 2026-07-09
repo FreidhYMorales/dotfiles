@@ -142,7 +142,7 @@ Configuraciones/
 - Sistema reinstalado limpio ✅
 - Entorno activo: monasm-dots (EWW + Hyprland) — corriendo como referencia visual
 - Dotfiles propios deployados (hypr y quickshell en PENDING hasta tener config propia)
-- **Repo pendiente de subir a GitHub** — no hay remote configurado todavía
+- **Repo en GitHub**: `https://github.com/FreidhYMorales/dotfiles`
 
 ---
 
@@ -188,9 +188,9 @@ Configuraciones/
 /ruta/al/disco/Configuraciones/install.sh [--no-gpu]
 
 # Opción B — sin repo en disco (fresh install, con internet)
-curl -fsSL https://raw.githubusercontent.com/TU_USUARIO/Configuraciones/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/install.sh | bash
 # o con flags:
-curl -fsSL .../install.sh | bash -s -- --no-gpu
+curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/install.sh | bash -s -- --no-gpu
 
 # Pasos manuales DESPUÉS del bootstrap (ver sección en el propio bootstrap.sh):
 #   1. Restaurar GEMINI_API_KEY en ~/.config/zsh/secrets.zsh
