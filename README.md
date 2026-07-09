@@ -51,7 +51,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 
 ## What bootstrap does
 
-25 steps, fully non-interactive:
+26 steps, fully non-interactive:
 
 1. Base tools (`git`, `base-devel`, `stow`, `unzip`)
 2. yay (AUR helper)
@@ -68,7 +68,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 13. OCR (tesseract)
 14. Screen recording (gpu-screen-recorder — AUR)
 15. Theming (matugen, spicetify, spotify)
-16. Apps (vesktop, mpv)
+16. Apps (vesktop, zen-browser, mpv)
 17. Quickshell + Qt5/Qt6 Wayland
 18. System utils (upower, ntfs-3g, power-profiles-daemon)
 19. Fonts (Iosevka Term Nerd, Noto, Red Hat)
@@ -77,7 +77,8 @@ The script detects whether the repo is already present, clones it if not, and ha
 22. xdg-desktop-portal-termfilechooser (yazi as file picker)
 23. Network (iwd + impala) + Bluetooth (bluez + bluetui)
 24. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm)
-25. GRUB + Star Wars Posters theme + dual boot *(skipped with `--no-grub`)*
+25. AI tools (Claude Code, Gemini CLI, OpenCode, gentle-ai)
+26. GRUB + Star Wars Posters theme + dual boot *(skipped with `--no-grub`)*
 
 Ends by running `deploy.sh` (Stow), updating XDG dirs, rebuilding font cache, and installing Neovim/Yazi plugins.
 
