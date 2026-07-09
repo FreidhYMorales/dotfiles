@@ -1,0 +1,104 @@
+#!/bin/bash
+# Screen recording con gpu-screen-recorder.
+# Toggle: si no está grabando, inicia. Si está grabando, detiene y guarda.
+# Pause/resume: envía SIGUSR2 al proceso.
+#
+# Usage:
+#   record              — toggle inicio/fin de grabación
+#   record --pause      — pausar/reanudar grabación en curso
+#   record --region     — seleccionar región con slurp antes de grabar
+#   record --sound      — incluir audio del sistema
+#
+# Deps: gpu-screen-recorder (AUR), slurp, wl-clipboard, libnotify
+# Instalar: yay -S gpu-screen-recorder-git
+#
+# Variables de entorno opcionales:
+#   RECORDING_DIR  — carpeta donde guardar (default: ~/Videos/Recordings)
+
+set -euo pipefail
+
+RECORDER="gpu-screen-recorder"
+RECORDING_DIR="${RECORDING_DIR:-$HOME/Videos/Recordings}"
+LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/record.pid"
+
+proc_running() {
+  pidof "$RECORDER" >/dev/null 2>&1
+}
+
+stop_recording() {
+  pkill -f "$RECORDER" || true
+
+  # Esperar a que termine de escribir el archivo
+  while proc_running; do sleep 0.1; done
+
+  local filename="recording_$(date +'%Y%m%d_%H-%M-%S').mp4"
+  local filepath="$RECORDING_DIR/$filename"
+  mkdir -p "$RECORDING_DIR"
+
+  # El recorder guarda en /tmp por defecto, mover al destino
+  local tmp_file
+  tmp_file=$(cat "$LOCK_FILE" 2>/dev/null || true)
+  [[ -f $tmp_file ]] && mv "$tmp_file" "$filepath"
+  rm -f "$LOCK_FILE"
+
+  local action
+  action=$(notify-send \
+    --action="watch=Ver" \
+    --action="open=Abrir carpeta" \
+    --action="delete=Eliminar" \
+    "Grabación guardada" "$filepath" 2>/dev/null || true)
+
+  case "$action" in
+    watch)  xdg-open "$filepath" ;;
+    open)   xdg-open "$RECORDING_DIR" ;;
+    delete) rm -f "$filepath" ;;
+  esac
+}
+
+start_recording() {
+  local args=("-w")
+  local tmp_file
+  tmp_file=$(mktemp /tmp/recording_XXXXXX.mp4)
+  echo "$tmp_file" > "$LOCK_FILE"
+
+  if [[ "${RECORD_REGION:-}" == "true" ]]; then
+    local region
+    region=$(slurp -f "%wx%h+%x+%y" 2>/dev/null)
+    [[ -z $region ]] && { rm -f "$LOCK_FILE" "$tmp_file"; exit 0; }
+    args+=("region" "-region" "$region")
+  else
+    local monitor
+    monitor=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .name')
+    local refresh
+    refresh=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .refreshRate | round')
+    args+=("$monitor" "-f" "$refresh")
+  fi
+
+  [[ "${RECORD_SOUND:-}" == "true" ]] && args+=("-a" "default_output")
+
+  notify-send "Grabación iniciada" "Usá el atajo de nuevo para detener"
+
+  setsid "$RECORDER" "${args[@]}" -o "$tmp_file" >/dev/null 2>&1 &
+}
+
+# Parse flags
+RECORD_REGION=false
+RECORD_SOUND=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --pause)
+      pkill -USR2 -f "$RECORDER" 2>/dev/null && exit 0
+      notify-send "Record" "No hay grabación en curso" -u low
+      exit 1
+      ;;
+    --region) RECORD_REGION=true ;;
+    --sound)  RECORD_SOUND=true  ;;
+  esac
+done
+
+if proc_running; then
+  stop_recording
+else
+  start_recording
+fi

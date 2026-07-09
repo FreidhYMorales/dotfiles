@@ -1,0 +1,9 @@
+# Stow-generated symlinks don't go here, but just in case
+.stow-local-ignore
+
+# Secrets — never commit
+zsh/.config/zsh/secrets.zsh
+
+# Compiled / generated
+*.pyc
+__pycache__/

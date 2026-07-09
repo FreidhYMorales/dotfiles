@@ -1,0 +1,1 @@
+/home/deadlock/Files/Configuraciones/caelestia/scripts/kitty-theme-reload.sh

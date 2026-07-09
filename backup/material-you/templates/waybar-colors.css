@@ -1,0 +1,18 @@
+/* Template de colores para Waybar — formato de Caelestia
+   Se regenera automáticamente al cambiar tema/wallpaper.
+   Importar desde style.css:
+     @import "~/.config/waybar/colours.css";
+
+   Los {{ $nombre }} son reemplazados por hex values sin #.
+   Con matugen usar su propio sistema de templates. */
+
+@define-color primary #{{ $primary }};
+@define-color onPrimary #{{ $onPrimary }};
+@define-color primaryContainer #{{ $primaryContainer }};
+@define-color secondary #{{ $secondary }};
+@define-color surface #{{ $surface }};
+@define-color onSurface #{{ $onSurface }};
+@define-color surfaceContainer #{{ $surfaceContainer }};
+@define-color surfaceContainerHigh #{{ $surfaceContainerHigh }};
+@define-color error #{{ $error }};
+@define-color outline #{{ $outline }};

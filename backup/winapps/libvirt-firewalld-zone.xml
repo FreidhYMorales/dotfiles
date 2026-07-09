@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="ACCEPT">
+  <short>libvirt</short>
+  <description>The default policy of "ACCEPT" allows all packets to/from interfaces in the zone to be forwarded, while the (*reject) target blocks forwarded packets and accepts only packets destined for the host.</description>
+  <service name="dhcp"/>
+  <service name="dhcpv6"/>
+  <service name="dns"/>
+  <service name="ssh"/>
+  <service name="tftp"/>
+</zone>

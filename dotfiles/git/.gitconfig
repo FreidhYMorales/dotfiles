@@ -1,0 +1,6 @@
+[user]
+	email = yannelmorales51@gmail.com
+	name = deadlock
+[safe]
+	directory = /home/deadlock/Files/Configuraciones/dotfiles
+	directory = /home/deadlock/Files/dotfiles

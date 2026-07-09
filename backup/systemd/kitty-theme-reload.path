@@ -1,0 +1,8 @@
+[Unit]
+Description=Watch caelestia kitty theme file for changes
+
+[Path]
+PathModified=%h/.local/state/caelestia/theme/kitty-theme.conf
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,139 @@
+/* caelestia — Notion theme para zen-browser
+   Auto-generated — do not edit manually
+   Template: ~/.config/caelestia/templates/notion-theme.css */
+
+@-moz-document domain("notion.so") {
+
+  /* ── Variables propias de Notion — enfoque más confiable ─────
+     .notion-dark-theme es la clase raíz del modo oscuro.
+     Overrideando aquí afecta todo lo que usa estas variables,
+     incluido el popup "Invitar a miembros" que usa --c-bacSec. */
+  .notion-dark-theme {
+    /* Texto */
+    --c-texPri:    #{{ onSurface.hex }} !important;
+    --c-texSec:    #{{ onSurfaceVariant.hex }} !important;
+    --c-texTer:    #{{ outline.hex }} !important;
+    --c-texDis:    #{{ outlineVariant.hex }} !important;
+    --c-texAccPri: #{{ onSurfaceVariant.hex }} !important;
+    --c-texInvPri: #{{ onPrimary.hex }} !important;
+    --c-texInvSec: #{{ onPrimaryContainer.hex }} !important;
+
+    /* Iconos */
+    --c-icoPri:    #{{ onSurface.hex }} !important;
+    --c-icoSec:    #{{ onSurfaceVariant.hex }} !important;
+    --c-icoInvPri: #{{ onPrimary.hex }} !important;
+    --c-icoInvSec: #{{ onPrimaryContainer.hex }} !important;
+
+    /* Acento azul → primary */
+    --c-bluTexAccPri: #{{ primary.hex }} !important;
+    --c-bluBacAccPri: #{{ primary.hex }}26 !important;
+    --c-bluButPreBac: #{{ primaryContainer.hex }} !important;
+    --c-bluBorAccPri: #{{ primary.hex }} !important;
+    --c-butBluFocRin: 0 0 0 1.5px #{{ primary.hex }} !important;
+    --c-bacAccPri:    #{{ primary.hex }}1a !important;
+    /* variables antiguas por compatibilidad */
+    --c-texAccBlu: #{{ primary.hex }} !important;
+    --c-bacAccBlu: #{{ primary.hex }}26 !important;
+    --c-accBlu:    #{{ primary.hex }} !important;
+    --c-borFoc:    #{{ primary.hex }} !important;
+
+    /* Bordes */
+    --c-borPri:      #{{ outline.hex }} !important;
+    --c-borSec:      #{{ outlineVariant.hex }} !important;
+    --ca-borPriTra:  #{{ outlineVariant.hex }}40 !important;
+
+    /* Fondos — semi-transparentes para mantener el glass */
+    --c-bacEle: #{{ surfaceContainerHigh.hex }}cc !important;
+    --c-bacSec: #{{ surfaceContainer.hex }}cc !important;
+    --c-bacTer: #{{ surfaceContainerHigh.hex }}cc !important;
+    --c-popBac: #{{ surfaceContainer.hex }}e6 !important;
+    --c-graBacEle: #{{ surfaceContainerHigh.hex }}cc !important;
+
+    /* Sombras */
+    --c-shaOutSm:
+      0px 0px 0px 1px #{{ outlineVariant.hex }},
+      0px 2px 4px 0px rgba(0,0,0,0.3) !important;
+    --c-shaOutMd:
+      0px 0px 0px 1px #{{ outlineVariant.hex }},
+      0px 4px 12px -2px rgba(0,0,0,0.3) !important;
+    --c-shaOutLg:
+      0px 0px 0px 1px #{{ outlineVariant.hex }},
+      0px 14px 28px -6px rgba(0,0,0,0.35),
+      0px 2px 4px -1px rgba(0,0,0,0.2) !important;
+    --c-shaBasMd:
+      0px 2px 8px 0px rgba(0,0,0,0.3) !important;
+  }
+
+  /* ── Etiquetas de sección ("Reuniones", "Recientes", etc.) ───
+     Notion les aplica opacity encima de --c-texPri, forzamos
+     el color directamente para que coincida con onSurfaceVariant. */
+  .notion-sidebar [role="heading"],
+  .notion-sidebar-container [role="heading"],
+  .notion-sidebar span[style*="opacity"],
+  .notion-sidebar-container span[style*="opacity"] {
+    color: #{{ onSurfaceVariant.hex }} !important;
+    opacity: 1 !important;
+  }
+
+  /* ── Item seleccionado en sidebar ─────────────────────────── */
+  .notion-sidebar-container [aria-current="page"],
+  .notion-sidebar-container [aria-selected="true"],
+  .notion-sidebar [aria-current="page"],
+  .notion-sidebar [aria-selected="true"] {
+    background-color: #{{ surfaceContainerHigh.hex }} !important;
+    color: #{{ primary.hex }} !important;
+  }
+
+  /* ── Hover en sidebar ─────────────────────────────────────── */
+  .notion-sidebar-container [role="button"]:hover,
+  .notion-sidebar [role="button"]:hover {
+    background-color: #{{ surfaceContainerHigh.hex }}80 !important;
+  }
+
+  /* ── Links ────────────────────────────────────────────────── */
+  .notion-link,
+  a.notion-link,
+  [class*="notion-link"] {
+    color: #{{ primary.hex }} !important;
+  }
+
+  /* ── Inline code ──────────────────────────────────────────── */
+  .notion-inline-code,
+  .notion-text-equation-token {
+    background-color: #{{ surfaceContainerLow.hex }}cc !important;
+    color: #{{ tertiary.hex }} !important;
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+  }
+
+  /* ── Subrayados (text-decoration: underline en contenido) ── */
+  .notion-page-content [style*="text-decoration:underline"],
+  .notion-page-content [style*="text-decoration: underline"],
+  .notion-page-content [style*="underline"] {
+    text-decoration-color: #{{ primary.hex }} !important;
+  }
+
+  /* ── Halo de selección de bloque (inyectado por JS con color hardcoded) */
+  .notion-selectable-halo {
+    background: #{{ primary.hex }}24 !important;
+  }
+
+  /* ── Focus ring de inputs (Notion aplica rgba(35,131,226,...) inline) */
+  [style*="rgba(35, 131, 226"] {
+    outline-color: #{{ primary.hex }} !important;
+  }
+
+  /* ── Selection highlight ──────────────────────────────────── */
+  ::selection {
+    background-color: #{{ primary.hex }}33 !important;
+  }
+
+  /* ── Scrollbar ────────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #{{ outlineVariant.hex }};
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #{{ outline.hex }}; }
+}

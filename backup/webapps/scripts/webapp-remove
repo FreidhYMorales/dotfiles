@@ -1,0 +1,38 @@
+#!/bin/bash
+# Remove a web app launcher and its icon.
+# Usage (interactive): webapp-remove
+# Usage (scripted):    webapp-remove <name> [name2...]
+
+set -e
+
+ICON_DIR="$HOME/.local/share/applications/icons"
+DESKTOP_DIR="$HOME/.local/share/applications"
+
+if (($# == 0)); then
+  mapfile -d '' FILES < <(find "$DESKTOP_DIR" -name '*.desktop' -print0)
+  WEB_APPS=()
+  for f in "${FILES[@]}"; do
+    grep -q '^Exec=webapp-launch' "$f" && WEB_APPS+=("$(basename "${f%.desktop}")")
+  done
+
+  if ((${#WEB_APPS[@]} == 0)); then
+    echo "No web apps installed."
+    exit 0
+  fi
+
+  IFS=$'\n' SORTED=($(sort <<<"${WEB_APPS[*]}")); unset IFS
+
+  if command -v gum &>/dev/null; then
+    mapfile -t CHOSEN < <(gum choose --no-limit --header "Select apps to remove" "${SORTED[@]}")
+  else
+    echo "Installed web apps: ${SORTED[*]}"
+    read -rp "Names to remove (space-separated): " -a CHOSEN
+  fi
+else
+  CHOSEN=("$@")
+fi
+
+for name in "${CHOSEN[@]}"; do
+  rm -f "$DESKTOP_DIR/$name.desktop" "$ICON_DIR/$name.png"
+  echo "Removed: $name"
+done

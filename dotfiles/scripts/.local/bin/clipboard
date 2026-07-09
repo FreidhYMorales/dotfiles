@@ -1,0 +1,30 @@
+#!/bin/bash
+# Clipboard history picker con modo delete.
+# Usage:
+#   clipboard          — buscar y pegar entrada del historial
+#   clipboard --delete — seleccionar entradas para eliminar (útil para datos sensibles)
+#
+# Deps: cliphist, wl-clipboard, fuzzel
+# Instalar: sudo pacman -S cliphist wl-clipboard fuzzel
+#
+# Para que cliphist capture el historial, agregar al autostart de Hyprland:
+#   exec-once = wl-paste --type text --watch cliphist store
+#   exec-once = wl-paste --type image --watch cliphist store
+
+set -euo pipefail
+
+if ! command -v cliphist &>/dev/null; then
+  notify-send "clipboard" "cliphist no está instalado" -u critical
+  exit 1
+fi
+
+if [[ "${1:-}" == "--delete" ]]; then
+  cliphist list \
+    | fuzzel --dmenu --prompt="del > " --placeholder="Seleccionar para eliminar" \
+    | cliphist delete
+else
+  cliphist list \
+    | fuzzel --dmenu --placeholder="Buscar en historial" \
+    | cliphist decode \
+    | wl-copy
+fi
