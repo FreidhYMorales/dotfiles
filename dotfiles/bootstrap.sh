@@ -218,11 +218,11 @@ step "Languages: JavaScript extras"
 sudo pacman -S --needed --noconfirm pnpm
 
 # ── 25. AI tools ─────────────────────────────────────────────────────────────
-step "AI tools"
-npm install -g @anthropic-ai/claude-code
-npm install -g @google/gemini-cli
-npm install -g opencode
-curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+# step "AI tools"
+# npm install -g @anthropic-ai/claude-code
+# npm install -g @google/gemini-cli
+# npm install -g opencode
+# curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
 
 # ── 26. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
