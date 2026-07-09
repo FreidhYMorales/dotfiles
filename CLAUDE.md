@@ -14,14 +14,24 @@ como fuente de verdad para dotfiles, referencias y memoria de proyecto.
 ```
 Configuraciones/
 ├── CLAUDE.md          ← este archivo
-├── dotfiles/          ← repo deployable con GNU Stow (~/Files/Configuraciones/dotfiles/)
+├── install.sh         ← entry point curl-able (detecta repo / clona si falta)
+├── .gitignore         ← excluye backups/, secrets, runtime SDDM, fg.yazi, etc.
+├── dotfiles/          ← paquetes Stow — deploy.sh los symlinks a $HOME
+│   ├── bootstrap.sh   ← instalación completa (25 pasos), llama deploy.sh al final
 │   ├── deploy.sh      ← ./deploy.sh [pkg] [--dry-run]
-│   └── ...paquetes/   ← nvim, yazi, zsh, kitty, scripts, etc.
+│   └── nvim/ yazi/ zsh/ kitty/ hypr/ quickshell/ git/ scripts/
+│       fonts/ vesktop/ betterdiscord/ mimeapps/ termfilechooser/ xdg-portal/
+│       matugen/ ...
+├── system/            ← configs sudo-level (no van a $HOME, no son Stow)
+│   └── sddm/
+│       ├── themes/silent/          ← tema SDDM completo (copiado a /usr/share/sddm/themes/)
+│       └── sddm.conf.d/the_hyde_project.conf
 └── backup/            ← backups, referencias, configs anteriores
     ├── references/    ← documentación de referencia (LEER PRIMERO)
     ├── backups/       ← ⚠️ SENSIBLE — gnupg, ssh, gh (gitignoreado)
+    ├── quickshell/    ← symlink → ../dotfiles/quickshell/.config/quickshell
     ├── archive/       ← configs obsoletas (hypr pre-Omarchy, etc.)
-    └── ...configs/    ← nvim, yazi, zsh, kitty, etc. (fuente para dotfiles)
+    └── ...configs/    ← nvim, yazi, zsh, kitty, etc.
 ```
 
 ---
@@ -40,13 +50,19 @@ Configuraciones/
 
 ## Estado actual del proyecto
 
-### Dotfiles
-- Repo en `dotfiles/` con **19 paquetes** deployados con GNU Stow ✅
-- `PENDING=()` — todos los paquetes están activos, incluyendo hypr, quickshell y matugen (nuevo)
-- `bootstrap.sh` en raíz de dotfiles — instala todas las dependencias + corre deploy.sh. `--no-gpu` salta drivers NVIDIA
+### Dotfiles / Bootstrap
+- **Git repo inicializado** en la raíz de `Configuraciones/` — 4 commits (rama `main`)
+- **`install.sh`** — entry point curl-able. Detecta si el repo ya existe en disco o clona desde `$REPO_URL`. Luego llama a `bootstrap.sh`. Flags: `--no-gpu`, `--dir=<path>`
+- **`dotfiles/bootstrap.sh`** — 25 pasos, cubre todo el sistema desde cero:
+  - Flags: `--no-gpu` (salta NVIDIA), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
+  - Instala: Hyprland, GPU, shell+OMZ, CLI tools, Neovim+runtimes, Yazi, Audio+sof-firmware, screenshots, clipboard, notificaciones, OCR, screen recording, theming (matugen+spicetify), **apps (vesktop+mpv)**, Quickshell+qt5/qt6-wayland, system utils (power-profiles-daemon+ntfs-3g), fonts, SDDM silent theme, termfilechooser, iwd+impala+bluez+bluetui, lenguajes (lua, java, c++, python-extras, pnpm), GRUB Star Wars
+  - Termina con `deploy.sh`, `xdg-user-dirs-update`, `fc-cache`, `luarocks magick`, `ya pack -i`, MPD, sddm-theme-sync helper
+- **Paquetes Stow activos** (todos en `PENDING=()`): nvim, yazi, zsh, kitty, hypr, quickshell, git, scripts, matugen, fonts, vesktop, betterdiscord, mimeapps, termfilechooser, xdg-portal + otros
 - `secrets.zsh` vive en `dotfiles/zsh/.config/zsh/secrets.zsh` (gitignoreado) — restaurar GEMINI_API_KEY manualmente
-- `git config --global safe.directory` ya está en `.gitconfig` para las rutas del disco externo
-- **Sync manual requerido**: backup/quickshell/ y dotfiles/quickshell/ no están symlinkeados — propagar cambios manualmente
+- `git config --global safe.directory` ya está en `.gitconfig` para rutas del disco externo; también incluye credential helper de gh CLI
+- **`backup/quickshell/`** es un symlink → `../dotfiles/quickshell/.config/quickshell` — un solo source of truth, sin sync manual
+- **`system/sddm/`** — tema silent completo + conf. Bootstrap lo copia a `/usr/share/sddm/themes/` y `/etc/sddm.conf.d/`. Runtime files (custom.conf, qs-current.*) gitignoreados
+- `sddm-theme-sync` helper instalado en `/usr/local/bin/` con sudoers entry — llamado desde el post-hook de matugen para actualizar colores SDDM dinámicamente
 
 ### Quickshell propio
 - Visión definida en `backup/references/quickshell-vision.md`
@@ -126,6 +142,7 @@ Configuraciones/
 - Sistema reinstalado limpio ✅
 - Entorno activo: monasm-dots (EWW + Hyprland) — corriendo como referencia visual
 - Dotfiles propios deployados (hypr y quickshell en PENDING hasta tener config propia)
+- **Repo pendiente de subir a GitHub** — no hay remote configurado todavía
 
 ---
 
@@ -138,6 +155,10 @@ Configuraciones/
 | Shell | zsh (por ahora) | Migración a fish pendiente de evaluar |
 | Bar style | Horizontal top flotante | Monospace/TUI-inspired, pills, Iosevka Term Nerd Font |
 | Lock screen | WlSessionLock en Quickshell | Sin hyprlock/swaylock — integrado al escritorio |
+| Entry point | install.sh curl-able | Detecta repo / clona; sin clonar primero ni pasos manuales |
+| System configs | `system/` (fuera de dotfiles/) | SDDM y GRUB van a /usr/share y /etc — no son Stow |
+| WiFi | iwd + impala | NetworkManager eliminado; impala es TUI nativa sin daemon extra |
+| SDDM theming dinámico | sddm-theme-sync + sudoers | Matugen necesita escribir a /usr/share como root sin prompt |
 
 ---
 
@@ -160,37 +181,23 @@ Configuraciones/
 
 ---
 
-## Comandos útiles al reinstalar
+## Reinstalar desde cero
 
 ```bash
-# 1. Instalar dependencias base
-sudo pacman -S --needed git base-devel stow
+# Opción A — con repo en disco (disco externo montado)
+/ruta/al/disco/Configuraciones/install.sh [--no-gpu]
 
-# 2. Instalar yay
-git clone https://aur.archlinux.org/yay.git /tmp/yay && cd /tmp/yay && makepkg -si
+# Opción B — sin repo en disco (fresh install, con internet)
+curl -fsSL https://raw.githubusercontent.com/TU_USUARIO/Configuraciones/main/install.sh | bash
+# o con flags:
+curl -fsSL .../install.sh | bash -s -- --no-gpu
 
-# 3. Instalar paquetes del sistema (ver packages-reference.md para lista completa)
-
-# 4. Instalar Oh My Zsh (antes del deploy de dotfiles)
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-# 5. Clonar plugins de zsh en OMZ custom
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-git clone https://github.com/chrissicool/zsh-256color ~/.oh-my-zsh/custom/plugins/zsh-256color
-git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions
-
-# 6. Deploy dotfiles con Stow
-cd ~/Files/Configuraciones/dotfiles && ./deploy.sh --dry-run  # verificar
-./deploy.sh
-
-# 7. Restaurar secrets
-cp ~/Files/Configuraciones/backup/backups/gnupg/* ~/.gnupg/
-cp ~/Files/Configuraciones/backup/backups/ssh/* ~/.ssh/
-echo 'export GEMINI_API_KEY="..."' > ~/.config/zsh/secrets.zsh
-
-# 8. Post-nvim: instalar magick para snacks.image
-luarocks install magick
-
-# 9. Instalar plugins de yazi (ver packages-reference.md sección 7)
+# Pasos manuales DESPUÉS del bootstrap (ver sección en el propio bootstrap.sh):
+#   1. Restaurar GEMINI_API_KEY en ~/.config/zsh/secrets.zsh
+#   2. Restaurar SSH keys desde backup/backups/ssh/
+#   3. Restaurar GPG keys desde backup/backups/gnupg/
+#   4. Verificar gh auth status (credential helper en .gitconfig)
+#   5. Configurar Spicetify con paths correctos de Spotify
+#   6. Revisar safe.directory en .gitconfig si cambió la ruta del disco
+#   7. grub-install (machine-specific — ver instrucciones en bootstrap.sh step 25)
 ```
