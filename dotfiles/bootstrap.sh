@@ -3,17 +3,26 @@
 # Installs all packages, configures shell, deploys dotfiles via Stow.
 #
 # Usage:
-#   ./bootstrap.sh           — full install (NVIDIA GPU)
-#   ./bootstrap.sh --no-gpu  — skip NVIDIA drivers (non-NVIDIA systems)
+#   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
+#   ./bootstrap.sh --no-gpu               — skip NVIDIA drivers
+#   ./bootstrap.sh --no-grub              — skip GRUB theme + config (e.g. systemd-boot)
+#   ./bootstrap.sh --grub-res=2560x1440   — GRUB theme at 2K resolution
+#   ./bootstrap.sh --grub-res=3840x2160   — GRUB theme at 4K resolution
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 SKIP_GPU=false
+SKIP_GRUB=false
+GRUB_RESOLUTION="1920x1080x32"
 
 for arg in "$@"; do
-  [[ "$arg" == "--no-gpu" ]] && SKIP_GPU=true
+  case "$arg" in
+    --no-gpu)         SKIP_GPU=true ;;
+    --no-grub)        SKIP_GRUB=true ;;
+    --grub-res=*)     GRUB_RESOLUTION="${arg#--grub-res=}x32" ;;
+  esac
 done
 
 step() { echo ""; echo "==> $*"; }
@@ -175,6 +184,45 @@ sudo pacman -S --needed --noconfirm bluez bluez-utils
 yay -S --needed --noconfirm bluetui
 sudo systemctl enable bluetooth
 
+# ── 23. GRUB theme + dual boot ───────────────────────────────────────────────
+if [[ "$SKIP_GRUB" == false ]]; then
+  step "GRUB: packages"
+  sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
+
+  step "GRUB: Star Wars Posters theme"
+  GRUB_THEME_TMP="$(mktemp -d)"
+  git clone --depth=1 \
+    https://github.com/hashirsajid58200p/star-wars-posters-grub-theme \
+    "$GRUB_THEME_TMP"
+  THEME_DEST="/boot/grub/themes/StarWarsPosters"
+  sudo mkdir -p "$THEME_DEST"
+  sudo cp -r "$GRUB_THEME_TMP"/. "$THEME_DEST/"
+  rm -rf "$GRUB_THEME_TMP"
+
+  step "GRUB: configure theme + dual boot"
+  GRUB_DEFAULTS="/etc/default/grub"
+  # Theme + resolution (remove old entries first to avoid duplicates)
+  sudo sed -i '/^GRUB_THEME=/d'   "$GRUB_DEFAULTS"
+  sudo sed -i '/^GRUB_GFXMODE=/d' "$GRUB_DEFAULTS"
+  printf 'GRUB_THEME="%s/theme.txt"\n' "$THEME_DEST" | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
+  printf 'GRUB_GFXMODE="%s"\n' "$GRUB_RESOLUTION"    | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
+  # OS prober — detects Windows and other distros
+  if grep -q "^#\?GRUB_DISABLE_OS_PROBER" "$GRUB_DEFAULTS"; then
+    sudo sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=.*/GRUB_DISABLE_OS_PROBER=false/' "$GRUB_DEFAULTS"
+  else
+    echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
+  fi
+  # Remember last selected OS across reboots
+  sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$GRUB_DEFAULTS"
+  grep -q "^GRUB_SAVEDEFAULT" "$GRUB_DEFAULTS" || \
+    echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
+  # Longer timeout so dual boot is usable
+  sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=10/' "$GRUB_DEFAULTS"
+
+  step "GRUB: regenerate config"
+  sudo grub-mkconfig -o /boot/grub/grub.cfg
+fi
+
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"
 "$SCRIPT_DIR/deploy.sh"
@@ -246,3 +294,9 @@ echo "       ~/.config/spicetify/config-xpui.ini → update spotify_path + prefs
 echo "       spicetify backup apply"
 echo ""
 echo "  6. Update safe.directory in ~/.gitconfig if disk path changed."
+echo ""
+echo "  7. GRUB install (machine-specific — run once after partitioning):"
+echo "       sudo grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB"
+echo "     If Windows EFI files are missing from /boot/EFI/, restore them:"
+echo "       cp -r ~/Mio/Configuraciones/backup/archive/restorations/probe-os/efi/Microsoft /boot/EFI/"
+echo "       sudo grub-mkconfig -o /boot/grub/grub.cfg"
