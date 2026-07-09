@@ -130,7 +130,7 @@ yay -S --needed --noconfirm matugen spicetify-cli spotify
 
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
-yay -S --needed --noconfirm vesktop zen-browser-bin
+yay -S --needed --noconfirm vesktop zen-browser-bin nordzy-cursor
 sudo pacman -S --needed --noconfirm mpv
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
