@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh — Full system setup for a fresh Arch Linux install.
-# Installs all packages, configures shell, deploys dotfiles via Stow.
+# Installs all packages, configures shell, deploys dotfiles via Stow. (26 steps)
 #
 # Usage:
 #   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
@@ -130,7 +130,7 @@ yay -S --needed --noconfirm matugen spicetify-cli spotify
 
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
-yay -S --needed --noconfirm vesktop
+yay -S --needed --noconfirm vesktop zen-browser-bin
 sudo pacman -S --needed --noconfirm mpv
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
@@ -211,7 +211,14 @@ yay -S --needed --noconfirm uv
 step "Languages: JavaScript extras"
 sudo pacman -S --needed --noconfirm pnpm
 
-# ── 25. GRUB theme + dual boot ───────────────────────────────────────────────
+# ── 25. AI tools ─────────────────────────────────────────────────────────────
+step "AI tools"
+npm install -g @anthropic-ai/claude-code
+npm install -g @google/gemini-cli
+npm install -g opencode
+curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+
+# ── 26. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
   step "GRUB: packages"
   sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
