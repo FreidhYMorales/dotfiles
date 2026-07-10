@@ -56,7 +56,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 1. Base tools (`git`, `base-devel`, `stow`, `unzip`)
 2. yay (AUR helper)
 3. Hyprland + Wayland stack + hyprpaper
-4. NVIDIA drivers *(skipped with `--no-gpu`)*
+4. GPU drivers — auto-detects NVIDIA / AMD / Intel (including hybrids) *(skipped with `--no-gpu`)*
 5. zsh, Kitty, fish, Oh My Zsh + plugins
 6. CLI tools (eza, bat, fd, ripgrep, fzf, lazygit, zellij, starship, rsync, aria2, p7zip, tealdeer, procs, dust, qrencode, poppler, gping…)
 7. Neovim + Node.js, Python, Go, Rust, luarocks

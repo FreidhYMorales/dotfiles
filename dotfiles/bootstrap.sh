@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
-#   ./bootstrap.sh --no-gpu               — skip NVIDIA drivers
+#   ./bootstrap.sh --no-gpu               — skip GPU drivers entirely (VM, manual install)
 #   ./bootstrap.sh --no-grub              — skip GRUB theme + config (e.g. systemd-boot)
 #   ./bootstrap.sh --grub-res=2560x1440   — GRUB theme at 2K resolution
 #   ./bootstrap.sh --grub-res=3840x2160   — GRUB theme at 4K resolution
@@ -53,9 +53,39 @@ sudo pacman -S --needed --noconfirm \
 
 # ── 4. GPU ────────────────────────────────────────────────────────────────────
 if [[ "$SKIP_GPU" == false ]]; then
-  step "NVIDIA drivers"
-  sudo pacman -S --needed --noconfirm \
-    nvidia nvidia-utils nvidia-settings libva-nvidia-driver
+  step "GPU drivers (auto-detect)"
+  sudo pacman -S --needed --noconfirm pciutils
+
+  GPU_INFO=$(lspci | grep -Ei "VGA|3D|Display")
+  HAS_NVIDIA=false
+  HAS_AMD=false
+  HAS_INTEL=false
+
+  if echo "$GPU_INFO" | grep -qi "nvidia";      then HAS_NVIDIA=true; fi
+  if echo "$GPU_INFO" | grep -Eqi "amd|radeon"; then HAS_AMD=true;    fi
+  if echo "$GPU_INFO" | grep -qi "intel";       then HAS_INTEL=true;  fi
+
+  if [[ "$HAS_NVIDIA" == true ]]; then
+    step "GPU: NVIDIA"
+    sudo pacman -S --needed --noconfirm \
+      nvidia nvidia-utils nvidia-settings libva-nvidia-driver
+  fi
+
+  if [[ "$HAS_AMD" == true ]]; then
+    step "GPU: AMD"
+    sudo pacman -S --needed --noconfirm \
+      mesa vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu
+  fi
+
+  if [[ "$HAS_INTEL" == true ]]; then
+    step "GPU: Intel"
+    sudo pacman -S --needed --noconfirm \
+      mesa vulkan-intel intel-media-driver libva-intel-driver
+  fi
+
+  if [[ "$HAS_NVIDIA" == false && "$HAS_AMD" == false && "$HAS_INTEL" == false ]]; then
+    echo "No recognized GPU found — skipping GPU drivers"
+  fi
 fi
 
 # ── 5. Shell & Terminal ───────────────────────────────────────────────────────
