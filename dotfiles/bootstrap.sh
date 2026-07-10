@@ -89,7 +89,7 @@ done
 # ── 6. CLI Tools ──────────────────────────────────────────────────────────────
 step "CLI tools"
 sudo pacman -S --needed --noconfirm \
-  eza bat fd ripgrep fzf sd duf jq lazygit starship zellij \
+  eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
   rsync aria2 p7zip tealdeer procs dust qrencode poppler
 
 step "CLI tools: AUR"
