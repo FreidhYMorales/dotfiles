@@ -1,0 +1,4 @@
+singleton Paths   1.0 Paths.qml
+singleton SysInfo 1.0 SysInfo.qml
+singleton Icons   1.0 Icons.qml
+singleton CUtils  1.0 CUtils.qml

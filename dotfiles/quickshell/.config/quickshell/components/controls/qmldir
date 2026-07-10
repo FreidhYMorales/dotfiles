@@ -1,0 +1,6 @@
+module qs.components.controls
+IconButton       1.0 IconButton.qml
+ButtonRow        1.0 ButtonRow.qml
+LoadingIndicator 1.0 LoadingIndicator.qml
+Slider           1.0 Slider.qml
+Toggle           1.0 Toggle.qml

@@ -1,0 +1,3 @@
+module qs.components.images
+FadeImage    1.0 FadeImage.qml
+CachingImage 1.0 CachingImage.qml

@@ -1,0 +1,31 @@
+[config]
+
+# Quickshell — colors.json read live by services/Colours.qml
+[templates.quickshell]
+input_path  = "~/.config/matugen/colors.json.template"
+output_path = "~/.config/matugen/colors.json"
+
+# Kitty — reloaded via kitten @ set-colors in post-hook
+[templates.kitty]
+input_path  = "~/.config/matugen/templates/kitty-theme.conf"
+output_path = "~/.config/kitty/matugen-theme.conf"
+
+# btop — reloaded via SIGUSR2 in post-hook
+[templates.btop]
+input_path  = "~/.config/matugen/templates/btop.theme"
+output_path = "~/.config/btop/themes/matugen.theme"
+
+# Hyprland — reloaded via hyprctl reload in post-hook
+[templates.hyprland]
+input_path  = "~/.config/matugen/templates/hypr-colors.lua"
+output_path = "~/.config/hypr/deadlock/colors.lua"
+
+# Zen Browser — post-hook copies to active profile chrome/
+[templates.zen]
+input_path  = "~/.config/matugen/templates/zen-matugen.css"
+output_path = "~/.config/matugen/output/zen-matugen.css"
+
+# Zellij — post-hook not needed, Zellij reads themes/ on next session
+[templates.zellij]
+input_path  = "~/.config/matugen/templates/zellij-theme.kdl"
+output_path = "~/.config/zellij/themes/matugen.kdl"

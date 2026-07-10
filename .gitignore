@@ -19,7 +19,9 @@ system/sddm/themes/silent/backgrounds/qs-current.*
 # ── Tool cache / local settings ──────────────────────────────────────────────
 **/.atl/*.cache.json
 **/.claude/settings.local.json
-.config
+
+# ── Stow artifact — repo-root .config should never exist here ────────────────
+/.config
 
 # ── System-specific archive data — not dotfiles ───────────────────────────────
 backup/archive/restorations/probe-os/

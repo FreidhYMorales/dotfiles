@@ -275,7 +275,7 @@ step "Post-install: font cache"
 fc-cache -fv
 
 step "Post-install: luarocks magick (nvim snacks.image)"
-luarocks install magick
+luarocks install --local magick
 
 step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then

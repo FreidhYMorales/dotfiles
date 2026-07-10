@@ -1,0 +1,12 @@
+**/*.js
+source/**
+tests/**
+design/**
+.github
+themes/.gitkeep
+.gitignore
+.vscode
+.prettierignore
+images/**
+!images/night-wolf-icon.png
+!LICENSE

@@ -1,0 +1,12 @@
+Lock              1.0 Lock.qml
+LockSurface       1.0 LockSurface.qml
+LockAuth          1.0 LockAuth.qml
+LockIdle          1.0 LockIdle.qml
+LockAvatar        1.0 LockAvatar.qml
+LockPasswordInput 1.0 LockPasswordInput.qml
+LockIconButton    1.0 LockIconButton.qml
+LockSpinner       1.0 LockSpinner.qml
+LockPowerMenu     1.0 LockPowerMenu.qml
+LockMenuArea      1.0 LockMenuArea.qml
+LockLayoutSelector 1.0 LockLayoutSelector.qml
+LockVirtualKeyboard 1.0 LockVirtualKeyboard.qml
