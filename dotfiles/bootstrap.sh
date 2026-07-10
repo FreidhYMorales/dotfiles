@@ -320,6 +320,13 @@ fi
 
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"
+# Remove auto-generated files that would conflict with Stow symlinks.
+# These are created by tools installed above (OMZ → .zshrc, git → .gitconfig).
+# On a fresh install there's nothing to preserve — our dotfiles replace them.
+rm -f \
+  "$HOME/.zshrc" \
+  "$HOME/.zshenv" \
+  "$HOME/.gitconfig"
 "$SCRIPT_DIR/deploy.sh"
 
 # ── Post-install ──────────────────────────────────────────────────────────────

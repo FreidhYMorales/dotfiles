@@ -25,8 +25,12 @@ for arg in "$@"; do
     fi
 done
 
+# --adopt moves conflicting real files into the stow package so the link can be
+# created, then git restore puts back the repo version. Net effect: conflicts are
+# resolved non-interactively and the repo copy always wins.
 stow_flags=(-v --target="$TARGET" --dir="$DOTFILES_DIR")
-[[ "$DRY_RUN" == true ]] && stow_flags+=(--simulate)
+[[ "$DRY_RUN" == false ]] && stow_flags+=(--adopt)
+[[ "$DRY_RUN" == true ]]  && stow_flags+=(--simulate)
 
 if [[ "${#packages[@]}" -gt 0 ]]; then
     # Deploy specific packages
@@ -45,6 +49,15 @@ else
         echo "  stow $pkg"
         stow "${stow_flags[@]}" "$pkg"
     done
+fi
+
+if [[ "$DRY_RUN" != true ]]; then
+    # Restore any files --adopt may have pulled in from the system, so the repo
+    # version always wins over whatever was on disk before stowing.
+    GIT_ROOT="$(git -C "$DOTFILES_DIR" rev-parse --show-toplevel 2>/dev/null)" || true
+    if [[ -n "$GIT_ROOT" ]]; then
+        git -C "$GIT_ROOT" restore -- dotfiles/ 2>/dev/null || true
+    fi
 fi
 
 echo ""
