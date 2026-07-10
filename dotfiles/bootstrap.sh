@@ -89,7 +89,11 @@ done
 # ── 6. CLI Tools ──────────────────────────────────────────────────────────────
 step "CLI tools"
 sudo pacman -S --needed --noconfirm \
-  eza bat fd ripgrep fzf sd duf jq lazygit starship zellij
+  eza bat fd ripgrep fzf sd duf jq lazygit starship zellij \
+  rsync aria2 p7zip tealdeer procs dust qrencode poppler
+
+step "CLI tools: AUR"
+yay -S --needed --noconfirm gping
 
 # ── 7. Neovim ─────────────────────────────────────────────────────────────────
 step "Neovim & runtimes"
@@ -137,8 +141,8 @@ yay -S --needed --noconfirm matugen spicetify-cli spotify
 
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
-yay -S --needed --noconfirm vesktop zen-browser-bin nordzy-cursors nordzy-hyprcursors
-sudo pacman -S --needed --noconfirm mpv
+yay -S --needed --noconfirm vesktop zen-browser-bin nordzy-cursors nordzy-hyprcursors nwg-displays
+sudo pacman -S --needed --noconfirm mpv libreoffice-fresh
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
@@ -226,6 +230,15 @@ yay -S --needed --noconfirm uv
 
 step "Languages: JavaScript extras"
 sudo pacman -S --needed --noconfirm pnpm
+
+step "Dev tools"
+sudo pacman -S --needed --noconfirm \
+  git-delta hyperfine tokei watchexec xh sqlite
+
+step "Dev: Docker"
+sudo pacman -S --needed --noconfirm docker docker-compose
+sudo systemctl enable docker
+sudo usermod -aG docker "$USER"
 
 # ── 26. AI tools ─────────────────────────────────────────────────────────────
 # step "AI tools"
