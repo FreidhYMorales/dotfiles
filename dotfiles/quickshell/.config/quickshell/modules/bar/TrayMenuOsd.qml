@@ -26,6 +26,8 @@ Variants {
 
             readonly property bool isFocused:
                 screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
+            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
 
             property bool _menuVisible: false
 
@@ -140,7 +142,7 @@ Variants {
                 radius:         12
                 topLeftRadius:  0
                 topRightRadius: 0
-                color:          Colours.m3surfaceContainer
+                color:          win.colors.m3surfaceContainer
                 clip:           true
                 layer.enabled:  true
                 Behavior on color { CAnim {} }
@@ -164,7 +166,7 @@ Variants {
                                 visible: entryDelegate.modelData.isSeparator
                                 anchors { left: parent.left; right: parent.right; leftMargin: 12; rightMargin: 12; verticalCenter: parent.verticalCenter }
                                 height: 1
-                                color:  Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)
+                                color:  Colours.mid(win.colors.m3surfaceContainer, win.colors.m3surfaceContainerHigh)
                             }
 
                             Rectangle {
@@ -172,7 +174,7 @@ Variants {
                                 anchors.fill: parent
                                 anchors { leftMargin: 4; rightMargin: 4 }
                                 radius:  8
-                                color:   itemHov.hovered ? Colours.m3surfaceContainerHigh : "transparent"
+                                color:   itemHov.hovered ? win.colors.m3surfaceContainerHigh : "transparent"
                                 Behavior on color { CAnim {} }
 
                                 Text {
@@ -184,7 +186,7 @@ Variants {
                                         rightMargin:     12
                                     }
                                     text:           (entryDelegate.modelData.checkState === Qt.Checked ? "✓ " : "") + entryDelegate.modelData.text
-                                    color:          entryDelegate.modelData.enabled ? Colours.m3onSurface : Colours.m3onSurfaceVariant
+                                    color:          entryDelegate.modelData.enabled ? win.colors.m3onSurface : win.colors.m3onSurfaceVariant
                                     font.family:    "Iosevka Term Nerd Font"
                                     font.pixelSize: 12
                                     elide:          Text.ElideRight

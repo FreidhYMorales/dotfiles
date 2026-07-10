@@ -5,6 +5,11 @@ import "../../components"
 Item {
     id: root
 
+    // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+    // Defaults to the shared global palette so this widget still works
+    // wherever else it might be instantiated without a screen context.
+    property var colors: Colours.palette
+
     implicitHeight: calCol.implicitHeight
 
     property var _now:   new Date()
@@ -64,7 +69,7 @@ Item {
                     anchors.fill: parent
                     radius: 7
                     color:  prevHov.hovered
-                                ? Qt.alpha(Colours.m3onSurface, 0.08)
+                                ? Qt.alpha(root.colors.m3onSurface, 0.08)
                                 : "transparent"
                     Behavior on color { CAnim {} }
                 }
@@ -73,7 +78,7 @@ Item {
                     text:           "󰅁"
                     font.family:    "Iosevka Term Nerd Font"
                     font.pixelSize: 16
-                    color:          Colours.m3onSurface
+                    color:          root.colors.m3onSurface
                     Behavior on color { CAnim {} }
                 }
                 HoverHandler { id: prevHov }
@@ -93,7 +98,7 @@ Item {
                 font.family:    "Iosevka Term Nerd Font"
                 font.pixelSize: 13
                 font.weight:    Font.Medium
-                color:          Colours.m3onSurface
+                color:          root.colors.m3onSurface
                 Behavior on color { CAnim {} }
             }
 
@@ -106,7 +111,7 @@ Item {
                     anchors.fill: parent
                     radius: 7
                     color:  nextHov.hovered
-                                ? Qt.alpha(Colours.m3onSurface, 0.08)
+                                ? Qt.alpha(root.colors.m3onSurface, 0.08)
                                 : "transparent"
                     Behavior on color { CAnim {} }
                 }
@@ -115,7 +120,7 @@ Item {
                     text:           "󰅂"
                     font.family:    "Iosevka Term Nerd Font"
                     font.pixelSize: 16
-                    color:          Colours.m3onSurface
+                    color:          root.colors.m3onSurface
                     Behavior on color { CAnim {} }
                 }
                 HoverHandler { id: nextHov }
@@ -142,7 +147,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     font.family:         "Iosevka Term Nerd Font"
                     font.pixelSize:      10
-                    color:               Colours.m3onSurfaceVariant
+                    color:               root.colors.m3onSurfaceVariant
                     Behavior on color { CAnim {} }
                 }
             }
@@ -171,7 +176,7 @@ Item {
                         anchors.centerIn: parent
                         width: 24; height: 24; radius: 12
                         visible: isToday
-                        color:   Colours.m3primary
+                        color:   root.colors.m3primary
                         Behavior on color { CAnim {} }
                     }
                     Text {
@@ -181,10 +186,10 @@ Item {
                         font.pixelSize:      12
                         horizontalAlignment: Text.AlignHCenter
                         color: isToday
-                                   ? Colours.m3onPrimary
+                                   ? root.colors.m3onPrimary
                                    : modelData.thisMonth
-                                       ? Colours.m3onSurface
-                                       : Qt.alpha(Colours.m3onSurface, 0.35)
+                                       ? root.colors.m3onSurface
+                                       : Qt.alpha(root.colors.m3onSurface, 0.35)
                         Behavior on color { CAnim {} }
                     }
                 }

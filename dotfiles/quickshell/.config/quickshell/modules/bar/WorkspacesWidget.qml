@@ -10,6 +10,11 @@ Row {
     id: wsRow
     spacing: 5
 
+    // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+    // Defaults to the shared global palette so this widget still works
+    // wherever else it might be instantiated without a screen context.
+    property var colors: Colours.palette
+
     // Probe: Repeater over Hyprland.workspaces gives reactive .count
     // AND lets us read workspace IDs via itemAt(i).wsId — avoids broken [i] access on ObjectModel
     Repeater {
@@ -61,9 +66,9 @@ Row {
                 anchors.centerIn: parent
                 text:           parent.isActive   ? "●" :
                                 parent.isOccupied ? "○" : "—"
-                color:          parent.isActive   ? Colours.m3primary :
-                                parent.isOccupied ? Colours.m3onSurfaceVariant :
-                                                    Qt.alpha(Colours.m3onSurface, 0.3)
+                color:          parent.isActive   ? wsRow.colors.m3primary :
+                                parent.isOccupied ? wsRow.colors.m3onSurfaceVariant :
+                                                    Qt.alpha(wsRow.colors.m3onSurface, 0.3)
                 font.family:    "Iosevka Term Nerd Font"
                 font.pixelSize: parent.isActive ? 34 : parent.isOccupied ? 26 : 20
                 Behavior on color          { CAnim {} }

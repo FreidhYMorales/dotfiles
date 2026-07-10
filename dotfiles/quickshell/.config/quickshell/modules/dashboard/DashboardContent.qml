@@ -21,10 +21,15 @@ Item {
     property bool   _notifActive: false
     property string _lastNotifId: ""
 
+    HoverHandler {
+        onHoveredChanged: hovered ? dashCloseTimer.stop() : dashCloseTimer.restart()
+    }
+
     Connections {
         target: Visibilities
         function onDashboardChanged() {
             if (Visibilities.dashboard) {
+                dashCloseTimer.stop()
                 closeTimer.stop()
                 cs1.stop(); cs2.stop(); cs3.stop(); cs4.stop()
                 root.open      = true
@@ -43,6 +48,7 @@ Item {
                 }
                 openTimer.restart()
             } else {
+                dashCloseTimer.stop()
                 openTimer.stop()
                 s1.stop(); s2.stop(); s3.stop()
                 notifDismissTimer.stop()
@@ -56,6 +62,7 @@ Item {
 
     Timer { id: openTimer;  interval: 16;  onTriggered: { root.panelOpen = true; s1.restart(); s2.restart(); s3.restart() } }
     Timer { id: closeTimer; interval: 540; onTriggered: root.open = false }
+    Timer { id: dashCloseTimer; interval: 1000; onTriggered: Visibilities.dashboard = false }
 
     Timer { id: s1;  interval: 140; onTriggered: root._stage = 1 }
     Timer { id: s2;  interval: 250; onTriggered: root._stage = 2 }

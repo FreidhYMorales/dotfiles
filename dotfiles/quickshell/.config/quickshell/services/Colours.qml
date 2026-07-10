@@ -183,6 +183,166 @@ Singleton {
         root.isLight = light
         root._persistTheme()
         root.regenerateFrom(Wallpapers.actualCurrent, Wallpapers.isVideoPath(Wallpapers.actualCurrent))
+        // Keep every per-monitor override in the same scheme mode as the
+        // global theme — otherwise a monitor's palette would silently stay
+        // on whatever mode was active the last time IT was committed.
+        for (const screenName in Wallpapers.perScreen)
+            root.regeneratePaletteFor(screenName, Wallpapers.perScreen[screenName],
+                Wallpapers.isVideoPath(Wallpapers.perScreen[screenName]))
+    }
+
+    // --- Per-monitor palettes (bar/panels only — see regeneratePaletteFor) ---
+    // Keyed by ShellScreen.name. A screen with no entry here just follows the
+    // global flat m3* properties/`palette` above (shared default, kept in
+    // sync with kitty/Hyprland/btop/SDDM/etc via the real matugen pipeline).
+    property var palettes: ({})
+
+    // Resolves the palette a bar/panel widget on `screenName` should read
+    // from — either its own override or the shared global `palette`. Every
+    // property present on `palette` is also present here, so both branches
+    // are safe to dot-access identically (Colours.paletteFor(s).m3primary).
+    function paletteFor(screenName) {
+        return root.palettes[screenName] ?? root.palette
+    }
+
+    function clearScreenPalettes() {
+        root.palettes = {}
+    }
+
+    // Same field mapping as parse() below, but returned as a plain object
+    // instead of mutated onto root.m3* — used for per-monitor palettes,
+    // which must NEVER touch the globally-applied colors or external apps.
+    //
+    // Note: this reads matugen's own `--json hex` dump shape (used for
+    // --dry-run calls), which nests each color as
+    // { default: { color }, dark: { color }, light: { color } } — NOT the
+    // { hex } shape that the real colors.json (written by our OWN
+    // colors.json.template) uses in parse() below. "default" already
+    // reflects whichever --mode light/dark was requested on the CLI, same
+    // as the existing _runNextPreview swatch reader.
+    function _extractPalette(data) {
+        if (!data?.colors) return null
+        const c = data.colors
+        return {
+            m3primary:                 c.primary?.default?.color                   ?? root.m3primary,
+            m3onPrimary:               c.on_primary?.default?.color                ?? root.m3onPrimary,
+            m3primaryContainer:        c.primary_container?.default?.color         ?? root.m3primaryContainer,
+            m3onPrimaryContainer:      c.on_primary_container?.default?.color      ?? root.m3onPrimaryContainer,
+            m3secondary:               c.secondary?.default?.color                 ?? root.m3secondary,
+            m3onSecondary:             c.on_secondary?.default?.color              ?? root.m3onSecondary,
+            m3secondaryContainer:      c.secondary_container?.default?.color       ?? root.m3secondaryContainer,
+            m3onSecondaryContainer:    c.on_secondary_container?.default?.color    ?? root.m3onSecondaryContainer,
+            m3tertiary:                c.tertiary?.default?.color                  ?? root.m3tertiary,
+            m3onTertiary:              c.on_tertiary?.default?.color               ?? root.m3onTertiary,
+            m3tertiaryContainer:       c.tertiary_container?.default?.color        ?? root.m3tertiaryContainer,
+            m3onTertiaryContainer:     c.on_tertiary_container?.default?.color     ?? root.m3onTertiaryContainer,
+            m3background:              c.background?.default?.color                ?? root.m3background,
+            m3onBackground:            c.on_background?.default?.color             ?? root.m3onBackground,
+            m3surface:                 c.surface?.default?.color                   ?? root.m3surface,
+            m3onSurface:               c.on_surface?.default?.color                ?? root.m3onSurface,
+            m3surfaceDim:              c.surface_dim?.default?.color               ?? root.m3surfaceDim,
+            m3surfaceBright:           c.surface_bright?.default?.color            ?? root.m3surfaceBright,
+            m3surfaceContainerLowest:  c.surface_container_lowest?.default?.color  ?? root.m3surfaceContainerLowest,
+            m3surfaceContainerLow:     c.surface_container_low?.default?.color     ?? root.m3surfaceContainerLow,
+            m3surfaceContainer:        c.surface_container?.default?.color         ?? root.m3surfaceContainer,
+            m3surfaceContainerHigh:    c.surface_container_high?.default?.color    ?? root.m3surfaceContainerHigh,
+            m3surfaceContainerHighest: c.surface_container_highest?.default?.color ?? root.m3surfaceContainerHighest,
+            m3onSurfaceVariant:        c.on_surface_variant?.default?.color        ?? root.m3onSurfaceVariant,
+            m3outline:                 c.outline?.default?.color                   ?? root.m3outline,
+            m3outlineVariant:          c.outline_variant?.default?.color           ?? root.m3outlineVariant,
+            m3error:                   c.error?.default?.color                     ?? root.m3error,
+            m3onError:                 c.on_error?.default?.color                  ?? root.m3onError,
+            m3errorContainer:          c.error_container?.default?.color           ?? root.m3errorContainer,
+            m3onErrorContainer:        c.on_error_container?.default?.color        ?? root.m3onErrorContainer,
+            m3inverseSurface:          c.inverse_surface?.default?.color           ?? root.m3inverseSurface,
+            m3inverseOnSurface:        c.inverse_on_surface?.default?.color        ?? root.m3inverseOnSurface,
+            m3inversePrimary:          c.inverse_primary?.default?.color           ?? root.m3inversePrimary,
+            m3scrim:                   c.scrim?.default?.color                     ?? root.m3scrim,
+            m3shadow:                  c.shadow?.default?.color                    ?? root.m3shadow
+        }
+    }
+
+    // Queued (not parallel) like generatePreviews below — same reasoning:
+    // several monitors can request a regen close together (startup restore,
+    // a global scheme change looping every override) and shouldn't spawn N
+    // matugen processes at once.
+    property var _screenPaletteQueue: []
+    property bool _screenPaletteBusy: false
+    readonly property string _screenPaletteFramePath: `${Paths.cache}/quickshell-screen-palette-frame.png`
+    Process { id: screenPaletteExtractFrameProc; property var onDone: null }
+
+    function regeneratePaletteFor(screenName, path, isVideo) {
+        if (!screenName || !path || !root.matugenAvailable) return
+        root._screenPaletteQueue.push({ screenName: screenName, path: path, isVideo: isVideo })
+        root._runNextScreenPalette()
+    }
+
+    function _runNextScreenPalette() {
+        if (root._screenPaletteBusy || root._screenPaletteQueue.length === 0) return
+        root._screenPaletteBusy = true
+        const job = root._screenPaletteQueue.shift()
+        if (job.isVideo) {
+            root._extractFrameForScreenPalette(job.path, framePath => root._execScreenPalette(job.screenName, framePath))
+        } else {
+            root._execScreenPalette(job.screenName, job.path)
+        }
+    }
+
+    function _extractFrameForScreenPalette(videoPath, onDone) {
+        if (!root.ffmpegthumbnailerAvailable) {
+            root._screenPaletteBusy = false
+            root._runNextScreenPalette()
+            return
+        }
+        screenPaletteExtractFrameProc.onDone = onDone
+        screenPaletteExtractFrameProc.command = ["ffmpegthumbnailer", "-i", videoPath, "-o", root._screenPaletteFramePath, "-s", "512"]
+        screenPaletteExtractFrameProc.exited.connect(root._onScreenPaletteFrameExtracted)
+        screenPaletteExtractFrameProc.running = true
+    }
+
+    function _onScreenPaletteFrameExtracted(exitCode) {
+        screenPaletteExtractFrameProc.exited.disconnect(root._onScreenPaletteFrameExtracted)
+        if (exitCode === 0 && screenPaletteExtractFrameProc.onDone) {
+            screenPaletteExtractFrameProc.onDone(root._screenPaletteFramePath)
+        } else {
+            root._screenPaletteBusy = false
+            root._runNextScreenPalette()
+        }
+        screenPaletteExtractFrameProc.onDone = null
+    }
+
+    function _execScreenPalette(screenName, imagePath) {
+        screenPaletteProc.pendingScreen = screenName
+        screenPaletteProc.command = ["matugen", "image", imagePath,
+            "--type", root.currentMode,
+            "--mode", root.isLight ? "light" : "dark",
+            "--source-color-index", "0",
+            "--dry-run", "--quiet",
+            "--json", "hex"]
+        screenPaletteProc.running = true
+    }
+
+    Process {
+        id: screenPaletteProc
+        property string pendingScreen: ""
+        stdout: StdioCollector {
+            id: screenPaletteStdout
+            onStreamFinished: {
+                try {
+                    const data   = JSON.parse(screenPaletteStdout.text)
+                    const parsed = root._extractPalette(data)
+                    if (parsed) {
+                        const next = Object.assign({}, root.palettes)
+                        next[screenPaletteProc.pendingScreen] = parsed
+                        root.palettes = next
+                    }
+                } catch (e) {
+                    console.warn("Colours: failed to parse per-screen palette json for", screenPaletteProc.pendingScreen, e)
+                }
+                root._screenPaletteBusy = false
+                root._runNextScreenPalette()
+            }
+        }
     }
 
     // --- matugen invocation (shared by Colours.commit + Wallpapers.commit) ---

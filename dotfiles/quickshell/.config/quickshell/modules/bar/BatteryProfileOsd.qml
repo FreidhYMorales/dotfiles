@@ -22,18 +22,28 @@ Variants {
 
             readonly property bool isFocused:
                 screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
+            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
 
             property bool _batVisible: false
 
             Timer { id: batHideTimer; interval: 400; onTriggered: win._batVisible = false }
 
+            Timer {
+                id: batCloseTimer
+                interval: 1000
+                onTriggered: Visibilities.batteryProfile = false
+            }
+
             Connections {
                 target: Visibilities
                 function onBatteryProfileChanged() {
                     if (Visibilities.batteryProfile) {
+                        batCloseTimer.stop()
                         batHideTimer.stop()
                         win._batVisible = true
                     } else {
+                        batCloseTimer.stop()
                         batHideTimer.restart()
                     }
                 }
@@ -110,9 +120,13 @@ Variants {
                 radius:         12
                 topLeftRadius:  0
                 topRightRadius: 0
-                color:          Colours.m3surfaceContainer
+                color:          win.colors.m3surfaceContainer
                 layer.enabled:  true
                 Behavior on color { CAnim {} }
+
+                HoverHandler {
+                    onHoveredChanged: hovered ? batCloseTimer.stop() : batCloseTimer.restart()
+                }
 
                 MouseArea { anchors.fill: parent; z: 0 }
 
@@ -144,7 +158,7 @@ Variants {
                         width:  parent.segW * 3
                         height: parent.segH
                         radius: height / 2
-                        color:  Colours.m3surfaceContainerHigh
+                        color:  win.colors.m3surfaceContainerHigh
                         Behavior on color { CAnim {} }
 
                         // Sliding indicator
@@ -153,7 +167,7 @@ Variants {
                             width:   parent.parent.segW - 4
                             height:  parent.height - 4
                             radius:  height / 2
-                            color:   Colours.m3primary
+                            color:   win.colors.m3primary
                             anchors.verticalCenter: parent.verticalCenter
                             x: parent.parent.selectedIndex * parent.parent.segW + 2
                             Behavior on x {
@@ -181,8 +195,8 @@ Variants {
                                         font.family:    "Iosevka Term Nerd Font"
                                         font.pixelSize: 14
                                         color: pill.parent.selectedIndex === index
-                                               ? Colours.m3onPrimary
-                                               : Colours.m3onSurface
+                                               ? win.colors.m3onPrimary
+                                               : win.colors.m3onSurface
                                         Behavior on color { CAnim {} }
                                     }
 
@@ -209,7 +223,7 @@ Variants {
                         text:           IdleManager.caffeineMode ? "󰅶" : "󰛊"
                         font.family:    "Iosevka Term Nerd Font"
                         font.pixelSize: 15
-                        color: IdleManager.caffeineMode ? Colours.m3primary : Colours.m3onSurface
+                        color: IdleManager.caffeineMode ? win.colors.m3primary : win.colors.m3onSurface
                         Behavior on color { CAnim {} }
                     }
 

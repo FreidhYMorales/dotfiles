@@ -4,6 +4,41 @@ Errores reales encontrados durante el desarrollo. Leer antes de tocar servicios 
 
 ---
 
+## Quickshell — registro de tipos (`qmldir`)
+
+### Un archivo `.qml` nuevo NO se ve solo — hay que registrarlo a mano
+
+Cada carpeta del proyecto (`services/`, `modules/launcher/`, `modules/bar/`,
+`components/`, etc.) tiene su propio archivo `qmldir` que lista los tipos a
+mano — **no** es auto-discovery por nombre de archivo, a pesar de que así
+parece funcionar mientras solo se editan archivos ya existentes.
+
+Síntoma si te olvidás: `qs` deja de arrancar (`Configuration Loaded` nunca
+aparece), con un error tipo:
+
+```
+ERROR:   caused by @modules/launcher/LauncherContent.qml[N:M]: KeybindsList is not a type
+```
+
+`qmllint`/`qml` (el runner standalone) NO detectan este problema — el archivo
+nuevo es sintácticamente válido y hasta carga bien de forma aislada. El error
+solo aparece corriendo `qs` de verdad, porque es el único que respeta el
+`qmldir` como manifiesto autoritativo.
+
+```
+# services/qmldir — singletons (pragma Singleton):
+singleton Keybinds     1.0 Keybinds.qml
+
+# modules/launcher/qmldir — componentes normales:
+KeybindsList 1.0 KeybindsList.qml
+```
+
+**Regla**: cada vez que se crea un archivo `.qml` nuevo (no al editar uno
+existente), agregar la línea correspondiente al `qmldir` de esa carpeta antes
+de probarlo con `qs`.
+
+---
+
 ## Quickshell / MPRIS
 
 ### El singleton MPRIS se llama `Mpris`, no `MprisController`

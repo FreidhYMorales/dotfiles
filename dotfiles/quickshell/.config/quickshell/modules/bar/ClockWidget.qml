@@ -3,6 +3,13 @@ import "../../services"
 import "../../components"
 
 Item {
+    id: root
+
+    // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+    // Defaults to the shared global palette so this widget still works
+    // wherever else it might be instantiated without a screen context.
+    property var colors: Colours.palette
+
     implicitWidth:  clockText.implicitWidth + 20
     implicitHeight: 26
 
@@ -10,10 +17,10 @@ Item {
         anchors.fill: parent
         radius: height / 2
         color: Visibilities.calendar || hov.hovered
-                   ? Colours.m3surfaceContainerHighest
-                   : Colours.m3surfaceContainerHigh
+                   ? root.colors.m3surfaceContainerHighest
+                   : root.colors.m3surfaceContainerHigh
         border.width: 1
-        border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)
+        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
         Behavior on color { CAnim {} }
     }
 
@@ -21,7 +28,7 @@ Item {
         id: clockText
         anchors.centerIn: parent
         text:           Time.date + "  |  " + Time.timeFull
-        color:          Colours.m3onSurface
+        color:          root.colors.m3onSurface
         font.family:    "Iosevka Term Nerd Font"
         font.pixelSize: 12
         font.weight:    Font.Medium

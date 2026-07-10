@@ -8,6 +8,12 @@ import "../../components"
 // a single path instead of two ways to stop.
 Item {
     id: root
+
+    // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+    // Defaults to the shared global palette so this widget still works
+    // wherever else it might be instantiated without a screen context.
+    property var colors: Colours.palette
+
     implicitWidth:  row.implicitWidth + 16
     implicitHeight: 26
 
@@ -20,9 +26,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: height / 2
-        color:        Colours.m3surfaceContainerHigh
+        color:        root.colors.m3surfaceContainerHigh
         border.width: 1
-        border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)
+        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
         Behavior on color { CAnim {} }
     }
 
@@ -34,7 +40,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text:           "󰻃"
-            color:          Recorder.recording ? Colours.m3error : Colours.m3onSurface
+            color:          Recorder.recording ? root.colors.m3error : root.colors.m3onSurface
             font.family:    "Iosevka Term Nerd Font"
             font.pixelSize: 13
             Behavior on color { CAnim {} }
@@ -44,7 +50,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             visible:        Recorder.recording
             text:           root._fmtElapsed()
-            color:          Colours.m3error
+            color:          root.colors.m3error
             font.family:    "Iosevka Term Nerd Font"
             font.pixelSize: 12
             Behavior on color { CAnim {} }

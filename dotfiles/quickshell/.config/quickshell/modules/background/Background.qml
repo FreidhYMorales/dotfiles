@@ -31,6 +31,7 @@ Variants {
 
             BackgroundSurface {
                 anchors.fill: parent
+                screenName:   screenScope.modelData.name
             }
 
             // Caffeine mode — pauses the screensaver/lock/suspend chain via

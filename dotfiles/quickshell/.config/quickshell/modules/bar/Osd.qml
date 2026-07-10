@@ -22,6 +22,8 @@ Variants {
 
             readonly property bool isFocused:
                 screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
+            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
 
             property bool showVolume:     false
             property bool showBrightness: false
@@ -34,7 +36,7 @@ Variants {
 
             Timer {
                 id: volumeTimer
-                interval: 2000
+                interval: 1000
                 onTriggered: {
                     win.showVolume      = false
                     Visibilities.volume = false
@@ -56,15 +58,21 @@ Variants {
             Connections {
                 target: Visibilities
                 function onVolumeChanged() {
-                    if (!Visibilities.volume || !win.isFocused) return
-                    win.volCardX = Math.max(8, Math.min(
-                        Visibilities.volumeBarCenterX - 90,
-                        screenScope.modelData.width - 180 - 8
-                    ))
-                    volHideTimer.stop()
-                    win._volVisible = true
-                    win.showVolume  = true
-                    volumeTimer.restart()
+                    if (Visibilities.volume) {
+                        if (!win.isFocused) return
+                        win.volCardX = Math.max(8, Math.min(
+                            Visibilities.volumeBarCenterX - 90,
+                            screenScope.modelData.width - 180 - 8
+                        ))
+                        volumeTimer.stop()
+                        volHideTimer.stop()
+                        win._volVisible = true
+                        win.showVolume  = true
+                    } else {
+                        volumeTimer.stop()
+                        win.showVolume = false
+                        volHideTimer.restart()
+                    }
                 }
             }
 
@@ -154,11 +162,12 @@ Variants {
                 radius:         12
                 topLeftRadius:  0
                 topRightRadius: 0
-                color:         Colours.m3surfaceContainer
+                color:         win.colors.m3surfaceContainer
                 clip:          true
                 layer.enabled: true
 
                 HoverHandler {
+                    id: volHover
                     onHoveredChanged: hovered ? volumeTimer.stop() : volumeTimer.restart()
                 }
 
@@ -181,7 +190,7 @@ Variants {
                     Rectangle {
                         anchors.fill: parent
                         radius: height / 2
-                        color:  Colours.m3surfaceContainerHighest
+                        color:  win.colors.m3surfaceContainerHighest
                         Behavior on color { CAnim {} }
                     }
 
@@ -190,7 +199,7 @@ Variants {
                         width:  volSlider.thumbX + volSlider.thumbDia
                         height: parent.height
                         radius: height / 2
-                        color:  Audio.muted ? Qt.alpha(Colours.m3primary, 0.35) : Colours.m3primary
+                        color:  Audio.muted ? Qt.alpha(win.colors.m3primary, 0.35) : win.colors.m3primary
                         Behavior on width { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
                     }
@@ -202,7 +211,7 @@ Variants {
                         width:  volSlider.thumbDia
                         height: volSlider.thumbDia
                         radius: height / 2
-                        color:  Audio.muted ? Colours.m3onSurfaceVariant : Colours.m3onPrimary
+                        color:  Audio.muted ? win.colors.m3onSurfaceVariant : win.colors.m3onPrimary
                         Behavior on x     { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
 
@@ -211,7 +220,7 @@ Variants {
                             text:           Audio.muted       ? "󰖁" :
                                             Audio.volume > 66 ? "󰕾" :
                                             Audio.volume > 33 ? "󰖀" : "󰕿"
-                            color:          Audio.muted ? Colours.m3surfaceContainer : Colours.m3primary
+                            color:          Audio.muted ? win.colors.m3surfaceContainer : win.colors.m3primary
                             font.family:    "Iosevka Term Nerd Font"
                             font.pixelSize: 13
                             Behavior on color { CAnim {} }
@@ -247,7 +256,7 @@ Variants {
                             if (!tapOnThumb) setVol(mouseX)
                         }
                         onClicked:  { if (tapOnThumb) Audio.toggleMute() }
-                        onReleased: volumeTimer.restart()
+                        onReleased: if (!volHover.hovered) volumeTimer.restart()
                         cursorShape: Qt.SizeHorCursor
                     }
                 }
@@ -305,7 +314,7 @@ Variants {
                 radius:         12
                 topLeftRadius:  0
                 topRightRadius: 0
-                color:         Colours.m3surfaceContainer
+                color:         win.colors.m3surfaceContainer
                 clip:          true
                 layer.enabled: true
 
@@ -331,7 +340,7 @@ Variants {
                     Rectangle {
                         anchors.fill: parent
                         radius: height / 2
-                        color:  Colours.m3surfaceContainerHighest
+                        color:  win.colors.m3surfaceContainerHighest
                     }
 
                     // Fill
@@ -339,7 +348,7 @@ Variants {
                         width:  brightSlider.thumbX + brightSlider.thumbDia
                         height: parent.height
                         radius: height / 2
-                        color:  Colours.m3primary
+                        color:  win.colors.m3primary
                         Behavior on width { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
                     }
@@ -351,7 +360,7 @@ Variants {
                         width:  brightSlider.thumbDia
                         height: brightSlider.thumbDia
                         radius: height / 2
-                        color:  Colours.m3onPrimary
+                        color:  win.colors.m3onPrimary
                         Behavior on x     { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
 
@@ -359,7 +368,7 @@ Variants {
                             anchors.centerIn: parent
                             text:           Brightness.percent > 66 ? "󰃠" :
                                             Brightness.percent > 33 ? "󰃟" : "󰃞"
-                            color:          Colours.m3primary
+                            color:          win.colors.m3primary
                             font.family:    "Iosevka Term Nerd Font"
                             font.pixelSize: 13
                             Behavior on color { CAnim {} }
