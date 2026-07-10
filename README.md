@@ -51,7 +51,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 
 ## What bootstrap does
 
-26 steps, fully non-interactive:
+27 steps, fully non-interactive:
 
 1. Base tools (`git`, `base-devel`, `stow`, `unzip`)
 2. yay (AUR helper)
@@ -73,12 +73,13 @@ The script detects whether the repo is already present, clones it if not, and ha
 18. System utils (upower, ntfs-3g, power-profiles-daemon)
 19. Fonts (Iosevka Term Nerd, Noto, Red Hat)
 20. System info (btop, fastfetch)
-21. SDDM + silent theme
-22. xdg-desktop-portal-termfilechooser (yazi as file picker)
-23. Network (iwd + impala) + Bluetooth (bluez + bluetui)
-24. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm)
-25. AI tools (Claude Code, Gemini CLI, OpenCode, gentle-ai)
-26. GRUB + Star Wars Posters theme + dual boot *(skipped with `--no-grub`)*
+21. SDDM + silent theme (with default custom config until matugen runs)
+22. logind — power button: ignore short press, long press = poweroff
+23. xdg-desktop-portal-termfilechooser (yazi as file picker)
+24. Network (iwd + impala) + Bluetooth (bluez + bluetui)
+25. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm)
+26. AI tools (Claude Code, Gemini CLI, OpenCode, gentle-ai)
+27. GRUB + Star Wars Posters theme + dual boot *(skipped with `--no-grub`)*
 
 Ends by running `deploy.sh` (Stow), updating XDG dirs, rebuilding font cache, and installing Neovim/Yazi plugins.
 
