@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh — Full system setup for a fresh Arch Linux install.
-# Installs all packages, configures shell, deploys dotfiles via Stow. (26 steps)
+# Installs all packages, configures shell, deploys dotfiles via Stow. (27 steps)
 #
 # Usage:
 #   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
@@ -100,8 +100,9 @@ sudo pacman -S --needed --noconfirm \
 step "Yazi"
 sudo pacman -S --needed --noconfirm \
   yazi gvfs gvfs-mtp udisks2 util-linux \
-  glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard
-yay -S --needed --noconfirm rich-cli
+  glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard \
+  python-pipx
+pipx install rich-cli
 
 # ── 9. Audio ──────────────────────────────────────────────────────────────────
 step "Audio (PipeWire + MPD)"
@@ -179,14 +180,23 @@ step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
 
+step "SDDM: bootstrap default custom config (replaced on first matugen run)"
+sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/configs/custom.conf
+
 step "SDDM: enable service"
 sudo systemctl enable sddm
 
-# ── 22. XDG portal — term file chooser ───────────────────────────────────────
+# ── 22. logind — power button behavior ───────────────────────────────────────
+step "logind: power button config"
+sudo mkdir -p /etc/systemd/logind.conf.d
+sudo cp "$REPO_ROOT/system/logind/logind.conf.d/deadlock.conf" /etc/systemd/logind.conf.d/
+sudo systemctl restart systemd-logind 2>/dev/null || true
+
+# ── 23. XDG portal — term file chooser ───────────────────────────────────────
 step "xdg-desktop-portal-termfilechooser"
 yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git
 
-# ── 23. Network & Bluetooth TUIs ─────────────────────────────────────────────
+# ── 24. Network & Bluetooth TUIs ─────────────────────────────────────────────
 step "Network (iwd + impala)"
 sudo pacman -S --needed --noconfirm iwd
 yay -S --needed --noconfirm impala
@@ -197,7 +207,7 @@ sudo pacman -S --needed --noconfirm bluez bluez-utils
 yay -S --needed --noconfirm bluetui
 sudo systemctl enable bluetooth
 
-# ── 24. Programming languages & dev tools ────────────────────────────────────
+# ── 25. Programming languages & dev tools ────────────────────────────────────
 # nodejs/npm, python, go, rust/cargo already installed in step 7 (Neovim runtimes)
 
 step "Languages: Lua"
@@ -217,14 +227,14 @@ yay -S --needed --noconfirm uv
 step "Languages: JavaScript extras"
 sudo pacman -S --needed --noconfirm pnpm
 
-# ── 25. AI tools ─────────────────────────────────────────────────────────────
+# ── 26. AI tools ─────────────────────────────────────────────────────────────
 # step "AI tools"
 # npm install -g @anthropic-ai/claude-code
 # npm install -g @google/gemini-cli
 # npm install -g opencode
 # curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
 
-# ── 26. GRUB theme + dual boot ───────────────────────────────────────────────
+# ── 27. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
   step "GRUB: packages"
   sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
@@ -282,7 +292,8 @@ if command -v ya &>/dev/null; then
   ya pack -i
   if [[ ! -d "$HOME/.config/yazi/plugins/fg.yazi" ]]; then
     git clone https://github.com/DreamMaoMao/fg.yazi \
-      "$HOME/.config/yazi/plugins/fg.yazi"
+      "$HOME/.config/yazi/plugins/fg.yazi" 2>/dev/null \
+      || echo "Warning: fg.yazi clone failed — install manually: git clone https://github.com/DreamMaoMao/fg.yazi ~/.config/yazi/plugins/fg.yazi"
   fi
 fi
 
