@@ -300,6 +300,10 @@ fi
 step "Post-install: MPD service"
 systemctl --user enable --now mpd
 
+step "Post-install: default wallpaper state (used by Quickshell on first launch)"
+mkdir -p "$HOME/.local/state/quickshell"
+echo "$HOME/.config/hypr/assets/arch.png" > "$HOME/.local/state/quickshell/wallpaper.txt"
+
 step "Post-install: matugen post-hook permissions"
 chmod +x "$HOME/.config/matugen/post-hook.sh"
 
