@@ -110,6 +110,8 @@ pipx install rich-cli
 
 # ── 9. Audio ──────────────────────────────────────────────────────────────────
 step "Audio (PipeWire + MPD)"
+# Remove known conflicting packages so pacman doesn't pause asking for confirmation
+sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
   pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
   mpd ncmpcpp wiremix sof-firmware
