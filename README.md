@@ -58,7 +58,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 3. Hyprland + Wayland stack + hyprpaper
 4. NVIDIA drivers *(skipped with `--no-gpu`)*
 5. zsh, Kitty, fish, Oh My Zsh + plugins
-6. CLI tools (eza, bat, fd, ripgrep, fzf, lazygit, zellij, starship…)
+6. CLI tools (eza, bat, fd, ripgrep, fzf, lazygit, zellij, starship, rsync, aria2, p7zip, tealdeer, procs, dust, qrencode, poppler, gping…)
 7. Neovim + Node.js, Python, Go, Rust, luarocks
 8. Yazi + all previewers (imagemagick, ffmpeg, ffmpegthumbnailer, mediainfo…)
 9. PipeWire + MPD + sof-firmware
@@ -68,7 +68,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 13. OCR (tesseract)
 14. Screen recording (gpu-screen-recorder — AUR)
 15. Theming (matugen, spicetify, spotify)
-16. Apps (vesktop, zen-browser, mpv)
+16. Apps (vesktop, zen-browser, mpv, libreoffice, nwg-displays)
 17. Quickshell + Qt5/Qt6 Wayland
 18. System utils (upower, ntfs-3g, power-profiles-daemon)
 19. Fonts (Iosevka Term Nerd, Noto, Red Hat)
@@ -77,7 +77,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 22. logind — power button: ignore short press, long press = poweroff
 23. xdg-desktop-portal-termfilechooser (yazi as file picker)
 24. Network (iwd + impala) + Bluetooth (bluez + bluetui)
-25. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm)
+25. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm) + dev tools (git-delta, hyperfine, tokei, watchexec, xh, sqlite, docker)
 26. AI tools (Claude Code, Gemini CLI, OpenCode, gentle-ai)
 27. GRUB + Star Wars Posters theme + dual boot *(skipped with `--no-grub`)*
 
