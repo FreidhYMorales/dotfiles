@@ -1,0 +1,3 @@
+module qs.components.containers
+StyledListView    1.0 StyledListView.qml
+ClippingRectangle 1.0 ClippingRectangle.qml

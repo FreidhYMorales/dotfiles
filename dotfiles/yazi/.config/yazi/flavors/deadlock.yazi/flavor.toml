@@ -1,0 +1,182 @@
+
+# ============================================================
+#  theme.toml — Terminal-native / Transparent theme
+#  RULE: ANSI names ONLY — never hex codes.
+#        Colors inherit from Kitty's active colorscheme.
+#  ANSI palette reference:
+#    black, red, green, yellow, blue, magenta, cyan, white
+#    bright-black, bright-red, bright-green, bright-yellow,
+#    bright-blue, bright-magenta, bright-cyan, bright-white
+#    "reset" = terminal default fg/bg (transparent-aware)
+# ============================================================
+#
+# ------------------------------------------------------------
+#  Manager (file list)
+# ------------------------------------------------------------
+[manager]
+cwd = { fg = "cyan" }
+
+# Cursor / selected item
+hovered         = { fg = "black",  bg = "blue",        bold = true }
+preview_hovered = { fg = "black",  bg = "bright-black"             }
+
+# Selection marker (visual mode)
+marker_selected  = { fg = "black", bg = "green" }
+marker_unset     = { fg = "reset", bg = "reset" }
+marker_copied    = { fg = "black", bg = "yellow" }
+marker_cut       = { fg = "black", bg = "red"    }
+
+# Tab bar
+tab_active   = { fg = "black", bg = "blue",  bold = true  }
+tab_inactive = { fg = "reset", bg = "reset"               }
+
+# Count / borders
+count_selected = { fg = "black", bg = "green"  }
+count_copied   = { fg = "black", bg = "yellow" }
+count_cut      = { fg = "black", bg = "red"    }
+
+border_symbol = "│"
+border_style  = { fg = "bright-black" }
+
+# ------------------------------------------------------------
+#  Indicator (selecction bar)
+# ------------------------------------------------------------
+[indicator]
+padding = { open = "█", close = "█"}
+
+# ------------------------------------------------------------
+#  Status bar
+# ------------------------------------------------------------
+[status]
+separator_open  = ""
+separator_close = ""
+separator_style = { fg = "bright-black", bg = "reset" }
+
+# Segments (mode indicator)
+mode_normal  = { fg = "black", bg = "blue",    bold = true }
+mode_select  = { fg = "black", bg = "green",   bold = true }
+mode_unset   = { fg = "black", bg = "magenta", bold = true }
+
+progress_label  = { bold = true }
+progress_normal = { fg = "blue",  bg = "reset" }
+progress_error  = { fg = "red",   bg = "reset" }
+
+permissions_t = { fg = "green"       }
+permissions_r = { fg = "yellow"      }
+permissions_w = { fg = "red"         }
+permissions_x = { fg = "cyan"        }
+permissions_s = { fg = "bright-black"}
+
+# ------------------------------------------------------------
+#  Input (command prompt)
+# ------------------------------------------------------------
+[input]
+cursor         = { fg = "black", bg = "cyan"  }
+title          = { fg = "cyan",  bold = true  }
+value          = { fg = "reset"               }
+selected       = { fg = "black", bg = "blue"  }
+
+# ------------------------------------------------------------
+#  Completion popup
+# ------------------------------------------------------------
+[completion]
+border   = { fg = "blue"                           }
+active   = { fg = "black", bg = "blue", bold = true }
+inactive = { fg = "reset", bg = "reset"             }
+
+# ------------------------------------------------------------
+#  Pick dialog (open-with menu)
+# ------------------------------------------------------------
+[pick]
+border   = { fg = "blue"                            }
+active   = { fg = "black", bg = "blue", bold = true }
+inactive = { fg = "reset"                           }
+
+# ------------------------------------------------------------
+#  Notify / help
+# ------------------------------------------------------------
+[notify]
+title_info  = { fg = "green"  }
+title_warn  = { fg = "yellow" }
+title_error = { fg = "red"    }
+
+icon_info  = ""
+icon_warn  = ""
+icon_error = ""
+
+# ------------------------------------------------------------
+#  Help overlay
+# ------------------------------------------------------------
+[help]
+on      = { fg = "cyan"                              }
+exec    = { fg = "green"                             }
+desc    = { fg = "reset"                             }
+hovered = { fg = "black", bg = "blue", bold = true   }
+footer  = { fg = "black", bg = "bright-black"        }
+
+# ------------------------------------------------------------
+#  Icons — ANSI palette, hereda colores del terminal
+#  Prioridad: globs > dirs > files > exts > conds
+#  prepend_globs sobreescribe los devicons hex del set built-in
+# ------------------------------------------------------------
+[icon]
+
+# Globs: extensiones agrupadas por categoría — ANSI por categoría
+# Coinciden con los colores de [filetype] más abajo
+prepend_globs = [
+  # Audio → cyan
+  { url = "**/*.{mp3,flac,ogg,wav,opus,m4a,aac,wma,aiff,ape}",           text = "󰝚", fg = "cyan"          },
+  # Video → bright-cyan
+  { url = "**/*.{mp4,mkv,avi,mov,webm,flv,wmv,m4v,ts,vob,ogv}",          text = "󰕧", fg = "bright-cyan"    },
+  # Imágenes → bright-magenta
+  { url = "**/*.{jpg,jpeg,png,gif,webp,svg,bmp,ico,tiff,tif,heic,raw}",   text = "󰋩", fg = "bright-magenta" },
+  # Archivos comprimidos → magenta
+  { url = "**/*.{zip,tar,gz,bz2,xz,zst,7z,rar,cab,iso,tgz,tbz2,txz}",   text = "󰀼", fg = "magenta"        },
+  # PDF → bright-red
+  { url = "**/*.pdf",                                                      text = "󰈦", fg = "bright-red"     },
+]
+
+# Conds: tipo de archivo — se aplican a lo no capturado por globs/exts
+prepend_conds = [
+  { if = "dir",    text = "󰉋", fg = "blue"         },
+  { if = "hidden", text = "󰈉", fg = "bright-black"  },
+  { if = "orphan", text = "󰌺", fg = "red"           },
+  { if = "link",   text = "󰌹", fg = "cyan"          },
+  { if = "exec",   text = "󰆍", fg = "green"         },
+]
+
+# ------------------------------------------------------------
+#  File-type color rules (ANSI only)
+# ------------------------------------------------------------
+[filetype]
+rules = [
+  # Directories — mime inode/directory is the correct selector
+  { mime = "inode/directory", style = { fg = "blue",  bold = true } },
+  # Symlinks
+  { url = "**/*", is = "link",   style = { fg = "cyan"                  } },
+  # Orphan symlinks
+  { url = "**/*", is = "orphan", style = { fg = "red",  underline = true } },
+  # Executables
+  { url = "**/*", is = "exec",   style = { fg = "green", bold = true     } },
+  # Hidden files
+  { url = ".*",    style = { fg = "bright-black"       } },
+  # Archives
+  { mime = "application/zip",     style = { fg = "magenta" } },
+  { mime = "application/gzip",    style = { fg = "magenta" } },
+  { mime = "application/x-bzip2", style = { fg = "magenta" } },
+  { mime = "application/x-xz",    style = { fg = "magenta" } },
+  { mime = "application/zstd",    style = { fg = "magenta" } },
+  { mime = "application/x-tar",   style = { fg = "magenta" } },
+  { mime = "application/x-7z-compressed", style = { fg = "magenta" } },
+  { mime = "application/vnd.rar", style = { fg = "magenta" } },
+  # Images
+  { mime = "image/*",   style = { fg = "bright-magenta" } },
+  # Video
+  { mime = "video/*",   style = { fg = "bright-cyan"    } },
+  # Audio
+  { mime = "audio/*",   style = { fg = "cyan"           } },
+  # Documents
+  { mime = "application/pdf", style = { fg = "bright-red" } },
+  # Fallback
+  { url = "*", style = { fg = "reset" } },
+]

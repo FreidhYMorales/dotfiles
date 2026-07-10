@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Privileged helper — copies wallpaper and themed config to SDDM silent theme.
+# Installed to /usr/local/bin/sddm-theme-sync (root-owned, chmod 755).
+# Called by post-hook.sh: sudo /usr/local/bin/sddm-theme-sync <src> <name> <conf>
+#
+# Sudoers entry (managed by bootstrap.sh):
+#   deadlock ALL=(root) NOPASSWD: /usr/local/bin/sddm-theme-sync
+
+set -euo pipefail
+
+SDDM_THEME="/usr/share/sddm/themes/silent"
+WALLPAPER_SRC="${1:-}"
+DEST_NAME="${2:-}"
+CONF_SRC="${3:-}"
+
+# Validate all args present
+if [[ -z "$WALLPAPER_SRC" || -z "$DEST_NAME" || -z "$CONF_SRC" ]]; then
+    echo "Usage: sddm-theme-sync <wallpaper_src> <dest_name> <conf_src>" >&2
+    exit 1
+fi
+
+# Validate wallpaper source is a real file
+if [[ ! -f "$WALLPAPER_SRC" ]]; then
+    echo "sddm-theme-sync: wallpaper not found: $WALLPAPER_SRC" >&2
+    exit 1
+fi
+
+# Validate dest name (prevent path traversal — must be qs-current.<ext> only)
+if ! [[ "$DEST_NAME" =~ ^qs-current\.(jpg|jpeg|png|mp4|mkv|webm|gif|webp)$ ]]; then
+    echo "sddm-theme-sync: invalid dest name: $DEST_NAME" >&2
+    exit 1
+fi
+
+# Validate config source is a real file
+if [[ ! -f "$CONF_SRC" ]]; then
+    echo "sddm-theme-sync: config not found: $CONF_SRC" >&2
+    exit 1
+fi
+
+# Remove previous qs-current.* files (clean slate before copying)
+shopt -s nullglob
+for f in "$SDDM_THEME/backgrounds/qs-current."*; do
+    rm -f "$f"
+done
+shopt -u nullglob
+
+# Copy wallpaper and config
+cp "$WALLPAPER_SRC" "$SDDM_THEME/backgrounds/$DEST_NAME"
+cp "$CONF_SRC" "$SDDM_THEME/configs/custom.conf"

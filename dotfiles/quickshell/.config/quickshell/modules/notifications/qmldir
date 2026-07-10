@@ -1,0 +1,7 @@
+NotifToast               1.0 NotifToast.qml
+NotificationPanel        1.0 NotificationPanel.qml
+NotificationPanelContent 1.0 NotificationPanelContent.qml
+NotificationItem         1.0 NotificationItem.qml
+NotificationsTab         1.0 NotificationsTab.qml
+CalendarTab              1.0 CalendarTab.qml
+WeatherTab               1.0 WeatherTab.qml

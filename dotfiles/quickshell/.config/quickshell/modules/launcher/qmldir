@@ -1,0 +1,7 @@
+Launcher 1.0 Launcher.qml
+LauncherContent 1.0 LauncherContent.qml
+AppItem 1.0 AppItem.qml
+WallpaperCard 1.0 WallpaperCard.qml
+ThemeModeItem 1.0 ThemeModeItem.qml
+CommandItem 1.0 CommandItem.qml
+ScreensaverForm 1.0 ScreensaverForm.qml

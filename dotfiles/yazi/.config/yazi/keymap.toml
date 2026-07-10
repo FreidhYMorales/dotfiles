@@ -1,0 +1,121 @@
+# ============================================================
+#  keymap.toml — Custom keybindings (prepend_keymap)
+#  Strategy: prepend_keymap = override defaults selectively.
+#  Yazi default keymap is preserved unless explicitly replaced.
+#
+#  Plugins will be appended to [mgr.prepend_keymap]
+#  as each one is added. Section markers indicate where
+#  each plugin's bindings live.
+# ============================================================
+
+# ------------------------------------------------------------
+#  MANAGER context
+# ------------------------------------------------------------
+[mgr]
+prepend_keymap = [
+  # --- Navigation (Vim-native) ---
+  { on = "h", run = "leave",              desc = "Go to parent dir" },
+  { on = "l",       run = "plugin bypass smart-enter", desc = "Smart enter (bypass)" },
+  { on = "<Right>", run = "plugin bypass smart-enter", desc = "Smart enter (bypass)" },
+  { on = "<Enter>", run = "plugin bypass smart-enter", desc = "Smart enter (bypass)" },
+  { on = "H", run = "back",               desc = "History back"  },
+  { on = "L", run = "forward",            desc = "History forward" },
+
+  # --- Sorting ---
+  { on = ["s", "n"], run = "sort natural   --dir-first", desc = "Sort: natural"      },
+  { on = ["s", "a"], run = "sort alphabetical --dir-first", desc = "Sort: alphabetical" },
+  { on = ["s", "m"], run = "sort modified  --dir-first --reverse", desc = "Sort: modified (newest first)" },
+  { on = ["s", "s"], run = "sort size      --dir-first --reverse", desc = "Sort: size (largest first)"    },
+
+  # --- Tabs ---
+  { on = "T", run = "tab_create --current", desc = "New tab (current dir)" },
+  { on = "X", run = "tab_close  0",         desc = "Close current tab"     },
+  { on = "<Tab>",   run = "tab_switch 1 --relative", desc = "Next tab"     },
+  { on = "<S-Tab>", run = "tab_switch -1 --relative", desc = "Prev tab"    },
+
+  # --- Toggle hidden files ---
+  { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },
+
+  # --- Shell ---
+  { on = "!", run = "shell --block --confirm", desc = "Open shell prompt" },
+
+  # ============================================================
+  #  PLUGIN KEYBINDS — added per plugin below
+  # ============================================================
+
+  # [PLUGIN: clipboard (XYenon)]
+  # y → yank nativo de Yazi + copia rutas al clipboard del sistema (wl-copy)
+  { on = "y",     run = ["yank", 'plugin clipboard -- --action=copy --notify-unknown-display-server'],  desc = "Yank + copy to system clipboard" },
+  # <C-p> → pega desde el clipboard del sistema a Yazi
+  { on = "<C-p>", run = ['plugin clipboard -- --action=paste'],         desc = "Paste from system clipboard" },
+
+  # [PLUGIN: relative-motions]
+  # 1–9 como prefijos de movimiento: "3j" baja 3, "5k" sube 5, etc.
+  { on = "1", run = "plugin relative-motions 1", desc = "Relative motion: 1" },
+  { on = "2", run = "plugin relative-motions 2", desc = "Relative motion: 2" },
+  { on = "3", run = "plugin relative-motions 3", desc = "Relative motion: 3" },
+  { on = "4", run = "plugin relative-motions 4", desc = "Relative motion: 4" },
+  { on = "5", run = "plugin relative-motions 5", desc = "Relative motion: 5" },
+  { on = "6", run = "plugin relative-motions 6", desc = "Relative motion: 6" },
+  { on = "7", run = "plugin relative-motions 7", desc = "Relative motion: 7" },
+  { on = "8", run = "plugin relative-motions 8", desc = "Relative motion: 8" },
+  { on = "9", run = "plugin relative-motions 9", desc = "Relative motion: 9" },
+  # [PLUGIN: bypass] — keybinds en Navigation section (l, →, Enter)
+  # [PLUGIN: fg]
+  { on = ["f", "g"], run = "plugin fg",        desc = "Search file content (fuzzy, fzf+rg)" },
+  { on = ["f", "G"], run = "plugin fg -- rg",  desc = "Search file content (exact, ripgrep)" },
+  { on = ["f", "f"], run = "plugin fg -- fzf", desc = "Search filename (fzf)" },
+  # [PLUGIN: gvfs]
+  { on = ["M", "m"], run = "plugin gvfs -- select-then-mount --jump", desc = "GVFS: montar dispositivo y saltar" },
+  { on = ["M", "u"], run = "plugin gvfs -- select-then-unmount --eject", desc = "GVFS: desmontar y expulsar" },
+  { on = ["M", "U"], run = "plugin gvfs -- select-then-unmount --eject --force", desc = "GVFS: forzar expulsión" },
+  { on = ["M", "a"], run = "plugin gvfs -- add-mount",    desc = "GVFS: añadir URI de montaje" },
+  { on = ["M", "e"], run = "plugin gvfs -- edit-mount",   desc = "GVFS: editar URI de montaje" },
+  { on = ["M", "r"], run = "plugin gvfs -- remove-mount", desc = "GVFS: eliminar URI de montaje" },
+  { on = ["g", "m"], run = "plugin gvfs -- jump-to-device", desc = "GVFS: saltar a dispositivo montado" },
+  { on = ["`", "`"], run = "plugin gvfs -- jump-back-prev-cwd", desc = "GVFS: volver al directorio anterior" },
+  # [PLUGIN: simple-mtp]
+  # M,p / M,P — MTP via FUSE (simple-mtpfs). Alternativa a gvfs para archivos grandes.
+  { on = ["M", "p"], run = "plugin simple-mtp -- mount",   desc = "simple-mtpfs: montar dispositivo MTP" },
+  { on = ["M", "P"], run = "plugin simple-mtp -- unmount", desc = "simple-mtpfs: desmontar dispositivo MTP" },
+
+  # [PLUGIN: mount]
+  # M,M — no conflicta con gvfs (M,m/u/U/a/e/r) — gestor de discos locales via udisks2
+  { on = ["M", "M"], run = "plugin mount", desc = "Mount: gestor de discos locales (udisks2)" },
+
+  # [PLUGIN: mediainfo]
+  { on = "I", run = "plugin mediainfo -- toggle-metadata", desc = "Mediainfo: toggle thumbnail/metadata" },
+
+  # [PLUGIN: recycle-bin]
+  { on = ["R", "b"], run = "plugin recycle-bin",            desc = "Recycle-bin: menú principal"      },
+  { on = ["R", "o"], run = "plugin recycle-bin -- open",    desc = "Recycle-bin: abrir papelera"      },
+  { on = ["R", "r"], run = "plugin recycle-bin -- restore", desc = "Recycle-bin: restaurar"           },
+  { on = ["R", "d"], run = "plugin recycle-bin -- delete",  desc = "Recycle-bin: eliminar de papelera"},
+  { on = ["R", "e"], run = "plugin recycle-bin -- empty",   desc = "Recycle-bin: vaciar papelera"     },
+  # [PLUGIN: what-size]
+  { on = "<C-s>", run = "plugin what-size", desc = "What-size: tamaño de selección o cwd" },
+  # [PLUGIN: ouch]
+  { on = "C", run = "plugin ouch", desc = "Ouch: comprimir selección" },
+  # [PLUGIN: lazygit]
+  { on = ["g", "i"], run = "plugin lazygit", desc = "Lazygit: abrir en directorio actual" },
+]
+
+# ------------------------------------------------------------
+#  INPUT context (command-line prompt)
+# ------------------------------------------------------------
+[input]
+prepend_keymap = [
+  { on = "<C-c>", run = "close",          desc = "Cancel"   },
+  { on = "<Esc>", run = "escape",         desc = "Escape"   },
+  { on = "<C-u>", run = "kill-line-to-start", desc = "Kill to start" },
+  { on = "<C-k>", run = "kill-line",      desc = "Kill to end"  },
+]
+
+# ------------------------------------------------------------
+#  SELECT context (multi-item picker)
+# ------------------------------------------------------------
+[select]
+prepend_keymap = [
+  { on = "<Esc>", run = "close",          desc = "Cancel" },
+  { on = "q",     run = "close",          desc = "Cancel" },
+]
