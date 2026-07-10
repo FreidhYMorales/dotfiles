@@ -14,6 +14,9 @@ Item {
     property var    apps:          []
     property string _buf:          ""
     property int    selectedIndex: 0
+    // Which monitor the ">wallpaper" picker is currently targeting — ""
+    // means "all monitors" (Wallpapers.commit's default/sync behavior).
+    property string activeScreen:  ""
 
     readonly property int itemH:   64
     readonly property int searchH: 56
@@ -21,6 +24,9 @@ Item {
     // it doesn't grow with the result count (it's an infinite horizontal
     // PathView, not a capped-at-5-rows vertical list).
     readonly property int carouselH: 190
+    // Extra height reserved for the monitor-tabs row, only shown when 2+
+    // screens are connected.
+    readonly property int monitorTabsH: 28
 
     // ">" alone (or ">partial-name") lists available commands; ">wallpaper "/
     // ">theme " (note the trailing space — matches how caelestia's own
@@ -28,7 +34,8 @@ Item {
     readonly property var commands: [
         { id: "wallpaper",   name: "Wallpaper",   description: "Choose the desktop wallpaper", icon: "󰸉" },
         { id: "theme",       name: "Theme",       description: "Choose the color theming mode", icon: "󰏘" },
-        { id: "screensaver", name: "Screensaver", description: "Configure screensaver, lock and suspend", icon: "󰍹" }
+        { id: "screensaver", name: "Screensaver", description: "Configure screensaver, lock and suspend", icon: "󰍹" },
+        { id: "keybinds",    name: "Keybinds",    description: "Keyboard shortcuts cheatsheet", icon: "󰌌" }
     ]
 
     readonly property string mode: {
@@ -36,6 +43,7 @@ Item {
         if (t.startsWith(">wallpaper "))   return "wallpapers"
         if (t.startsWith(">theme "))       return "themes"
         if (t.startsWith(">screensaver ")) return "screensaver"
+        if (t.startsWith(">keybinds "))    return "keybinds"
         if (t.startsWith(">"))             return "commands"
         return "apps"
     }
@@ -44,8 +52,15 @@ Item {
         if (root.mode === "wallpapers")   return t.slice(">wallpaper ".length).trim().toLowerCase()
         if (root.mode === "themes")       return t.slice(">theme ".length).trim().toLowerCase()
         if (root.mode === "screensaver")  return ""
+        if (root.mode === "keybinds")     return ""
         if (root.mode === "commands")     return t.slice(1).trim().toLowerCase()
         return t.toLowerCase()
+    }
+
+    // Strips desktop-entry field codes (%f, %U, etc.) an exec= string may
+    // still carry, then collapses/trims whitespace left behind.
+    function sanitizeExec(exec) {
+        return exec.replace(/%[fFuUdDnNickvm%]/g, "").replace(/\s+/g, " ").trim()
     }
 
     // Picking a command from the ">" list fills in its prefix + a trailing
@@ -73,13 +88,28 @@ Item {
         Wallpapers.stopPreview()
         root.pendingIsLight = Colours.isLight
         if (root.mode === "themes") Colours.generatePreviews(Wallpapers.actualCurrent, Wallpapers.isVideoPath(Wallpapers.actualCurrent))
+        // Re-read hyprctl every time the cheatsheet is opened — cheap, and
+        // keeps it correct if keybinds.lua changed and Hyprland reloaded
+        // since the shell started.
+        if (root.mode === "keybinds") Keybinds.refresh()
         if (root.mode === "wallpapers") {
+            root.activeScreen = ""
             root._wallpaperRealMove = false
             // Re-arm the position baseline too — otherwise a stale one from
             // a previous visit to this mode gets compared against next time,
             // which could immediately (and wrongly) look like real movement.
             wallpaperMoveTracker.armed = false
         }
+    }
+
+    // Re-evaluates the live preview for whatever card is currently centered
+    // in the carousel, scoped to root.activeScreen — shared by carousel
+    // navigation and by switching monitor tabs (neither alone changes both
+    // selectedIndex and activeScreen at once, so each needs to trigger this).
+    function _refreshWallpaperPreview() {
+        if (root.mode !== "wallpapers" || root.filtered.length === 0) return
+        const idx = Math.min(root.selectedIndex, root.filtered.length - 1)
+        if (idx >= 0) Wallpapers.preview(root.filtered[idx].path, root.activeScreen)
     }
 
     // Toggling light/dark applies immediately to whichever mode is already
@@ -96,10 +126,11 @@ Item {
             return q ? Wallpapers.entries.filter(e => e.name.toLowerCase().includes(q)) : Wallpapers.entries
         if (root.mode === "themes")
             return q ? Colours.modes.filter(m => m.name.toLowerCase().includes(q)) : Colours.modes
-        // Doesn't filter anything — ScreensaverForm isn't a list, so there's
-        // nothing here worth computing (would just be pure apps.filter()
-        // waste on every keystroke while this mode is active).
-        if (root.mode === "screensaver")
+        // Doesn't filter anything — ScreensaverForm/KeybindsList aren't
+        // lists driven by this property, so there's nothing here worth
+        // computing (would just be pure apps.filter() waste on every
+        // keystroke while either mode is active).
+        if (root.mode === "screensaver" || root.mode === "keybinds")
             return []
         if (root.mode === "commands")
             return q ? root.commands.filter(c => c.name.toLowerCase().includes(q) || c.id.includes(q)) : root.commands
@@ -123,13 +154,15 @@ Item {
             else if (root.mode === "themes") Qt.callLater(() => themeList.positionViewAtIndex(root.selectedIndex, ListView.Contain))
             else if (root.mode === "commands") Qt.callLater(() => commandList.positionViewAtIndex(root.selectedIndex, ListView.Contain))
         }
-        if (root.mode === "wallpapers" && idx >= 0) Wallpapers.preview(root.filtered[idx].path)
+        root._refreshWallpaperPreview()
     }
 
     readonly property int listH: {
         if (stage !== "open") return 0
         if (root.mode === "screensaver") return screensaverForm.formH
-        if (root.mode === "wallpapers" && root.filtered.length > 0) return root.carouselH
+        if (root.mode === "keybinds")    return keybindsList.formH
+        if (root.mode === "wallpapers" && root.filtered.length > 0)
+            return root.carouselH + (Quickshell.screens.length > 1 ? root.monitorTabsH + 8 : 0)
         if (filtered.length === 0 && searchField.text.length > 0) return itemH
         return Math.min(filtered.length, 5) * itemH
     }
@@ -157,6 +190,7 @@ Item {
             // closed, in which case onModeChanged wouldn't refire here.
             root._wallpaperRealMove = false
             wallpaperMoveTracker.armed = false
+            root.activeScreen = ""
         }
     }
 
@@ -299,9 +333,67 @@ Item {
                 onHovered:      root.selectedIndex = index
                 onClicked: {
                     if (!modelData) return
-                    const exec = modelData.exec.replace(/%[fFuUdDnNickvm%]/g, "").replace(/\s+/g, " ").trim()
+                    const exec = root.sanitizeExec(modelData.exec)
                     Quickshell.execDetached(["bash", "-c", exec])
                     Visibilities.toggle("launcher")
+                }
+            }
+        }
+
+        // ── Monitor tabs (">wallpaper" mode, only when 2+ screens) ──────────
+        // "All" (activeScreen === "") targets the shared default and clears
+        // every per-monitor override on commit — the sync-back-to-one-
+        // wallpaper action. Picking a specific monitor scopes preview/commit
+        // to just that screen (Wallpapers.currentFor/commit).
+
+        Row {
+            id: monitorTabs
+            anchors {
+                top:         parent.top
+                left:        parent.left
+                right:       parent.right
+                topMargin:   8
+                leftMargin:  8
+                rightMargin: 8
+            }
+            height:  root.monitorTabsH
+            spacing: 6
+            visible: root.mode === "wallpapers" && Quickshell.screens.length > 1
+            opacity: stage === "open" ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+
+            Repeater {
+                model: [""].concat(Quickshell.screens.map(s => s.name))
+
+                delegate: Rectangle {
+                    id: tab
+                    required property string modelData
+
+                    readonly property bool isSelected: root.activeScreen === tab.modelData
+
+                    height: root.monitorTabsH
+                    width:  tabLabel.implicitWidth + 20
+                    radius: height / 2
+                    color:  tab.isSelected ? Colours.m3primaryContainer : Colours.m3surfaceContainerHigh
+                    border.width: 1
+                    border.color: Colours.mid(Colours.m3surfaceContainer, tab.color)
+                    Behavior on color { CAnim {} }
+
+                    StyledText {
+                        id: tabLabel
+                        anchors.centerIn: parent
+                        text:  tab.modelData === "" ? "All" : tab.modelData
+                        color: tab.isSelected ? Colours.m3onPrimaryContainer : Colours.m3onSurfaceVariant
+                        font.pixelSize: 12
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            root.activeScreen = tab.modelData
+                            root._refreshWallpaperPreview()
+                        }
+                    }
                 }
             }
         }
@@ -317,7 +409,7 @@ Item {
         PathView {
             id: wallpaperCarousel
             anchors {
-                top:         parent.top
+                top:         monitorTabs.visible ? monitorTabs.bottom : parent.top
                 bottom:      searchBar.top
                 left:        parent.left
                 right:       parent.right
@@ -371,7 +463,7 @@ Item {
                 onClicked: {
                     if (!modelData) return
                     wallpaperCarousel.currentIndex = index
-                    Wallpapers.commit(modelData.path)
+                    Wallpapers.commit(modelData.path, root.activeScreen)
                     Visibilities.toggle("launcher")
                 }
             }
@@ -498,6 +590,22 @@ Item {
             Behavior on opacity { NumberAnimation { duration: 180 } }
         }
 
+        // ── Keybinds cheatsheet (">keybinds" mode) ──────────────────────────
+
+        KeybindsList {
+            id: keybindsList
+            anchors {
+                top:         parent.top
+                bottom:      searchBar.top
+                left:        parent.left
+                right:       parent.right
+                topMargin:   8
+            }
+            visible: root.mode === "keybinds"
+            opacity: stage === "open" ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+        }
+
         // No results placeholder
         Text {
             anchors {
@@ -505,12 +613,13 @@ Item {
                 top:              parent.top
                 topMargin:        (root.listH - font.pixelSize) / 2 + 8
             }
-            // root.mode === "screensaver" also has filtered.length === 0
-            // (see the `filtered` computed property above) — without this,
-            // the placeholder would overlap ScreensaverForm's own content
-            // any time the search text is non-empty in that mode.
+            // root.mode === "screensaver"/"keybinds" also have
+            // filtered.length === 0 (see the `filtered` computed property
+            // above) — without this, the placeholder would overlap their
+            // own content any time the search text is non-empty there.
             visible:        stage === "open" && root.filtered.length === 0 &&
-                             searchField.text.length > 0 && root.mode !== "screensaver"
+                             searchField.text.length > 0 &&
+                             root.mode !== "screensaver" && root.mode !== "keybinds"
             text:           root.mode === "wallpapers" ? "No wallpapers found"
                             : root.mode === "themes"    ? "No themes found"
                             : root.mode === "commands"  ? "No commands found"
@@ -591,11 +700,11 @@ Item {
                         return // stays open — just fills in the prefix
                     }
                     if (root.mode === "wallpapers") {
-                        Wallpapers.commit(root.filtered[idx].path)
+                        Wallpapers.commit(root.filtered[idx].path, root.activeScreen)
                     } else if (root.mode === "themes") {
                         Colours.commit(root.filtered[idx].id, root.pendingIsLight)
                     } else {
-                        const exec = root.filtered[idx].exec.replace(/%[fFuUdDnNickvm%]/g, "").replace(/\s+/g, " ").trim()
+                        const exec = root.sanitizeExec(root.filtered[idx].exec)
                         Quickshell.execDetached(["bash", "-c", exec])
                     }
                     Visibilities.toggle("launcher")

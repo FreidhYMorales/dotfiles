@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import "../../services"
 import "../../components"
@@ -269,6 +271,8 @@ Item {
                         delegate: Item {
                             id:     chip
                             height: playerList.height
+
+                            required property int index
 
                             readonly property var entry: Mpris.otherPlayers[index] ?? {}
 

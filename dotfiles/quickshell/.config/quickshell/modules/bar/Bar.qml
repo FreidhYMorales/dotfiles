@@ -35,6 +35,7 @@ Variants {
 
             BarContent {
                 anchors.fill: parent
+                screenName:   screenScope.modelData.name
             }
         }
     }

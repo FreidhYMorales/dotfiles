@@ -155,8 +155,13 @@ local clipHistory = "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"
 keybind(mainMod .. " + P", exec(colorPicker), descrip("Pick color to clipboard"))
 keybind(mainMod .. " + V", exec(clipHistory), descrip("Clipboard history"))
 
--- Super+L → lock screen
-keybind(mainMod .. " + L", exec("qs ipc call lock lock"), descrip("Lock screen"))
+-- Power button → lock screen (logind HandlePowerKey=ignore lets this through)
+keybind("XF86PowerOff", exec("qs ipc call lock lock"), { description = "Power button: lock screen" })
+
+-- TUI apps
+keybind(mainMod .. " + A", exec("kitty --class wiremix -e wiremix"), descrip("Open audio mixer"))
+keybind(mainMod .. " + Shift + B", exec("kitty --class bluetui -e bluetui"), descrip("Open bluetooth manager"))
+keybind(mainMod .. " + Shift + W", exec("kitty --class impala -e impala"), descrip("Open wifi manager"))
 
 -- Quickshell Panels
 keybind(mainMod .. " + SPACE", exec(qsIpc .. " launcher toggle"), descrip("Toggle Launcher"))

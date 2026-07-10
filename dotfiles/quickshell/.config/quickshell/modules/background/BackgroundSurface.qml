@@ -12,9 +12,11 @@ import "../../services"
 Item {
     id: root
 
+    required property string screenName
+
     property bool bgFailed: false
 
-    readonly property string bgSource: Wallpapers.current
+    readonly property string bgSource: Wallpapers.currentFor(root.screenName)
     readonly property bool isVideo: Wallpapers.isVideoPath(root.bgSource)
     readonly property bool showVideo: root.isVideo && !root.bgFailed
     readonly property bool showImage: !root.isVideo || root.bgFailed

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import "../../services"
@@ -87,6 +89,9 @@ Item {
                 clip:    true
 
                 delegate: NotificationItem {
+                    required property var model
+                    required property int index
+
                     width:    notifList.width
                     appName:  model.app
                     summary:  model.summary

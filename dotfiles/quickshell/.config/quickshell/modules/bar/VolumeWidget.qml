@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell.Io
 import "../../services"
 import "../../components"
 
@@ -9,6 +10,10 @@ Item {
 
     property bool standalone:   true
     property bool showPercent:  false
+    // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+    // Defaults to the shared global palette so this widget still works
+    // wherever else it might be instantiated without a screen context.
+    property var  colors:       Colours.palette
 
     Timer {
         id: hideTimer
@@ -34,7 +39,7 @@ Item {
         anchors.fill: parent
         visible:      root.standalone
         radius:       height / 2
-        color:        Colours.m3surfaceContainerHigh
+        color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
 
@@ -48,7 +53,7 @@ Item {
             text:           Audio.muted       ? "󰖁" :
                             Audio.volume > 66 ? "󰕾" :
                             Audio.volume > 33 ? "󰖀" : "󰕿"
-            color:          Audio.muted ? Colours.m3onSurfaceVariant : Colours.m3onSurface
+            color:          Audio.muted ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface
             font.family:    "Iosevka Term Nerd Font"
             font.pixelSize: 13
             Behavior on color { CAnim {} }
@@ -67,7 +72,7 @@ Item {
                 id: percentText
                 anchors { left: parent.left; leftMargin: 5; verticalCenter: parent.verticalCenter }
                 text:           Audio.volume + "%"
-                color:          Audio.muted ? Colours.m3onSurfaceVariant : Colours.m3onSurface
+                color:          Audio.muted ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface
                 font.family:    "Iosevka Term Nerd Font"
                 font.pixelSize: 12
                 Behavior on color { CAnim {} }
@@ -75,8 +80,25 @@ Item {
         }
     }
 
+    // Right click opens a full PipeWire mixer (per-app volumes, sink/source
+    // picker) — same "kitty + TUI" pattern as BluetoothWidget/WifiWidget.
+    // Left click keeps the quick OSD (Osd.qml) for the common case.
+    Process {
+        id: mixerProc
+        running: false
+        command: ["kitty", "--class", "qs-volume", "-e", "wiremix"]
+    }
+
     MouseArea {
         anchors.fill: parent
-        onClicked:    Visibilities.toggle("volume")
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.LeftButton) {
+                Visibilities.toggle("volume")
+            } else if (mouse.button === Qt.RightButton) {
+                if (mixerProc.running) mixerProc.running = false
+                else mixerProc.running = true
+            }
+        }
     }
 }

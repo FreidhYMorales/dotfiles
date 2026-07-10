@@ -266,10 +266,66 @@ Es la dependencia más segura (python3 es parte de Arch base). Si `jq` se instal
 
 ---
 
+## Wallpaper y colores por monitor (agregado 2026-07-10)
+
+Cada monitor puede tener su propio wallpaper y su propia paleta de bar/paneles,
+sin tocar el theme global (colors.json + kitty/Hyprland/btop/SDDM/Zen/Zellij),
+que sigue siendo un solo pipeline compartido.
+
+- **`Wallpapers.perScreen`** — `{ screenName: path }`, overrides por monitor.
+  Persistido en `~/.local/state/quickshell/wallpaper-screens.json` (separado
+  de `wallpaper.txt`, que sigue siendo solo el wallpaper compartido/default).
+  `Wallpapers.currentFor(screenName)` resuelve el override si existe, si no
+  cae a `actualCurrent`. `modules/background/BackgroundSurface.qml` usa esta
+  función (recibe `screenName` desde `Background.qml`'s `Variants`), no
+  `Wallpapers.current` (esa queda para consumidores sin concepto de monitor:
+  lock screen, `IdleManager`'s modo "usar wallpaper" para el salvapantallas).
+- **`Colours.palettes`** — `{ screenName: {m3primary, m3onSurface, ...} }`,
+  paletas independientes generadas SOLO para bar/paneles, nunca para el
+  pipeline externo. `Colours.paletteFor(screenName)` resuelve el override o
+  cae al `palette` global compartido (mismo shape en ambos casos, dot-access
+  intercambiable: `Colours.paletteFor(s).m3primary`).
+- **Cómo se genera una paleta por monitor sin tocar nada externo**:
+  `Colours.regeneratePaletteFor(screenName, path, isVideo)` corre
+  `matugen image <path> --type <mismo currentMode> --mode <mismo light/dark>
+  --source-color-index 0 --dry-run --quiet --json hex` — el mismo mecanismo
+  que ya usaba `generatePreviews` para las swatches de `>theme` (gotcha #7),
+  así que nunca escribe `colors.json` ni dispara `post-hook.sh`. Cola
+  secuencial (`_screenPaletteQueue`/`_runNextScreenPalette`), mismo criterio
+  que `generatePreviews`.
+  **Ojo con el gotcha #4 de arriba**: el dump `--json hex` expone
+  `colors.primary.default.color` (no `.hex`) — se repitió el mismo error al
+  escribir `Colours._extractPalette()` la primera vez (todo caía al fallback
+  `root.m3xxx`, cada monitor "individual" terminaba mostrando una copia
+  congelada del tema global). Verificado empíricamente corriendo matugen a
+  mano y comparando el JSON real antes de confiar en el parseo.
+- **Pantalla principal del laptop = tema general** — `Wallpapers.isPrimaryScreen(screenName)`
+  detecta la pantalla interna por convención Linux (`eDP-*`, nunca un monitor
+  externo). Committear wallpaper desde esa pantalla en el launcher's
+  `>wallpaper` **también** actualiza el compartido/global (mismo target que
+  el tab "All"), pero — a diferencia de "All" — **no limpia** los overrides
+  de otros monitores. Solo el tab "All" explícito hace el sync completo
+  (limpia `perScreen`/`palettes`, todo el mundo vuelve a seguir el
+  compartido). En un desktop sin pantalla `eDP` (la otra máquina de este
+  dotfiles), esto no aplica a ningún monitor — "All" sigue siendo la única
+  vía al tema compartido, igual que antes.
+- **Picker del launcher**: fila de tabs arriba del carrusel (`"All"` +
+  nombre de cada `Quickshell.screens`), solo visible con 2+ pantallas
+  conectadas. `LauncherContent.qml`'s `root.activeScreen` viaja tal cual
+  (sin resolver "primary → All") a `Wallpapers.preview()/commit()` — la
+  lógica de "la pantalla principal también es el tema general" vive
+  enteramente dentro de `Wallpapers.commit()`, no en el launcher.
+- **Qué widgets ya leen la paleta por pantalla**: toda la barra
+  (`BarContent.qml` resuelve `Colours.paletteFor(screenName)` y se lo pasa a
+  cada widget hijo vía una prop `colors`, default `Colours.palette` para que
+  sigan funcionando si se instancian en otro lado sin ese contexto) + los 5
+  OSD/popups de `modules/bar/` (`Osd`, `BatteryProfileOsd`, `TrayMenuOsd`,
+  `RecorderModeOsd`, `CalendarPopout`+`CalendarCard`). **Todavía NO
+  conectados**: Dashboard, Notifications, Launcher — siguen leyendo
+  `Colours.m3xxx` global.
+
 ## Pendientes / no incluido
 
-- Multi-monitor: mismo wallpaper en todos los outputs (el usuario tiene un
-  solo monitor hoy). Selección por monitor no implementada.
 - El toggle claro/oscuro no re-genera los 9 previews del picker de temas al
   cambiarlo (solo afecta el próximo commit real) — los swatches muestran la
   paleta generada con el `isLight` que estaba activo cuando se abrió `>theme`.

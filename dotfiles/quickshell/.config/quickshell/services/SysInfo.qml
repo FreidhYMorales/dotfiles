@@ -34,7 +34,10 @@ Singleton {
 
     Process {
         id: gpuCheckProc
-        command: ["bash", "-c", "command -v nvidia-smi >/dev/null 2>&1 && echo 1 || echo 0"]
+        // -L actually queries the driver — command -v only checks the binary
+        // exists, which is true even on systems with no NVIDIA hardware at
+        // all (leftover nvidia-utils package), giving a false positive.
+        command: ["bash", "-c", "nvidia-smi -L >/dev/null 2>&1 && echo 1 || echo 0"]
         stdout: SplitParser {
             onRead: line => { root.hasGpu = line.trim() === "1" }
         }

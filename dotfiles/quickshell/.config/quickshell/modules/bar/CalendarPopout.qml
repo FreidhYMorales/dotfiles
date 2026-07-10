@@ -22,6 +22,8 @@ Variants {
 
             readonly property bool isFocused:
                 screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
+            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
 
             property bool _calVisible: false
 
@@ -29,13 +31,21 @@ Variants {
 
             Timer { id: calHideTimer; interval: 400; onTriggered: win._calVisible = false }
 
+            Timer {
+                id: calCloseTimer
+                interval: 1000
+                onTriggered: Visibilities.calendar = false
+            }
+
             Connections {
                 target: Visibilities
                 function onCalendarChanged() {
                     if (Visibilities.calendar) {
+                        calCloseTimer.stop()
                         calHideTimer.stop()
                         win._calVisible = true
                     } else {
+                        calCloseTimer.stop()
                         calHideTimer.restart()
                     }
                 }
@@ -129,14 +139,19 @@ Variants {
                 radius:         12
                 topLeftRadius:  0
                 topRightRadius: 0
-                color:         Colours.m3surfaceContainer
+                color:         win.colors.m3surfaceContainer
                 clip:          true
                 layer.enabled: true
+
+                HoverHandler {
+                    onHoveredChanged: hovered ? calCloseTimer.stop() : calCloseTimer.restart()
+                }
 
                 MouseArea { anchors.fill: parent; z: 0 }
 
                 CalendarCard {
                     id: calCard
+                    colors: win.colors
                     anchors {
                         top:         parent.top
                         left:        parent.left

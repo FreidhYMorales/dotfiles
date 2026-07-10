@@ -6,6 +6,11 @@ import "../../components"
 Item {
     id: root
 
+    required property string screenName
+    // This bar's own per-monitor palette — see Colours.paletteFor. Falls
+    // back to the shared global palette on screens with no override.
+    readonly property var colors: Colours.paletteFor(root.screenName)
+
     property bool _notifCornerFlat: false
     property bool _dashCornerFlat:  false
 
@@ -45,7 +50,7 @@ Item {
         anchors.fill: parent
         radius:            height / 2
         bottomRightRadius: (Visibilities.notifToast || root._notifCornerFlat || root._dashCornerFlat) ? 0 : height / 2
-        color:             Colours.m3surfaceContainer
+        color:             root.colors.m3surfaceContainer
 
         Behavior on color             { CAnim {} }
         Behavior on bottomRightRadius {
@@ -72,9 +77,9 @@ Item {
         // visible but broke the intended dark/moody look. A subtle outline
         // gives definition instead of relying on fill contrast, since the
         // bar's background is already too close in tone to any darker step.
-        color:        Colours.m3surfaceContainerHigh
+        color:        root.colors.m3surfaceContainerHigh
         border.width: 1
-        border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)
+        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
         clip:   true
         Behavior on color  { CAnim {} }
         Behavior on width  { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
@@ -88,14 +93,15 @@ Item {
             }
             spacing: 4
 
-            LauncherButton  { standalone: false }
-            WorkspacesWidget {}
+            LauncherButton   { standalone: false; colors: root.colors }
+            WorkspacesWidget { colors: root.colors }
         }
     }
 
     // Center: Clock
     ClockWidget {
         anchors.centerIn: parent
+        colors: root.colors
     }
 
     // Right: BgApps + system pill
@@ -107,10 +113,10 @@ Item {
         }
         spacing: 4
 
-        BgAppsWidget   {}
-        CpuWidget      {}
-        RamWidget      {}
-        RecorderWidget {}
+        BgAppsWidget   { colors: root.colors }
+        CpuWidget      { colors: root.colors }
+        RamWidget      { colors: root.colors }
+        RecorderWidget { colors: root.colors }
 
         Rectangle {
             id:     rightPill
@@ -122,9 +128,9 @@ Item {
         // visible but broke the intended dark/moody look. A subtle outline
         // gives definition instead of relying on fill contrast, since the
         // bar's background is already too close in tone to any darker step.
-        color:        Colours.m3surfaceContainerHigh
+        color:        root.colors.m3surfaceContainerHigh
         border.width: 1
-        border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)
+        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
             Behavior on color { CAnim {} }
             Behavior on width {
                 NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
@@ -135,12 +141,12 @@ Item {
                 anchors.centerIn: parent
                 // spacing: 2
 
-                VolumeWidget       { id: volWidget; standalone: false }
-                BatteryWidget      { id: batWidget; standalone: false }
-                BluetoothWidget    { standalone: false }
-                WifiWidget         { standalone: false }
-                NotificationButton { standalone: false }
-                DashboardButton    { standalone: false }
+                VolumeWidget       { id: volWidget; standalone: false; colors: root.colors }
+                BatteryWidget      { id: batWidget; standalone: false; colors: root.colors }
+                BluetoothWidget    { standalone: false; colors: root.colors }
+                WifiWidget         { standalone: false; colors: root.colors }
+                NotificationButton { standalone: false; colors: root.colors }
+                DashboardButton    { standalone: false; colors: root.colors }
             }
         }
     }

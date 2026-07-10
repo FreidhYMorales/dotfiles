@@ -74,6 +74,33 @@ rule({
 	size = "700 500",
 })
 
+-- Float + center: wiremix (TUI audio mixer)
+rule({
+	name = "float-wiremix",
+	match = { class = "wiremix" },
+	float = true,
+	center = true,
+	size = "80% 70%",
+})
+
+-- Float + center: bluetui (TUI bluetooth manager)
+rule({
+	name = "float-bluetui",
+	match = { class = "bluetui" },
+	float = true,
+	center = true,
+	size = "70% 65%",
+})
+
+-- Float + center: impala (TUI wifi manager)
+rule({
+	name = "float-impala",
+	match = { class = "impala" },
+	float = true,
+	center = true,
+	size = "70% 65%",
+})
+
 -- Layer rules: blur for Quickshell power menu overlay
 hl.layer_rule({ match = { namespace = "qs-powermenu" }, blur = true })
 hl.layer_rule({ match = { namespace = "qs-powermenu" }, ignore_alpha = 0.2 })

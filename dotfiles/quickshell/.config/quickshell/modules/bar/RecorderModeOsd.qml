@@ -27,6 +27,8 @@ Variants {
 
             readonly property bool isFocused:
                 screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
+            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
 
             property bool _visible: false
 
@@ -115,7 +117,7 @@ Variants {
                 radius:         12
                 topLeftRadius:  0
                 topRightRadius: 0
-                color:          Colours.m3surfaceContainer
+                color:          win.colors.m3surfaceContainer
                 layer.enabled:  true
                 Behavior on color { CAnim {} }
 
@@ -127,7 +129,7 @@ Variants {
                     width:   segW * 3
                     height:  segH
                     radius:  height / 2
-                    color:   Colours.m3surfaceContainerHigh
+                    color:   win.colors.m3surfaceContainerHigh
                     Behavior on color { CAnim {} }
 
                     readonly property int segW: 52
@@ -155,7 +157,7 @@ Variants {
                                     anchors.fill: parent
                                     anchors.margins: 2
                                     radius: height / 2
-                                    color:  segment._flash ? Colours.m3primary : "transparent"
+                                    color:  segment._flash ? win.colors.m3primary : "transparent"
                                     Behavior on color { CAnim {} }
                                 }
 
@@ -164,7 +166,7 @@ Variants {
                                     text:           segment.modelData
                                     font.family:    "Iosevka Term Nerd Font"
                                     font.pixelSize: 14
-                                    color: segment._flash ? Colours.m3onPrimary : Colours.m3onSurface
+                                    color: segment._flash ? win.colors.m3onPrimary : win.colors.m3onSurface
                                     Behavior on color { CAnim {} }
                                 }
 

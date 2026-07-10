@@ -104,8 +104,16 @@ Configuraciones/
 - **Ícono de `AppItem` ahora es un cuadrado con bordes redondos** (`radius: 12`, antes círculo perfecto `radius: height/2`)
 - **Fix**: la letra de fallback (apps sin ícono real) quedaba invisible al seleccionar la app — su color pasaba a `m3primary`, igual que el fondo del ícono ya seleccionado (bug de copiado). Corregido a `m3onPrimary` (el rol pensado para contrastar sobre `m3primary`) en `AppItem.qml`, y se encontró el mismo bug exacto en `CommandItem.qml` (lista de comandos `>`) y `ThemeModeItem.qml` (`>theme`) — corregido en los 3 archivos
 
+#### OSDs — click abre/cierra + hover mantiene abierto (volumen, batería, calendario, dashboard)
+- Patrón unificado en 4 popups: `Osd.qml` (volumen), `BatteryProfileOsd.qml`, `CalendarPopout.qml`, `DashboardContent.qml`
+- Click en el widget de la barra abre/cierra (`Visibilities.toggle(...)`, toggle explícito)
+- `HoverHandler` en la tarjeta/panel: hover pausa el auto-cierre; al salir del hover arranca un `Timer` de 1000ms que cierra
+- El volumen ya no tiene auto-cierre "por defecto" al abrir (se sacó el `restart()` automático que corría sin importar el hover) — ahora solo cierra por click en el botón, por hover-leave (1s), o Escape
+- **Pendiente / bug sin resolver**: el segundo click en el widget de volumen (para cerrar el OSD) no funciona, reproducido incluso tras reiniciar la PC. Escape sí cierra correctamente (confirma que la lógica de cierre en `Osd.qml` está bien) — el problema está en que el click del widget no llega a togglear `Visibilities.volume` la segunda vez. Revisado a fondo sin encontrar la causa estáticamente (un solo call site de `toggle("volume")`, sin gating raro, sin desync entre el `MouseArea` y el ancho animado del ícono+porcentaje). Próximo paso: correr `qs` en foreground o revisar su log en vivo mientras se reproduce, para cazar un warning de QML en el momento exacto del click.
+
 #### Bugs corregidos
 - **Network.qml flicker**: el Timer reseteaba `connected/signal/ssid` antes de correr el proceso → ícono flickeaba cada 3s. Fix: bufferizar en props privadas del `Process` (`_connected`, `_signal`, `_ssid`) y aplicar todo junto en `onRunningChanged` cuando el proceso termina.
+- **`SysInfo.qml` detectaba GPU NVIDIA como falso positivo**: `hasGpu` se chequeaba con `command -v nvidia-smi` (solo confirma que el binario existe). En una máquina sin NVIDIA (Intel HD 520 + AMD discreta, confirmado con `lspci`) que tiene `nvidia-smi` instalado como leftover de un `bootstrap.sh` viejo (que asumía NVIDIA siempre, ver commit "auto-detect GPU vendor"), el binario existe pero falla con exit 9 al correr — el círculo de GPU del dashboard quedaba visible mostrando 0% fijo en vez de ocultarse. Fix: `nvidia-smi -L` (consulta al driver de verdad) en vez de `command -v`.
 
 #### Estado actual del lockscreen (`modules/lock/`)
 - Port visual completo del theme SDDM "silent" — fases 0-6 terminadas (detalle en `lockscreen.md` del proyecto)

@@ -10,6 +10,10 @@ Item {
     property bool standalone:   true
     property bool showPercent:  Battery.charging
     property real prevPercent: Battery.percentage
+    // Per-monitor palette (bar/panels only — see Colours.paletteFor).
+    // Defaults to the shared global palette so this widget still works
+    // wherever else it might be instantiated without a screen context.
+    property var  colors:      Colours.palette
 
     Timer {
         id: hideTimer
@@ -49,7 +53,7 @@ Item {
         anchors.fill: parent
         visible:      root.standalone
         radius:       height / 2
-        color:        Colours.m3surfaceContainerHigh
+        color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
 
@@ -64,7 +68,7 @@ Item {
                   Battery.percentage > 80 ? "󰁹" :
                   Battery.percentage > 50 ? "󰂀" :
                   Battery.percentage > 20 ? "󰁾" : "󰁺"
-            color:          Battery.percentage < 20 && !Battery.charging ? Colours.m3error : Colours.m3onSurface
+            color:          Battery.percentage < 20 && !Battery.charging ? root.colors.m3error : root.colors.m3onSurface
             font.family:    "Iosevka Term Nerd Font"
             font.pixelSize: 13
             Behavior on color { CAnim {} }
@@ -83,7 +87,7 @@ Item {
                 id: percentText
                 anchors { left: parent.left; leftMargin: 5; verticalCenter: parent.verticalCenter }
                 text:           Battery.percentage + "%"
-                color:          Battery.percentage < 20 && !Battery.charging ? Colours.m3error : Colours.m3onSurface
+                color:          Battery.percentage < 20 && !Battery.charging ? root.colors.m3error : root.colors.m3onSurface
                 font.family:    "Iosevka Term Nerd Font"
                 font.pixelSize: 12
                 Behavior on color { CAnim {} }

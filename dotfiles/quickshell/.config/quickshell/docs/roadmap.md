@@ -13,10 +13,12 @@
 | WorkspacesWidget | `bar/WorkspacesWidget.qml` | Dots animados, click cambia WS |
 | ClockWidget | `bar/ClockWidget.qml` | Click abre `CalendarPopout` (`Visibilities.toggle("calendar")`) |
 | BgAppsWidget | `bar/BgAppsWidget.qml` | Hover expand, hyprctl clients |
-| CpuWidget | `bar/CpuWidget.qml` | ⚠️ No estaba en visión original |
-| RamWidget | `bar/RamWidget.qml` | ⚠️ No estaba en visión original |
-| VolumeWidget | `bar/VolumeWidget.qml` | Click abre el OSD de volumen (`Osd.qml`) |
+| CpuWidget | `bar/CpuWidget.qml` | No estaba en visión original — decisión: se queda en el bar tal cual |
+| RamWidget | `bar/RamWidget.qml` | No estaba en visión original — decisión: se queda en el bar tal cual |
+| VolumeWidget | `bar/VolumeWidget.qml` | Click abre el OSD de volumen (`Osd.qml`); click derecho abre `wiremix` (mixer PipeWire completo) en kitty |
 | BatteryWidget | `bar/BatteryWidget.qml` | Solo display |
+| BluetoothWidget | `bar/BluetoothWidget.qml` | Click abre `bluetui` en kitty — lee `services/Bluetooth.qml` |
+| WifiWidget | `bar/WifiWidget.qml` | Click abre `impala` en kitty — lee `services/Network.qml` |
 | DashboardButton | `bar/DashboardButton.qml` | Con badge de notif unread |
 | Dashboard panel | `dashboard/Dashboard.qml` | Panel derecho 340px |
 | Dashboard content | `dashboard/DashboardContent.qml` | 4 cápsulas, scroll sin scrollbar |
@@ -47,36 +49,27 @@
 | Lock screen | `modules/lock/` (12+ componentes) | Port visual completo del theme SDDM "silent", fases 0-6 terminadas — ver `lockscreen.md` en la raíz |
 | Idle chain + caffeine | `services/IdleManager.qml`, `modules/lock/LockSurface.qml` (modo screensaver) | Salvapantallas → auto-bloqueo → auto-suspensión, nativo con `Quickshell.Wayland` — ver `idle-screensaver.md` |
 | Wallpaper + theming picker | `services/Wallpapers.qml`, `services/Colours.qml`, `modules/background/` | Picker en el launcher (`>wallpaper`, `>theme`), fondo propio renderizado por Quickshell — ver `wallpaper-theming.md` |
+| Wallpaper + colores por monitor | `services/Wallpapers.qml` (`perScreen`), `services/Colours.qml` (`paletteFor`/`palettes`), tabs de monitor en `>wallpaper` | Cada monitor puede tener su propio wallpaper + paleta (matugen `--dry-run`, no toca colors.json/kitty/Hyprland/etc). `eDP-*` (pantalla del laptop) = el tema general; monitores externos quedan independientes. Tab "All" sincroniza todo a un solo wallpaper. Barra + OSDs (`Osd`, `BatteryProfileOsd`, `TrayMenuOsd`, `RecorderModeOsd`, `CalendarPopout`) ya leen la paleta por pantalla — Dashboard/Notifications/Launcher siguen con la paleta global |
 | OSD | `bar/Osd.qml`, `bar/BatteryProfileOsd.qml`, `bar/TrayMenuOsd.qml`, `bar/RecorderModeOsd.qml` | Overlays de volumen/brillo/perfil de energía/tray/grabador, wireados en `shell.qml` |
 | Screen recorder | `services/Recorder.qml`, `bar/RecorderWidget.qml`, `bar/RecorderModeOsd.qml` | gpu-screen-recorder (screen/region/window) — ver `recorder.md` |
 
 ---
 
-### 🔲 Stubs (solo ícono fijo)
+## Decisiones tomadas
 
-| Elemento | Estado | Pendiente |
-|---|---|---|
-| `BluetoothWidget` | Ícono 󰂯 fijo | Conectar a servicio BT (Phase 4) |
-| `WifiWidget` | Ícono 󰤨 fijo | Conectar a NetworkManager (Phase 4) |
-
----
-
-## Decisiones pendientes
-
-| Decisión | Opciones | Estado |
-|---|---|---|
-| ¿`CpuWidget` y `RamWidget` en el bar? | Conservar / Eliminar / Mover al BgApps | Sin decidir |
+| Decisión | Elección |
+|---|---|
+| ¿`CpuWidget` y `RamWidget` en el bar? | Conservar tal cual — quedan en el bar |
 
 ---
 
 ## Phase 4 — Paneles auxiliares
 
 - [x] `OSD` — overlay para cambios de volumen/brillo — implementado (`bar/Osd.qml`), wireado en `shell.qml`
-- [ ] `VolumePopout` — panel dedicado con slider de volumen + selector de sink (PipeWire sinks via `pactl list sinks`), a construir desde cero (el contenido standalone previo, `VolumeCard.qml`, se descartó — sin selector de sink y sin uso). El OSD de volumen actual (`Osd.qml`) ya cubre el caso rápido de "cambiaste el volumen", así que esto sería un panel más completo, no un reemplazo.
-- [ ] `BluetoothPanel` — lista de dispositivos, toggle on/off, connect/disconnect (via `bluetoothctl`)
-- [ ] `NetworkPanel` — lista de redes WiFi, signal, conectar/desconectar (via `nmcli`)
-- [ ] `BluetoothWidget` — conectar a servicio real (reemplazar stub)
-- [ ] `WifiWidget` — conectar a NetworkManager (reemplazar stub; mostrar SSID + señal)
+- [x] `VolumePopout` — resuelto sin construir un panel QML propio: click derecho en `VolumeWidget` abre `wiremix` (mixer PipeWire completo, sink/source picker) en kitty, mismo patrón que Bluetooth/Wifi. Requiere `yay -S wiremix` (AUR, no instalado por defecto). El OSD de volumen (`Osd.qml`) sigue cubriendo el caso rápido de "cambiaste el volumen".
+- [x] `BluetoothPanel` — resuelto igual: `BluetoothWidget` ya abre `bluetui` (TUI completa: lista de dispositivos, toggle, connect/disconnect) en kitty. No hace falta un panel QML nativo.
+- [x] `NetworkPanel` — resuelto igual: `WifiWidget` ya abre `impala` (TUI completa: redes, señal, conectar/desconectar) en kitty. No hace falta un panel QML nativo.
+- [x] `BluetoothWidget` / `WifiWidget` — conectados a servicios reales (`services/Bluetooth.qml`, `services/Network.qml`)
 
 ---
 
@@ -93,6 +86,12 @@ la cadena de idle/screensaver — ver también `idle-screensaver.md`).
 
 ## Próximo paso inmediato
 
-1. Resolver la decisión pendiente sobre CpuWidget/RamWidget
-2. Conectar `BluetoothWidget`/`WifiWidget` a servicios reales (reemplazar stubs)
-3. Construir `VolumePopout` desde cero si se decide hacerlo (ver Phase 4)
+Quick wins de la última auditoría, sin empezar:
+
+1. Do Not Disturb toggle — complementa el modo caffeine ya existente
+2. Clipboard history widget — patrón de referencia ya disponible en `backup/references/end-4/quickshell/Cliphist.qml`
+3. Keybind cheatsheet overlay — bajo esfuerzo, los keybinds ya están enumerados en `quickshell-vision.md`
+
+Más grande, sin empezar:
+
+4. `M3Shapes` (plugin C++/Rust) — mayor impacto visual (lock screen), ver `backup/references/quickshell-pending-plugins.md`

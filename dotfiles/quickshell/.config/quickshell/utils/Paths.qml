@@ -34,6 +34,7 @@ Singleton {
     readonly property string wallpapersDir:   Quickshell.env("QS_WALLPAPER_DIR") || `${home}/Pictures/Wallpaper`
     readonly property string appState:        `${state}/quickshell`
     readonly property string wallpaperStatePath: `${appState}/wallpaper.txt`
+    readonly property string wallpaperPerScreenStatePath: `${appState}/wallpaper-screens.json`
     readonly property string themeStatePath:  `${appState}/theme.json`
     readonly property string idleStatePath:   `${appState}/idle.json`
 
