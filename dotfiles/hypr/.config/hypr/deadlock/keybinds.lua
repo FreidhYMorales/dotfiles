@@ -43,6 +43,10 @@ local function focus(direction)
 	return hl.dsp.focus({ direction = direction })
 end
 
+local function movewindow(direction)
+	return hl.dsp.window.move({ direction = direction })
+end
+
 local function fullscreen(mode, action)
 	return hl.dsp.window.fullscreen({ mode = mode, action = action })
 end
@@ -59,7 +63,7 @@ local qsIpc = "qs ipc call"
 keybind(mainMod .. " + RETURN", exec(terminal), descrip("Open Terminal"))
 keybind(mainMod .. " + B", exec(browser), descrip("Open Browser"))
 keybind(mainMod .. " + E", exec(fileManager), descrip("Open File Manager"))
-keybind(mainMod .. " + M", exec(music), descrip("Open Local Music"))
+keybind(mainMod .. " + SHIFT + M", exec(music), descrip("Open Local Music"))
 
 -- Window
 -- Behaviore
@@ -91,10 +95,16 @@ keybind(
 
 -- Movement
 -- Move focus with mainMod + arrow keys
-keybind(mainMod .. " + left", focus("left"), descrip("Move focus left"))
+keybind(mainMod .. " + left",  focus("left"),  descrip("Move focus left"))
 keybind(mainMod .. " + right", focus("right"), descrip("Move focus right"))
-keybind(mainMod .. " + up", focus("up"), descrip("Move focus up"))
-keybind(mainMod .. " + down", focus("down"), descrip("Move focus down"))
+keybind(mainMod .. " + up",    focus("up"),    descrip("Move focus up"))
+keybind(mainMod .. " + down",  focus("down"),  descrip("Move focus down"))
+
+-- Move window with mainMod + CTRL + arrow keys
+keybind(mainMod .. " + CTRL + left",  movewindow("left"),  descrip("Move window left"))
+keybind(mainMod .. " + CTRL + right", movewindow("right"), descrip("Move window right"))
+keybind(mainMod .. " + CTRL + up",    movewindow("up"),    descrip("Move window up"))
+keybind(mainMod .. " + CTRL + down",  movewindow("down"),  descrip("Move window down"))
 
 -- Move / resize window with mouse
 keybind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Move window with the mouse" })
