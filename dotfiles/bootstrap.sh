@@ -337,11 +337,14 @@ step "Post-install: font cache"
 fc-cache -fv
 
 step "Post-install: luarocks magick (nvim snacks.image)"
-luarocks install --local magick
+luarocks install --local magick \
+  || echo "Warning: luarocks magick failed — install manually: luarocks install --local magick"
 
 step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then
   ya pack -i
+  # plugins/ may not exist yet if the stow package has no tracked files there
+  mkdir -p "$HOME/.config/yazi/plugins"
   if [[ ! -d "$HOME/.config/yazi/plugins/fg.yazi" ]]; then
     git clone https://github.com/DreamMaoMao/fg.yazi \
       "$HOME/.config/yazi/plugins/fg.yazi" 2>/dev/null \
@@ -352,9 +355,12 @@ fi
 step "Post-install: MPD service"
 systemctl --user enable --now mpd
 
-step "Post-install: default wallpaper state (used by Quickshell on first launch)"
+step "Post-install: default Quickshell state"
 mkdir -p "$HOME/.local/state/quickshell"
+# Default wallpaper — Quickshell reads this on first launch
 echo "$HOME/.config/hypr/assets/arch.png" > "$HOME/.local/state/quickshell/wallpaper.txt"
+# Default theme state — dynamic:true so changing the wallpaper triggers matugen
+echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' > "$HOME/.local/state/quickshell/theme.json"
 
 step "Post-install: matugen post-hook permissions"
 chmod +x "$HOME/.config/matugen/post-hook.sh"
