@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""
+get-location — emit {"loc":"lat,lon","city":""} for the Quickshell weather service.
+
+Strategy (first success wins):
+  1. GeoClue2 — WiFi-based positioning via Mozilla Location Service.
+     Accurate to a few hundred meters when WiFi networks are in the database.
+     Requires: geoclue + python-gobject packages.
+  2. ipinfo.io — IP geolocation fallback. Less accurate; ISP routing can place
+     the result in the wrong city.
+
+Outputs a single JSON line to stdout. Exits 1 if both sources fail.
+"""
+import json
+import sys
+import subprocess
+
+
+def try_geoclue():
+    try:
+        import gi
+        gi.require_version("Geoclue", "2.0")
+        from gi.repository import Geoclue
+        simple = Geoclue.Simple.new_sync(
+            "quickshell-weather",
+            Geoclue.AccuracyLevel.CITY,
+            None
+        )
+        loc = simple.get_location()
+        lat = round(loc.get_property("latitude"), 4)
+        lon = round(loc.get_property("longitude"), 4)
+        return {"loc": f"{lat},{lon}", "city": ""}
+    except Exception:
+        return None
+
+
+def try_ipinfo():
+    try:
+        result = subprocess.run(
+            ["curl", "-sf", "--max-time", "5", "https://ipinfo.io/json"],
+            capture_output=True, text=True, timeout=8
+        )
+        if result.returncode == 0:
+            data = json.loads(result.stdout)
+            if data.get("loc"):
+                return {"loc": data["loc"], "city": data.get("city", "")}
+    except Exception:
+        pass
+    return None
+
+
+result = try_geoclue() or try_ipinfo()
+if result:
+    print(json.dumps(result))
+else:
+    sys.exit(1)

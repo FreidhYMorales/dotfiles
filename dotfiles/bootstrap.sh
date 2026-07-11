@@ -185,7 +185,8 @@ sudo pacman -S --needed --noconfirm \
 # ── 18. System utils ──────────────────────────────────────────────────────────
 step "System utils"
 sudo pacman -S --needed --noconfirm \
-  upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon
+  upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon \
+  geoclue python-gobject
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
 
@@ -361,9 +362,8 @@ mkdir -p "$HOME/.local/state/quickshell"
 echo "$HOME/.config/hypr/assets/arch.png" > "$HOME/.local/state/quickshell/wallpaper.txt"
 # Default theme state — dynamic:true so changing the wallpaper triggers matugen
 echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' > "$HOME/.local/state/quickshell/theme.json"
-# Weather location override — skips IP geolocation (which is often inaccurate with ISP routing)
-# Coordinates: Huehuetenango, Huehuetenango, Guatemala
-echo '{"loc":"15.3196,-91.4743","city":"Huehuetenango"}' > "$HOME/.local/state/quickshell/weather-loc.json"
+# weather-loc.json is NOT written here — get-location uses GeoClue2 (WiFi) automatically.
+# To pin a location manually: echo '{"loc":"lat,lon","city":"Name"}' > ~/.local/state/quickshell/weather-loc.json
 
 step "Post-install: matugen post-hook permissions"
 chmod +x "$HOME/.config/matugen/post-hook.sh"
