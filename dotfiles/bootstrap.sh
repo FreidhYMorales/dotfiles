@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh — Full system setup for a fresh Arch Linux install.
-# Installs all packages, configures shell, deploys dotfiles via Stow. (27 steps)
+# Installs all packages, configures shell, deploys dotfiles via Stow. (32 steps)
 #
 # Usage:
 #   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
@@ -32,6 +32,21 @@ sudo -v
 while true; do sudo -n true; sleep 60; kill -0 "$$" 2>/dev/null || exit; done &
 SUDO_KEEPALIVE_PID=$!
 trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
+
+# ── 0. pacman config ──────────────────────────────────────────────────────────
+step "pacman: color, parallel downloads, ILoveCandy"
+sudo sed -i 's/^#Color$/Color/'                                  /etc/pacman.conf
+sudo sed -i 's/^#ParallelDownloads = 5$/ParallelDownloads = 5/' /etc/pacman.conf
+grep -q "^ILoveCandy" /etc/pacman.conf || \
+  sudo sed -i '/^Color/a ILoveCandy' /etc/pacman.conf
+
+# ── 0b. Locale & timezone ─────────────────────────────────────────────────────
+step "Locale (en_US.UTF-8) + timezone (America/Guatemala)"
+sudo sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+sudo locale-gen
+echo 'LANG=en_US.UTF-8' | sudo tee /etc/locale.conf > /dev/null
+sudo timedatectl set-timezone America/Guatemala
+sudo timedatectl set-ntp true
 
 # ── 1. Pre-AUR bootstrap ─────────────────────────────────────────────────────
 step "Base tools"
@@ -120,7 +135,8 @@ done
 step "CLI tools"
 sudo pacman -S --needed --noconfirm \
   eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
-  rsync aria2 p7zip tealdeer procs dust qrencode poppler
+  rsync aria2 p7zip tealdeer procs dust qrencode poppler pacman-contrib
+sudo systemctl enable paccache.timer
 
 step "CLI tools: AUR"
 yay -S --needed --noconfirm gping
@@ -174,7 +190,7 @@ yay -S --needed --noconfirm matugen spicetify-cli spotify
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
 yay -S --needed --noconfirm vesktop zen-browser-bin nordzy-cursors nordzy-hyprcursors nwg-displays
-sudo pacman -S --needed --noconfirm mpv libreoffice-fresh
+sudo pacman -S --needed --noconfirm mpv libreoffice-fresh gnome-keyring libsecret
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
@@ -190,18 +206,50 @@ sudo pacman -S --needed --noconfirm \
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
 
-# ── 19. Fonts ─────────────────────────────────────────────────────────────────
+# ── 19. Firewall ──────────────────────────────────────────────────────────────
+step "Firewall (ufw)"
+sudo pacman -S --needed --noconfirm ufw
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo systemctl enable ufw
+sudo ufw --force enable
+
+# ── 20. zram (compressed swap) ───────────────────────────────────────────────
+step "zram (compressed swap in RAM)"
+sudo pacman -S --needed --noconfirm zram-generator
+sudo tee /etc/systemd/zram-generator.conf > /dev/null << 'EOF'
+[zram0]
+zram-size = min(ram / 2, 4096)
+compression-algorithm = zstd
+EOF
+sudo systemctl daemon-reload
+sudo systemctl start systemd-zram-setup@zram0 2>/dev/null || true
+
+# ── 21. Mirror ranking ────────────────────────────────────────────────────────
+step "reflector (mirror ranking)"
+sudo pacman -S --needed --noconfirm reflector
+sudo tee /etc/xdg/reflector/reflector.conf > /dev/null << 'EOF'
+--country Guatemala,Mexico,US
+--protocol https
+--latest 20
+--sort rate
+--save /etc/pacman.d/mirrorlist
+EOF
+sudo systemctl enable reflector.timer
+sudo systemctl start reflector 2>/dev/null || true
+
+# ── 22. Fonts ─────────────────────────────────────────────────────────────────
 step "Fonts"
 sudo pacman -S --needed --noconfirm \
   ttf-iosevkaterm-nerd noto-fonts noto-fonts-emoji noto-fonts-cjk \
   ttf-nerd-fonts-symbols
 yay -S --needed --noconfirm redhat-fonts
 
-# ── 20. System info ───────────────────────────────────────────────────────────
+# ── 23. System info ───────────────────────────────────────────────────────────
 step "System info"
 sudo pacman -S --needed --noconfirm btop fastfetch htop
 
-# ── 21. SDDM ─────────────────────────────────────────────────────────────────
+# ── 24. SDDM ─────────────────────────────────────────────────────────────────
 step "SDDM (display manager)"
 sudo pacman -S --needed --noconfirm sddm qt6-virtualkeyboard
 
@@ -223,17 +271,17 @@ sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/con
 step "SDDM: enable service"
 sudo systemctl enable sddm
 
-# ── 22. logind — power button behavior ───────────────────────────────────────
+# ── 25. logind — power button behavior ───────────────────────────────────────
 step "logind: power button config"
 sudo mkdir -p /etc/systemd/logind.conf.d
 sudo cp "$REPO_ROOT/system/logind/logind.conf.d/deadlock.conf" /etc/systemd/logind.conf.d/
 sudo systemctl restart systemd-logind 2>/dev/null || true
 
-# ── 23. XDG portal — term file chooser ───────────────────────────────────────
+# ── 26. XDG portal — term file chooser ───────────────────────────────────────
 step "xdg-desktop-portal-termfilechooser"
 yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git
 
-# ── 24. Network & Bluetooth TUIs ─────────────────────────────────────────────
+# ── 27. Network & Bluetooth TUIs ─────────────────────────────────────────────
 step "Network (iwd + impala)"
 sudo pacman -S --needed --noconfirm iwd
 yay -S --needed --noconfirm impala
@@ -244,7 +292,7 @@ sudo pacman -S --needed --noconfirm bluez bluez-utils
 yay -S --needed --noconfirm bluetui
 sudo systemctl enable bluetooth
 
-# ── 25. Programming languages & dev tools ────────────────────────────────────
+# ── 28. Programming languages & dev tools ────────────────────────────────────
 # nodejs/npm, python, go, rust/cargo already installed in step 7 (Neovim runtimes)
 
 step "Languages: Lua"
@@ -273,14 +321,14 @@ sudo pacman -S --needed --noconfirm docker docker-compose
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
 
-# ── 26. AI tools ─────────────────────────────────────────────────────────────
+# ── 29. AI tools ─────────────────────────────────────────────────────────────
 # step "AI tools"
 # npm install -g @anthropic-ai/claude-code
 # npm install -g @google/gemini-cli
 # npm install -g opencode
 # curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
 
-# ── 27. GRUB theme + dual boot ───────────────────────────────────────────────
+# ── 30. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
   step "GRUB: packages"
   sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
