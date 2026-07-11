@@ -96,10 +96,10 @@ Singleton {
         }
     }
 
-    // Step 1: geo-locate via IP
+    // Step 1: geo-locate via get-location script (GeoClue2 WiFi → ipinfo.io fallback)
     Process {
         id: ipProc
-        command: ["bash", "-c", "curl -sf --max-time 5 'https://ipinfo.io/json'"]
+        command: ["get-location"]
         running: false
         stdout: SplitParser {
             onRead: line => {
@@ -111,7 +111,7 @@ Singleton {
                         root._startWeather()
                     }
                 } catch(e) {
-                    console.warn("Weather: IP parse error:", e)
+                    console.warn("Weather: geolocation parse error:", e)
                 }
             }
         }
