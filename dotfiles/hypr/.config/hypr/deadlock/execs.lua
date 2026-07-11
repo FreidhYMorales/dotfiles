@@ -5,21 +5,17 @@ local exec = hl.exec_cmd
 
 local dbus = "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
 local wallpaper = "hyprpaper"
-local notif = "dunst"
 local polkit = "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-local idle = "hypridle"
 local keyring = "/usr/bin/gnome-keyring-daemon --start --components=secrets"
 local cliphistText = "wl-paste --type text --watch cliphist store"
 local cliphistImg = "wl-paste --type image --watch cliphist store"
-local quickshell = "killall dunst; quickshell"
+local quickshell = "quickshell"
 local term_file_chosser = "/usr/lib/xdg-desktop-portal-termfilechooser"
 
 hl.on("hyprland.start", function()
 	exec(dbus)
 	exec(wallpaper)
-	exec(notif)
 	exec(polkit)
-	exec(idle)
 	exec(keyring)
 	exec(cliphistText)
 	exec(cliphistImg)
