@@ -361,6 +361,9 @@ mkdir -p "$HOME/.local/state/quickshell"
 echo "$HOME/.config/hypr/assets/arch.png" > "$HOME/.local/state/quickshell/wallpaper.txt"
 # Default theme state — dynamic:true so changing the wallpaper triggers matugen
 echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' > "$HOME/.local/state/quickshell/theme.json"
+# Weather location override — skips IP geolocation (which is often inaccurate with ISP routing)
+# Coordinates: Huehuetenango, Huehuetenango, Guatemala
+echo '{"loc":"15.3196,-91.4743","city":"Huehuetenango"}' > "$HOME/.local/state/quickshell/weather-loc.json"
 
 step "Post-install: matugen post-hook permissions"
 chmod +x "$HOME/.config/matugen/post-hook.sh"

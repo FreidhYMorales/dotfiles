@@ -28,12 +28,9 @@ Singleton {
     }
 
     function reload() {
-        if (!loc) {
-            ipProc.running = false
-            ipProc.running = true
-        } else {
-            _startWeather()
-        }
+        locOverrideFile.reload()
+        // onLoaded fires synchronously if already loaded — _startWeather or
+        // ipProc.running will be set there once we know if there's an override.
     }
 
     function _startWeather() {
@@ -70,6 +67,33 @@ Singleton {
             95: "thunderstorm", 96: "thunderstorm", 99: "thunderstorm"
         }
         return map[code] || "air"
+    }
+
+    // Optional location override — if ~/.local/state/quickshell/weather-loc.json
+    // exists with { "loc": "lat,lon", "city": "Name" }, it skips IP geolocation.
+    // Write this file to pin the location without touching the QML.
+    FileView {
+        id: locOverrideFile
+        path: Paths.weatherLocPath
+        watchChanges: false
+        onLoaded: {
+            try {
+                const saved = JSON.parse(text())
+                if (saved.loc) {
+                    root.loc  = saved.loc
+                    root.city = saved.city || ""
+                    root._startWeather()
+                    return
+                }
+            } catch(e) {}
+            // No override or invalid — fall back to IP geolocation
+            ipProc.running = false
+            ipProc.running = true
+        }
+        onLoadFailed: {
+            ipProc.running = false
+            ipProc.running = true
+        }
     }
 
     // Step 1: geo-locate via IP
