@@ -74,28 +74,10 @@ rule({
 	size = "700 500",
 })
 
--- Float + center: wiremix (TUI audio mixer)
+-- Float + center: TUI apps (wiremix / bluetui / impala)
 rule({
-	name = "float-wiremix",
-	match = { class = "wiremix" },
-	float = true,
-	center = true,
-	size = "80% 70%",
-})
-
--- Float + center: bluetui (TUI bluetooth manager)
-rule({
-	name = "float-bluetui",
-	match = { class = "bluetui" },
-	float = true,
-	center = true,
-	size = "70% 65%",
-})
-
--- Float + center: impala (TUI wifi manager)
-rule({
-	name = "float-impala",
-	match = { class = "impala" },
+	name = "float-tui-apps",
+	match = { class = "wiremix|bluetui|impala" },
 	float = true,
 	center = true,
 	size = "70% 65%",
