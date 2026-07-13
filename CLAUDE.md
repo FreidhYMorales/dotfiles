@@ -5,7 +5,8 @@ como fuente de verdad para dotfiles, referencias y memoria de proyecto.
 
 **Usuario:** deadlock — yannelmorales51@gmail.com  
 **Stack:** Arch Linux · Hyprland · Quickshell (QML/Qt6) · Neovim · Yazi · zsh  
-**GPU:** NVIDIA (ver fixes en backup/references/caelestia/caelestia-patterns-reference.md)
+**Máquina destino:** Lenovo ThinkPad X1 Carbon Gen 13 — Intel Core Ultra 200V (Lunar Lake), Intel Arc (xe driver), sin GPU dedicada. Usar `--no-gpu` en bootstrap.
+**GPU anterior:** NVIDIA (Dell) — los fixes NVIDIA siguen en backup/references/caelestia/caelestia-patterns-reference.md pero ya no aplican a la máquina principal.
 
 ---
 
@@ -53,9 +54,11 @@ Configuraciones/
 ### Dotfiles / Bootstrap
 - **Git repo inicializado** en la raíz de `Configuraciones/` — 4 commits (rama `main`)
 - **`install.sh`** — entry point curl-able. Detecta si el repo ya existe en disco o clona desde `$REPO_URL`. Luego llama a `bootstrap.sh`. Flags: `--no-gpu`, `--dir=<path>`
-- **`dotfiles/bootstrap.sh`** — 25 pasos, cubre todo el sistema desde cero:
-  - Flags: `--no-gpu` (salta NVIDIA), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
+- **`dotfiles/bootstrap.sh`** — 33 pasos, cubre todo el sistema desde cero:
+  - Flags: `--no-gpu` (salta NVIDIA — usar en ThinkPad), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
   - Instala: Hyprland, GPU, shell+OMZ, CLI tools, Neovim+runtimes, Yazi, Audio+sof-firmware, screenshots, clipboard, notificaciones, OCR, screen recording, theming (matugen+spicetify), **apps (vesktop+zen-browser-bin+chromium+mpv)**, Quickshell+qt5/qt6-wayland, system utils (power-profiles-daemon+ntfs-3g), fonts, SDDM silent theme, termfilechooser, iwd+impala+bluez+bluetui, lenguajes (lua, java, c++, python-extras, pnpm), GRUB Star Wars
+  - Step 31 — Boot optimization: mask `systemd-networkd-wait-online` (~2 min de boot), cups socket activation, Intel xe Early KMS (cuando `--no-gpu`)
+  - GRUB timeout = 3s, kernel params `quiet loglevel=3 nowatchdog`
   - Termina con `deploy.sh`, `xdg-user-dirs-update`, `fc-cache`, `luarocks magick`, `ya pack -i`, MPD, sddm-theme-sync helper
 - **Paquetes Stow activos** (todos en `PENDING=()`): nvim, yazi, zsh, kitty, hypr, quickshell, git, scripts, matugen, fonts, vesktop, betterdiscord, mimeapps, termfilechooser, xdg-portal + otros
 - `secrets.zsh` vive en `dotfiles/zsh/.config/zsh/secrets.zsh` (gitignoreado) — restaurar GEMINI_API_KEY manualmente
@@ -152,9 +155,8 @@ Configuraciones/
 - **Dos bugs encontrados probando el panel en vivo, ambos ya corregidos**: (1) si `lockTimeoutMin <= screensaverTimeoutMin` (posible desde que existen los sliders), una carrera entre los dos `IdleMonitor` podía dejar el salvapantallas mostrado para siempre sin pedir nunca la contraseña — fix: `lockMonitor` ahora siempre dispara ≥5s después del salvapantallas sin importar los valores configurados; (2) el sentinel `background = wallpaper` del lockscreen empezó a seguir el fondo del salvapantallas en vez del wallpaper real — fix arriba, sección de lockscreen. Detalle: `idle-screensaver.md` gotchas #14/#15
 
 ### Instalación actual
-- Sistema reinstalado limpio ✅
-- Entorno activo: monasm-dots (EWW + Hyprland) — corriendo como referencia visual
-- Dotfiles propios deployados (hypr y quickshell en PENDING hasta tener config propia)
+- **Máquina actual**: Dell (Intel HD 520 + AMD Topaz) — en uso hasta recibir la ThinkPad
+- **Próxima máquina**: Lenovo ThinkPad X1 Carbon Gen 13 — fresh install con `./bootstrap.sh --no-gpu`
 - **Repo en GitHub**: `https://github.com/FreidhYMorales/dotfiles`
 
 ---
