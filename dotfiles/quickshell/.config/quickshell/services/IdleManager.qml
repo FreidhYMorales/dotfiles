@@ -96,7 +96,7 @@ Singleton {
     // idles out after screensaverMonitor already has, regardless of what
     // raw lockTimeoutMin the user configures via the >screensaver sliders.
     readonly property real _lockMonitorTimeoutSec:
-        Math.max(root.lockTimeoutMin * 60, root.screensaverTimeoutMin * 60 + 5)
+        root.screensaverTimeoutMin * 60 + Math.max(root.lockTimeoutMin * 60, 5)
 
     IdleMonitor {
         id: lockMonitor
@@ -109,7 +109,7 @@ Singleton {
     IdleMonitor {
         id: suspendMonitor
         enabled: root._restored && root.suspendTimeoutMin > 0
-        timeout: root.suspendTimeoutMin * 60
+        timeout: (root.screensaverTimeoutMin + root.lockTimeoutMin + root.suspendTimeoutMin) * 60
         respectInhibitors: true
         onIsIdleChanged: {
             if (isIdle) Quickshell.execDetached(["systemctl", "suspend"])
