@@ -370,16 +370,53 @@ if [[ "$SKIP_GRUB" == false ]]; then
 fi
 
 # ── 31. Boot optimization ────────────────────────────────────────────────────
-step "Boot optimization"
+step "Boot optimization: systemd services"
 # systemd-networkd-wait-online blocks boot for 2+ min on desktop waiting for
 # all interfaces — no desktop service needs full network before the session starts
 sudo systemctl mask systemd-networkd-wait-online.service
 # CUPS: socket activation — printer daemon starts on demand, not at every boot
 sudo systemctl enable cups.socket  2>/dev/null || true
 sudo systemctl disable cups.service 2>/dev/null || true
-# Early KMS is handled automatically by the kms hook + autodetect in mkinitcpio.
-# No explicit MODULES needed — autodetect picks up the right DRM driver (i915,
-# xe, amdgpu, etc.) from what's currently loaded on the target machine.
+
+step "Boot optimization: journald limits"
+# Without a size cap, journal flush at boot can take 1-2s and grow unbounded
+sudo mkdir -p /etc/systemd/journald.conf.d
+sudo tee /etc/systemd/journald.conf.d/size.conf > /dev/null <<'EOF'
+[Journal]
+SystemMaxUse=50M
+RuntimeMaxUse=20M
+EOF
+
+step "Boot optimization: mkinitcpio lz4 compression"
+# lz4 decompresses faster than zstd at the cost of slightly larger initramfs —
+# on SSD the decompression speed wins; kms hook handles Early KMS automatically
+sudo sed -i 's/^#\?COMPRESSION=.*/COMPRESSION="lz4"/' /etc/mkinitcpio.conf
+grep -q "^COMPRESSION_OPTIONS" /etc/mkinitcpio.conf \
+  && sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=(-9)/' /etc/mkinitcpio.conf \
+  || echo 'COMPRESSION_OPTIONS=(-9)' | sudo tee -a /etc/mkinitcpio.conf > /dev/null
+sudo mkinitcpio -P
+
+step "Boot optimization: sysctl tuning"
+sudo tee /etc/sysctl.d/99-performance.conf > /dev/null <<'EOF'
+# Rarely swap with plenty of RAM — avoid latency spikes from swapping
+vm.swappiness = 10
+# Retain more dentries/inodes in RAM instead of reclaiming them aggressively
+vm.vfs_cache_pressure = 50
+# Start background writeback earlier, flush before hitting the hard limit
+vm.dirty_background_ratio = 5
+vm.dirty_ratio = 15
+EOF
+sudo sysctl -p /etc/sysctl.d/99-performance.conf
+
+step "Boot optimization: noatime on root filesystem"
+# noatime skips updating the access-time timestamp on every file read —
+# eliminates unnecessary writes on SSD and reduces I/O overhead
+ROOT_UUID=$(findmnt -no UUID /)
+ROOT_TYPE=$(findmnt -no FSTYPE /)
+if [[ -n "$ROOT_UUID" ]] && grep -q "$ROOT_UUID" /etc/fstab; then
+  sudo sed -i "/$ROOT_UUID/s/defaults/defaults,noatime/" /etc/fstab
+  sudo mount -o remount,noatime /
+fi
 
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"
