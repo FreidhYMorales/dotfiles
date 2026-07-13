@@ -372,7 +372,7 @@ Singleton {
     }
     Process {
         id: postHookProc
-        command: [Paths.home + "/.config/matugen/post-hook.sh"]
+        command: [Paths.home + "/.config/matugen/post-hook.sh", root.isLight ? "light" : "dark"]
     }
 
     // path/isVideo describe the SOURCE (wallpaper) to derive colors from;
