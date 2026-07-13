@@ -141,24 +141,16 @@ Item {
                         height: 24
                         anchors.verticalCenter: parent?.verticalCenter
 
-                        Rectangle {
-                            anchors.fill: parent
-                            radius:       6
-                            color:        btnHov.hovered
-                                              ? Qt.alpha(Colours.m3onSurface, 0.12)
-                                              : "transparent"
-                            Behavior on color { CAnim {} }
-                        }
-
                         Text {
                             anchors.centerIn: parent
-                            text:           powerBtn.modelData.icon
-                            color:          btnHov.hovered
-                                                ? Colours.m3onSurface
-                                                : Colours.m3onSurfaceVariant
-                            font.family:    "Iosevka Term Nerd Font"
-                            font.pixelSize: 13
+                            text:            powerBtn.modelData.icon
+                            color:           btnHov.hovered ? Colours.m3primary : Colours.m3onSurfaceVariant
+                            font.family:     "Iosevka Term Nerd Font"
+                            font.pixelSize:  13
+                            scale:           btnHov.hovered ? 1.35 : 1.0
+                            transformOrigin: Item.Center
                             Behavior on color { CAnim {} }
+                            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                         }
 
                         HoverHandler { id: btnHov }

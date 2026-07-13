@@ -41,24 +41,16 @@ Item {
                     anchors.verticalCenter:   parent.verticalCenter
                     spacing: 4
 
-                    // Circle with icon
-                    Rectangle {
-                        width:  48
-                        height: 48
-                        radius: 24
-                        color:  hov.hovered ? Colours.m3secondaryContainer
-                                                  : Colours.m3surfaceContainerHigh
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text:           btnDelegate.modelData.icon
+                        color:          hov.hovered ? Colours.m3primary : Colours.m3onSurfaceVariant
+                        font.family:    "Iosevka Term Nerd Font"
+                        font.pixelSize: 24
+                        scale:          hov.hovered ? 1.3 : 1.0
+                        transformOrigin: Item.Center
                         Behavior on color { CAnim {} }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text:           btnDelegate.modelData.icon
-                            color:          hov.hovered ? Colours.m3onSecondaryContainer
-                                                              : Colours.m3onSurfaceVariant
-                            font.family:    "Iosevka Term Nerd Font"
-                            font.pixelSize: 20
-                            Behavior on color { CAnim {} }
-                        }
+                        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                     }
 
                     Text {
