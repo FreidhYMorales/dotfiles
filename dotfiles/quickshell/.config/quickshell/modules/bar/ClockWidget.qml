@@ -27,7 +27,7 @@ Item {
     Text {
         id: clockText
         anchors.centerIn: parent
-        text:           Time.date + "  |  " + Time.timeFull
+        text:           Time.date + "  |  " + Time.time24
         color:          root.colors.m3onSurface
         font.family:    "Iosevka Term Nerd Font"
         font.pixelSize: 12
