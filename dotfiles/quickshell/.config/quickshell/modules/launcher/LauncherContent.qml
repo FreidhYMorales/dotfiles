@@ -35,7 +35,8 @@ Item {
         { id: "wallpaper",   name: "Wallpaper",   description: "Choose the desktop wallpaper", icon: "󰸉" },
         { id: "theme",       name: "Theme",       description: "Choose the color theming mode", icon: "󰏘" },
         { id: "screensaver", name: "Screensaver", description: "Configure screensaver, lock and suspend", icon: "󰍹" },
-        { id: "keybinds",    name: "Keybinds",    description: "Keyboard shortcuts cheatsheet", icon: "󰌌" }
+        { id: "keybinds",    name: "Keybinds",    description: "Keyboard shortcuts cheatsheet", icon: "󰌌" },
+        { id: "webapp",      name: "Web App",     description: "Install a web app launcher",      icon: "󰖟" }
     ]
 
     readonly property string mode: {
@@ -44,6 +45,7 @@ Item {
         if (t.startsWith(">theme "))       return "themes"
         if (t.startsWith(">screensaver ")) return "screensaver"
         if (t.startsWith(">keybinds "))    return "keybinds"
+        if (t.startsWith(">webapp "))      return "webapp"
         if (t.startsWith(">"))             return "commands"
         return "apps"
     }
@@ -53,6 +55,7 @@ Item {
         if (root.mode === "themes")       return t.slice(">theme ".length).trim().toLowerCase()
         if (root.mode === "screensaver")  return ""
         if (root.mode === "keybinds")     return ""
+        if (root.mode === "webapp")       return ""
         if (root.mode === "commands")     return t.slice(1).trim().toLowerCase()
         return t.toLowerCase()
     }
@@ -92,6 +95,10 @@ Item {
         // keeps it correct if keybinds.lua changed and Hyprland reloaded
         // since the shell started.
         if (root.mode === "keybinds") Keybinds.refresh()
+        if (root.mode === "webapp") {
+            webAppForm.reset()
+            Qt.callLater(() => webAppForm.focusName())
+        }
         if (root.mode === "wallpapers") {
             root.activeScreen = ""
             root._wallpaperRealMove = false
@@ -130,7 +137,7 @@ Item {
         // lists driven by this property, so there's nothing here worth
         // computing (would just be pure apps.filter() waste on every
         // keystroke while either mode is active).
-        if (root.mode === "screensaver" || root.mode === "keybinds")
+        if (root.mode === "screensaver" || root.mode === "keybinds" || root.mode === "webapp")
             return []
         if (root.mode === "commands")
             return q ? root.commands.filter(c => c.name.toLowerCase().includes(q) || c.id.includes(q)) : root.commands
@@ -161,6 +168,7 @@ Item {
         if (stage !== "open") return 0
         if (root.mode === "screensaver") return screensaverForm.formH
         if (root.mode === "keybinds")    return keybindsList.formH
+        if (root.mode === "webapp")      return webAppForm.formH
         if (root.mode === "wallpapers" && root.filtered.length > 0)
             return root.carouselH + (Quickshell.screens.length > 1 ? root.monitorTabsH + 8 : 0)
         if (filtered.length === 0 && searchField.text.length > 0) return itemH
@@ -606,6 +614,22 @@ Item {
             Behavior on opacity { NumberAnimation { duration: 180 } }
         }
 
+        // ── Web App installer (">webapp" mode) ─────────────────────────────────
+
+        WebAppForm {
+            id: webAppForm
+            anchors {
+                top:         parent.top
+                bottom:      searchBar.top
+                left:        parent.left
+                right:       parent.right
+                topMargin:   8
+            }
+            visible: root.mode === "webapp"
+            opacity: stage === "open" ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+        }
+
         // No results placeholder
         Text {
             anchors {
@@ -619,7 +643,7 @@ Item {
             // own content any time the search text is non-empty there.
             visible:        stage === "open" && root.filtered.length === 0 &&
                              searchField.text.length > 0 &&
-                             root.mode !== "screensaver" && root.mode !== "keybinds"
+                             root.mode !== "screensaver" && root.mode !== "keybinds" && root.mode !== "webapp"
             text:           root.mode === "wallpapers" ? "No wallpapers found"
                             : root.mode === "themes"    ? "No themes found"
                             : root.mode === "commands"  ? "No commands found"
