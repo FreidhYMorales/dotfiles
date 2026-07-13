@@ -377,12 +377,9 @@ sudo systemctl mask systemd-networkd-wait-online.service
 # CUPS: socket activation — printer daemon starts on demand, not at every boot
 sudo systemctl enable cups.socket  2>/dev/null || true
 sudo systemctl disable cups.service 2>/dev/null || true
-# Intel Early KMS (non-NVIDIA systems — ThinkPad X1 Carbon Gen 13 uses Intel Arc/xe)
-# Adds xe to initramfs MODULES so the GPU is initialized before the display server
-if [[ "$SKIP_GPU" == true ]]; then
-  sudo sed -i 's/^MODULES=()/MODULES=(xe)/' /etc/mkinitcpio.conf
-  sudo mkinitcpio -P
-fi
+# Early KMS is handled automatically by the kms hook + autodetect in mkinitcpio.
+# No explicit MODULES needed — autodetect picks up the right DRM driver (i915,
+# xe, amdgpu, etc.) from what's currently loaded on the target machine.
 
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"

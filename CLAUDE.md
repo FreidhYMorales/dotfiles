@@ -5,8 +5,7 @@ como fuente de verdad para dotfiles, referencias y memoria de proyecto.
 
 **Usuario:** deadlock — yannelmorales51@gmail.com  
 **Stack:** Arch Linux · Hyprland · Quickshell (QML/Qt6) · Neovim · Yazi · zsh  
-**Máquina destino:** Lenovo ThinkPad X1 Carbon Gen 13 — Intel Core Ultra 200V (Lunar Lake), Intel Arc (xe driver), sin GPU dedicada. Usar `--no-gpu` en bootstrap.
-**GPU anterior:** NVIDIA (Dell) — los fixes NVIDIA siguen en backup/references/caelestia/caelestia-patterns-reference.md pero ya no aplican a la máquina principal.
+**Máquina:** Dell — Intel HD 520 (i915) + AMD Topaz (amdgpu), sin NVIDIA. Usar `--no-gpu` en bootstrap.
 
 ---
 
@@ -155,8 +154,7 @@ Configuraciones/
 - **Dos bugs encontrados probando el panel en vivo, ambos ya corregidos**: (1) si `lockTimeoutMin <= screensaverTimeoutMin` (posible desde que existen los sliders), una carrera entre los dos `IdleMonitor` podía dejar el salvapantallas mostrado para siempre sin pedir nunca la contraseña — fix: `lockMonitor` ahora siempre dispara ≥5s después del salvapantallas sin importar los valores configurados; (2) el sentinel `background = wallpaper` del lockscreen empezó a seguir el fondo del salvapantallas en vez del wallpaper real — fix arriba, sección de lockscreen. Detalle: `idle-screensaver.md` gotchas #14/#15
 
 ### Instalación actual
-- **Máquina actual**: Dell (Intel HD 520 + AMD Topaz) — en uso hasta recibir la ThinkPad
-- **Próxima máquina**: Lenovo ThinkPad X1 Carbon Gen 13 — fresh install con `./bootstrap.sh --no-gpu`
+- **Máquina**: Dell (Intel HD 520 + AMD Topaz) — fresh install pendiente con `./bootstrap.sh --no-gpu`
 - **Repo en GitHub**: `https://github.com/FreidhYMorales/dotfiles`
 
 ---
