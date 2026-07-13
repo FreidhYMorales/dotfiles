@@ -4,6 +4,10 @@
 
 KITTY_THEME="$HOME/.config/kitty/matugen-theme.conf"
 
+# ── GTK / system color scheme (propagates to GTK apps, Zen Browser, Electron) ──
+COLOR_SCHEME="${1:-dark}"
+gsettings set org.gnome.desktop.interface color-scheme "prefer-${COLOR_SCHEME}" 2>/dev/null || true
+
 # ── Kitty — live reload via socket ───────────────────────────────────────────
 if [[ -f "$KITTY_THEME" ]]; then
     for sock in /tmp/kitty-*; do
