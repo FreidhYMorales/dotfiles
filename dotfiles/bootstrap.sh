@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh — Full system setup for a fresh Arch Linux install.
-# Installs all packages, configures shell, deploys dotfiles via Stow. (32 steps)
+# Installs all packages, configures shell, deploys dotfiles via Stow. (33 steps)
 #
 # Usage:
 #   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
@@ -360,11 +360,28 @@ if [[ "$SKIP_GRUB" == false ]]; then
   sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$GRUB_DEFAULTS"
   grep -q "^GRUB_SAVEDEFAULT" "$GRUB_DEFAULTS" || \
     echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
-  # Longer timeout so dual boot is usable
-  sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=10/' "$GRUB_DEFAULTS"
+  # 3s — enough to select Windows on dual boot, fast enough on single boot
+  sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' "$GRUB_DEFAULTS"
+  # Quiet boot + disable NMI watchdog (saves ~200ms, reduces kernel log spam)
+  sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog"/' "$GRUB_DEFAULTS"
 
   step "GRUB: regenerate config"
   sudo grub-mkconfig -o /boot/grub/grub.cfg
+fi
+
+# ── 31. Boot optimization ────────────────────────────────────────────────────
+step "Boot optimization"
+# systemd-networkd-wait-online blocks boot for 2+ min on desktop waiting for
+# all interfaces — no desktop service needs full network before the session starts
+sudo systemctl mask systemd-networkd-wait-online.service
+# CUPS: socket activation — printer daemon starts on demand, not at every boot
+sudo systemctl enable cups.socket  2>/dev/null || true
+sudo systemctl disable cups.service 2>/dev/null || true
+# Intel Early KMS (non-NVIDIA systems — ThinkPad X1 Carbon Gen 13 uses Intel Arc/xe)
+# Adds xe to initramfs MODULES so the GPU is initialized before the display server
+if [[ "$SKIP_GPU" == true ]]; then
+  sudo sed -i 's/^MODULES=()/MODULES=(xe)/' /etc/mkinitcpio.conf
+  sudo mkinitcpio -P
 fi
 
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
