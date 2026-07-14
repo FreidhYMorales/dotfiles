@@ -29,3 +29,9 @@ output_path = "~/.config/matugen/output/zen-matugen.css"
 [templates.zellij]
 input_path  = "~/.config/matugen/templates/zellij-theme.kdl"
 output_path = "~/.config/zellij/themes/matugen.kdl"
+
+# Zen — M3 palette vars injected into all pages; Stylus userstyles reference these
+# post-hook copies output to Zen's chrome/userContent.css
+[templates.userContent]
+input_path  = "~/.config/matugen/templates/userContent.css"
+output_path = "~/.config/matugen/output/userContent.css"

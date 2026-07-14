@@ -12,7 +12,8 @@ TARGET="$HOME"
 DRY_RUN=false
 
 # Packages that are not ready yet (skipped by default)
-PENDING=()
+# stylus — userstyle backups for Stylus extension (not deployed via Stow; import manually)
+PENDING=(stylus)
 
 args=()
 packages=()

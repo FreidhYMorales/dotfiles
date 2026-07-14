@@ -1,0 +1,87 @@
+/* ==UserStyle==
+@name         WhatsApp — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      1.0.0
+@description  Themes WhatsApp Web with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://web.whatsapp.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  HOW TO USE:
+  1. Install Stylus extension in Zen Browser.
+  2. In Stylus, click "Import" and select this file.
+  3. Make sure the matugen post-hook has run at least once (creates userContent.css in Zen's chrome/).
+  4. Reload WhatsApp in Zen — colors should match the current wallpaper palette.
+
+  NOTE: WhatsApp updates their CSS variable names occasionally.
+  If something looks wrong, open DevTools, inspect the element, and look for
+  the CSS variable being used — then add an override below.
+*/
+
+@-moz-document domain("web.whatsapp.com") {
+
+  /* ── Backgrounds ─────────────────────────────────────────────────────────── */
+  body[data-theme="dark"],
+  body[data-nightmode="true"] {
+    /* Main app shell */
+    --app-background-color:          var(--mat-background)                !important;
+    --background-default:            var(--mat-surface-container-low)     !important;
+    --background-default-hover:      var(--mat-surface-container)         !important;
+    --background-secondary:          var(--mat-surface-container)         !important;
+    --background-secondary-alt:      var(--mat-surface-container-high)    !important;
+    --background-tertiary:           var(--mat-surface-container-highest) !important;
+
+    /* Panels / header */
+    --panel-header-background:       var(--mat-surface-container)         !important;
+    --panel-background-color:        var(--mat-surface-container-low)     !important;
+    --search-input-background:       var(--mat-surface-container-high)    !important;
+
+    /* Chat area */
+    --conversation-panel-background: var(--mat-background)                !important;
+    --compose-input-background:      var(--mat-surface-container)         !important;
+  }
+
+  /* ── Text ────────────────────────────────────────────────────────────────── */
+  body[data-theme="dark"],
+  body[data-nightmode="true"] {
+    --text-primary:    var(--mat-on-surface)         !important;
+    --text-secondary:  var(--mat-on-surface-variant) !important;
+    --text-muted:      var(--mat-outline)             !important;
+  }
+
+  /* ── Icons ───────────────────────────────────────────────────────────────── */
+  body[data-theme="dark"],
+  body[data-nightmode="true"] {
+    --icon-primary:    var(--mat-on-surface)         !important;
+    --icon-secondary:  var(--mat-on-surface-variant) !important;
+    --icon-tertiary:   var(--mat-outline)             !important;
+  }
+
+  /* ── Accent (replaces WhatsApp green with matugen primary) ──────────────── */
+  body[data-theme="dark"],
+  body[data-nightmode="true"] {
+    --primary-strong:        var(--mat-primary)               !important;
+    --primary-main:          var(--mat-primary)               !important;
+    --primary-tint:          var(--mat-primary-container)     !important;
+    --active-tab-marker:     var(--mat-primary)               !important;
+    --unread-marker-background: var(--mat-primary)            !important;
+  }
+
+  /* ── Message bubbles ─────────────────────────────────────────────────────── */
+  body[data-theme="dark"],
+  body[data-nightmode="true"] {
+    --message-primary:        var(--mat-primary-container)     !important;
+    --message-primary-strong: var(--mat-on-primary-container)  !important;
+    --message-secondary:      var(--mat-surface-container-high) !important;
+  }
+
+  /* ── Borders / dividers ──────────────────────────────────────────────────── */
+  body[data-theme="dark"],
+  body[data-nightmode="true"] {
+    --border-list-item-top:  var(--mat-outline-variant) !important;
+    --notification-badge:    var(--mat-primary)         !important;
+  }
+}
