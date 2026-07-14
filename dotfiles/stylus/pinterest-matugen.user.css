@@ -1,0 +1,189 @@
+/* ==UserStyle==
+@name         Pinterest — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Pinterest with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://www.pinterest.com/*
+@match        https://*.pinterest.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Pinterest uses @media (prefers-color-scheme) on :root.
+  Design token namespaces: --sema-color-* (semantic), --comp-button-*, --comp-switch-*,
+  --comp-toast-*, --epr-* (emoji picker).
+  The source has LESS if(@flavor=latte, ...) expressions — in plain CSS these always
+  resolve to the dark-mode branch (which is the correct mapping here).
+  darken() → same color; fade() → color-mix.
+*/
+
+@-moz-document regexp("^https?://(www|[a-z]{2})\\.pinterest\\.(com(\\.au|\\.mx)?|co(\\.uk|\\.kr)?|at|ca|ch|cl|de|dk|es|fr|ie|it|jp|nz|ph|pt|ru|se)/.*") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    :root,
+    body {
+      color: var(--mat-on-surface) !important;
+      background: var(--mat-surface-container-low) !important;
+    }
+
+    /* Core backgrounds */
+    --sema-color-background-default:                      var(--mat-surface-container-low) !important;
+    --sema-color-background-secondary:                    var(--mat-surface-container) !important;
+    --sema-color-hover-background-secondary:              var(--mat-surface-container-high) !important;
+    --sema-color-background-tertiary:                     var(--mat-outline-variant) !important;
+    --sema-color-hover-background-tertiary:               var(--mat-outline) !important;
+    --sema-color-background-elevation:                    var(--mat-surface-container-lowest) !important;
+    --sema-color-hover-background-elevation:              var(--mat-surface-container-low) !important;
+    --sema-color-hover-background-default:                var(--mat-surface-container) !important;
+    --sema-color-background-wash-light:                   var(--mat-surface-container-low) !important;
+    --sema-color-background-inverse:                      var(--mat-on-surface) !important;
+
+    /* Primary (accent = pins, links) */
+    --sema-color-background-primary:                      var(--mat-primary) !important;
+    --sema-color-hover-background-primary:                var(--mat-primary) !important;
+    --sema-color-pressed-background-primary:              var(--mat-primary) !important;
+    --sema-color-background-selected:                     var(--mat-primary) !important;
+    --sema-color-hover-background-selected:               var(--mat-primary) !important;
+    --sema-color-pressed-background-selected:             var(--mat-primary) !important;
+    --sema-color-background-checked:                      var(--mat-primary) !important;
+    --sema-color-hover-background-checked:                var(--mat-primary) !important;
+    --sema-color-pressed-background-checked:              var(--mat-primary) !important;
+    --sema-color-pressed-background-elevation:            var(--mat-surface-container) !important;
+    --sema-color-pressed-background-default:              var(--mat-surface-container-highest) !important;
+    --sema-color-pressed-background-secondary:            var(--mat-surface-container-highest) !important;
+
+    /* Text */
+    --sema-color-text-default:                            var(--mat-on-surface) !important;
+    --sema-color-text-subtle:                             var(--mat-on-surface-variant) !important;
+    --sema-color-text-link:                               var(--mat-primary) !important;
+    --sema-color-text-dark:                               var(--mat-on-surface) !important;
+    --sema-color-text-light:                              var(--mat-on-surface) !important;
+    --sema-color-text-inverse:                            var(--mat-surface-container-low) !important;
+    --sema-color-text-error:                              var(--mat-error) !important;
+    --sema-color-text-disabled:                           var(--mat-outline) !important;
+
+    /* Icons */
+    --sema-color-icon-primary:                            var(--mat-primary) !important;
+    --sema-color-icon-default:                            var(--mat-on-surface) !important;
+    --sema-color-icon-inverse:                            var(--mat-surface-container-lowest) !important;
+    --sema-color-icon-disabled:                           var(--mat-on-surface-variant) !important;
+    --sema-color-icon-subtle:                             var(--mat-outline) !important;
+    --sema-color-icon-dark:                               var(--mat-on-surface) !important;
+    --sema-color-icon-error:                              var(--mat-error) !important;
+
+    /* Borders */
+    --sema-color-border-decorative:                       var(--mat-surface-container-highest) !important;
+    --sema-color-border-interactive:                      var(--mat-outline-variant) !important;
+    --sema-color-hover-border-interactive:                var(--mat-outline) !important;
+    --sema-color-border-focus-outer-default:              var(--mat-primary) !important;
+    --sema-color-border-focus-inner-default:              var(--mat-surface-container-low) !important;
+    --sema-color-border-disabled:                         var(--mat-surface-container-high) !important;
+    --sema-color-border-inverse:                          var(--mat-surface-container-low) !important;
+    --sema-color-border-error:                            var(--mat-error) !important;
+
+    /* Error backgrounds */
+    --sema-color-background-error-default:                var(--mat-error) !important;
+
+    /* Button: button components */
+    --comp-button-color-background-primary-selected:      var(--mat-surface-container-high) !important;
+    --comp-button-color-background-tertiary-semi-transparent-default: color-mix(in srgb, var(--mat-surface-container-low), transparent 50%) !important;
+    --comp-button-color-hover-background-tertiary-semi-transparent-default: color-mix(in srgb, var(--mat-surface-container-low), transparent 50%) !important;
+    --comp-button-color-hover-background-secondary-default: var(--mat-surface-container-high) !important;
+    --comp-button-color-pressed-background-secondary-default: var(--mat-surface-container-high) !important;
+
+    /* Switch */
+    --comp-switch-color-background-container-enabled-off: var(--mat-surface-container-highest) !important;
+    --comp-switch-color-hover-background-container-enabled-off: var(--mat-outline-variant) !important;
+
+    /* Toast */
+    --comp-toast-color-background-default:                var(--mat-on-surface-variant) !important;
+
+    /* Grayscale base color */
+    --base-color-grayscale-100:                           var(--mat-surface-container) !important;
+
+    /* Emoji Picker */
+    .EmojiPickerReact {
+      --epr-bg-color:                    var(--mat-surface-container-low) !important;
+      --epr-text-color:                  var(--mat-on-surface) !important;
+      --epr-picker-border-color:         var(--mat-surface-container-low) !important;
+      --epr-category-label-bg-color:     var(--mat-surface-container-low) !important;
+      --epr-search-input-bg-color:       var(--mat-surface-container-lowest) !important;
+      --epr-skin-tone-picker-menu-color: var(--mat-surface-container-lowest) !important;
+      --epr-category-icon-active-color:  var(--mat-primary) !important;
+      --epr-highlight-color:             var(--mat-primary) !important;
+      --epr-hover-bg-color:              var(--mat-surface-container) !important;
+      --epr-focus-bg-color:              var(--mat-surface-container) !important;
+    }
+
+    /* Search box container */
+    #searchBoxContainer > div {
+      background-color: var(--mat-surface-container-lowest) !important;
+    }
+    #searchBoxContainer > div > div[style*="box-shadow:"] {
+      box-shadow: color-mix(in srgb, var(--mat-primary), transparent 50%) 0 0 0 4px !important;
+    }
+
+    /* Home feed background override */
+    [data-test-id="homefeed-feed"] div:has(> [data-root-margin="more-ideas-tabs"])[style*="background-color:"] {
+      background-color: var(--mat-surface-container-low) !important;
+    }
+
+    /* Pin save button */
+    [data-test-id="SaveButton"] > [class^="SaveButton"] {
+      background-color: var(--sema-color-background-primary) !important;
+    }
+
+    /* Message textarea */
+    textarea#messageDraft {
+      background-color: transparent !important;
+      color: var(--mat-on-surface-variant) !important;
+      caret-color: var(--mat-on-surface) !important;
+    }
+
+    /* Navigation arrow gradient overlays */
+    [data-test-id="one-bar-navigation-arrows"][style*="to left"]:not([style*="to right"]) {
+      background: linear-gradient(to left, var(--mat-surface-container-low), transparent 40px) !important;
+    }
+    [data-test-id="one-bar-navigation-arrows"][style*="to right"]:not([style*="to left"]) {
+      background: linear-gradient(to right, var(--mat-surface-container-low), transparent 40px) !important;
+    }
+
+    /* Multi-select fade */
+    [data-test-id="multi-select-filter-fade-bottom-edge"] {
+      background: linear-gradient(0deg, var(--mat-surface-container-low) 0%, transparent 100%) !important;
+    }
+
+    /* General inputs */
+    input,
+    textarea {
+      background-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    a {
+      color: var(--mat-primary) !important;
+    }
+  }
+
+  /* ── Light mode (minimal) ─────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    :root,
+    body {
+      --sema-color-text-link:       var(--mat-primary) !important;
+      --sema-color-icon-primary:    var(--mat-primary) !important;
+      --sema-color-background-primary: var(--mat-primary) !important;
+      --sema-color-text-error:      var(--mat-error) !important;
+    }
+
+    a {
+      color: var(--mat-primary) !important;
+    }
+  }
+}

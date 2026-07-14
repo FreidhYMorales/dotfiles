@@ -1,0 +1,217 @@
+/* ==UserStyle==
+@name         Proton — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Proton Mail/Drive/Calendar/Account with the active matugen palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://account.proton.me/*
+@match        https://mail.proton.me/*
+@match        https://drive.proton.me/*
+@match        https://calendar.proton.me/*
+@match        https://lumo.proton.me/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Proton uses @media (prefers-color-scheme) on :root.
+  Proton has a clean semantic design token system: --primary-*, --signal-*,
+  --interaction-*, --text-*, --field-*, --border-*, --background-*.
+  The minor/major scale variants (lighten/darken N%) are approximated with the
+  same base color — no relative color syntax used.
+  The SVG logo color replacement LESS mixin is skipped (not convertible).
+  scroll shadow: red()/green()/blue() LESS extraction → skipped.
+*/
+
+@-moz-document regexp("https://(account|mail|drive|calendar|lumo)\\.proton\\.me/.*$") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    :root,
+    .ui-prominent,
+    .ui-standard {
+      /* Primary (accent) */
+      --primary-minor-2:                color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+      --primary-minor-1:                color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+      --primary:                        var(--mat-primary) !important;
+      --primary-major-1:                var(--mat-primary) !important;
+      --primary-major-2:                var(--mat-primary) !important;
+      --primary-major-3:                var(--mat-primary) !important;
+      --primary-contrast:               var(--mat-surface-container-lowest) !important;
+
+      /* Signal danger (error) */
+      --signal-danger-minor-2:          color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+      --signal-danger-minor-1:          color-mix(in srgb, var(--mat-error), transparent 60%) !important;
+      --signal-danger:                  var(--mat-error) !important;
+      --signal-danger-major-1:          var(--mat-error) !important;
+      --signal-danger-major-2:          var(--mat-error) !important;
+      --signal-danger-major-3:          var(--mat-error) !important;
+      --signal-danger-contrast:         var(--mat-surface-container-lowest) !important;
+
+      /* Signal warning */
+      --signal-warning-minor-2:         color-mix(in srgb, var(--mat-secondary), transparent 80%) !important;
+      --signal-warning-minor-1:         color-mix(in srgb, var(--mat-secondary), transparent 60%) !important;
+      --signal-warning:                 var(--mat-secondary) !important;
+      --signal-warning-major-1:         var(--mat-secondary) !important;
+      --signal-warning-major-2:         var(--mat-secondary) !important;
+      --signal-warning-major-3:         var(--mat-secondary) !important;
+      --signal-warning-contrast:        var(--mat-surface-container-lowest) !important;
+
+      /* Signal success */
+      --signal-success-minor-2:         color-mix(in srgb, var(--mat-tertiary), transparent 80%) !important;
+      --signal-success-minor-1:         color-mix(in srgb, var(--mat-tertiary), transparent 60%) !important;
+      --signal-success:                 var(--mat-tertiary) !important;
+      --signal-success-major-1:         var(--mat-tertiary) !important;
+      --signal-success-major-2:         var(--mat-tertiary) !important;
+      --signal-success-major-3:         var(--mat-tertiary) !important;
+      --signal-success-contrast:        var(--mat-surface-container-lowest) !important;
+
+      /* Signal info */
+      --signal-info-minor-2:            color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+      --signal-info-minor-1:            color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+      --signal-info:                    var(--mat-primary) !important;
+      --signal-info-major-1:            var(--mat-primary) !important;
+      --signal-info-major-2:            var(--mat-primary) !important;
+      --signal-info-major-3:            var(--mat-primary) !important;
+      --signal-info-contrast:           var(--mat-surface-container-lowest) !important;
+
+      /* Interaction norm (interactive accent) */
+      --interaction-norm-minor-2:       color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+      --interaction-norm-minor-1:       color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+      --interaction-norm:               var(--mat-primary) !important;
+      --interaction-norm-major-1:       var(--mat-primary) !important;
+      --interaction-norm-major-2:       var(--mat-primary) !important;
+      --interaction-norm-major-3:       var(--mat-primary) !important;
+      --interaction-norm-contrast:      var(--mat-surface-container-lowest) !important;
+
+      /* Interaction weak (secondary buttons / hovers) */
+      --interaction-weak-minor-2:       color-mix(in srgb, var(--mat-surface-container), transparent 60%) !important;
+      --interaction-weak-minor-1:       color-mix(in srgb, var(--mat-surface-container), transparent 30%) !important;
+      --interaction-weak:               var(--mat-surface-container) !important;
+      --interaction-weak-major-1:       var(--mat-surface-container) !important;
+      --interaction-weak-major-2:       var(--mat-surface-container-high) !important;
+      --interaction-weak-major-3:       var(--mat-surface-container-highest) !important;
+      --interaction-weak-contrast:      var(--mat-on-surface) !important;
+
+      /* Text */
+      --text-norm:                      var(--mat-on-surface) !important;
+      --text-weak:                      var(--mat-on-surface-variant) !important;
+      --text-hint:                      var(--mat-on-surface-variant) !important;
+      --text-disabled:                  var(--mat-outline) !important;
+      --text-invert:                    var(--mat-background) !important;
+      --text-markdown:                  var(--mat-on-surface) !important;
+
+      /* Fields */
+      --field-norm:                     var(--mat-outline) !important;
+      --field-hover:                    var(--mat-outline-variant) !important;
+      --field-disabled:                 var(--mat-outline-variant) !important;
+      --field-focus:                    var(--mat-primary) !important;
+      --field-highlight:                color-mix(in srgb, var(--mat-primary), transparent 30%) !important;
+
+      /* Focus */
+      --focus-outline:                  var(--mat-primary) !important;
+      --focus-ring:                     color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+
+      /* Links */
+      --link-norm:                      var(--mat-primary) !important;
+      --link-hover:                     var(--mat-primary) !important;
+      --link-active:                    var(--mat-primary) !important;
+      --optional-link-norm:             var(--mat-primary) !important;
+      --optional-link-hover:            var(--mat-primary) !important;
+      --optional-link-active:           var(--mat-primary) !important;
+
+      /* Borders */
+      --border-norm:                    var(--mat-outline-variant) !important;
+      --border-weak:                    var(--mat-surface-container-high) !important;
+
+      /* Backgrounds */
+      --background-norm:                var(--mat-surface-container-low) !important;
+      --background-weak:                var(--mat-surface-container-lowest) !important;
+      --background-strong:              var(--mat-background) !important;
+      --background-invert:              var(--mat-on-surface) !important;
+
+      /* Interaction defaults */
+      --interaction-default:            transparent !important;
+      --interaction-default-hover:      color-mix(in srgb, var(--mat-on-surface-variant), transparent 80%) !important;
+      --interaction-default-active:     color-mix(in srgb, var(--mat-on-surface-variant), transparent 60%) !important;
+
+      /* Backdrop / scrim */
+      --backdrop-norm:                  color-mix(in srgb, var(--mat-background), transparent 50%) !important;
+
+      /* Scrollbars */
+      --optional-scrollbar-thumb-color:       var(--mat-surface-container) !important;
+      --optional-scrollbar-thumb-hover-color: var(--mat-surface-container-highest) !important;
+
+      /* Optional elevated surface */
+      --optional-background-elevated:   var(--mat-surface-container) !important;
+      --optional-background-lowered:    var(--mat-surface-container-low) !important;
+
+      /* Email item backgrounds */
+      --optional-email-item-unread-background-color: var(--mat-surface-container-lowest) !important;
+      --optional-email-item-read-background-color:   var(--mat-surface-container-low) !important;
+      --optional-email-item-read-text-color:         var(--mat-on-surface-variant) !important;
+
+      /* Logo text */
+      --optional-logo-text-proton-color: var(--mat-on-surface) !important;
+      --optional-logo-text-product-color: var(--mat-on-surface) !important;
+
+      /* Markdown code background */
+      --markdown-pre-background:        var(--mat-surface-container-lowest) !important;
+
+      /* Favorite icon */
+      --favorite-icon-color:            var(--mat-secondary) !important;
+
+      /* Upgrade gradient */
+      .button-promotion {
+        --upgrade-color-stop-1:         var(--mat-error) !important;
+        --upgrade-color-stop-2:         var(--mat-primary) !important;
+      }
+    }
+
+    /* Prominent UI (sidebar) has slightly different background scale */
+    .ui-prominent {
+      --background-norm:                var(--mat-surface-container-lowest) !important;
+      --background-weak:                var(--mat-surface-container-low) !important;
+      --background-strong:              var(--mat-background) !important;
+    }
+
+    /* Lumo-specific */
+    .whats-new-section {
+      background: var(--mat-primary) !important;
+    }
+    .new-label {
+      background-color: var(--mat-primary) !important;
+      color: var(--mat-background) !important;
+    }
+    .lumo-sidebar {
+      background: var(--mat-surface-container-lowest) !important;
+    }
+    .lumo-input-container.ghost-mode {
+      background-color: var(--mat-background) !important;
+      --ghost-text: var(--mat-on-surface) !important;
+      --ghost-text-weak: var(--mat-on-surface-variant) !important;
+    }
+    .lumo-input-container.ghost-mode .lumo-input {
+      background-color: var(--mat-surface-container-lowest) !important;
+    }
+  }
+
+  /* ── Light mode (minimal) ─────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    :root,
+    .ui-prominent,
+    .ui-standard {
+      --primary:           var(--mat-primary) !important;
+      --interaction-norm:  var(--mat-primary) !important;
+      --signal-danger:     var(--mat-error) !important;
+      --signal-success:    var(--mat-tertiary) !important;
+      --link-norm:         var(--mat-primary) !important;
+      --field-focus:       var(--mat-primary) !important;
+      --focus-outline:     var(--mat-primary) !important;
+    }
+  }
+}

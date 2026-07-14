@@ -1,0 +1,144 @@
+/* ==UserStyle==
+@name         Twitch — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Twitch with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://www.twitch.tv/*
+@match        https://dashboard.twitch.tv/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Twitch dark mode: .tw-root--theme-dark on the root element.
+  Light mode: .tw-root--theme-light.
+  Also covers dashboard.twitch.tv.
+  Twitch uses a rich --color-* token system (Vertex design).
+  The brand purple maps to mat-primary (accent).
+  darken() approximated with the same base color.
+*/
+
+@-moz-document domain("twitch.tv"), domain("dashboard.twitch.tv") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  .tw-root--theme-dark,
+  .tw-root--theme-dark .tw-dialog-layer,
+  .tw-root--theme-dark [class*="ScLayoutCssVars-sc-"],
+  .tw-root--theme-dark .tw-tooltip-layer {
+    /* Core backgrounds */
+    --color-background-body:                   var(--mat-surface-container-low) !important;
+    --color-background-base:                   var(--mat-surface-container-lowest) !important;
+    --color-background-alt:                    var(--mat-surface-container-lowest) !important;
+    --color-background-alt-2:                  var(--mat-background) !important;
+    --color-background-float:                  var(--mat-surface-container-lowest) !important;
+    --color-background-input:                  var(--mat-background) !important;
+    --color-background-input-focus:            var(--mat-background) !important;
+    --color-background-placeholder:            var(--mat-surface-container) !important;
+    --color-background-selectable:             var(--mat-surface-container) !important;
+    --color-background-progress:               var(--mat-surface-container) !important;
+    --color-background-overlay-alt:            color-mix(in srgb, var(--mat-surface-container-lowest), transparent 40%) !important;
+
+    /* Interactive backgrounds */
+    --color-background-interactable-hover:     color-mix(in srgb, var(--mat-surface-container), transparent 52%) !important;
+    --color-background-interactable-alpha-hover: var(--mat-surface-container) !important;
+    --color-background-interactable-active:    var(--mat-surface-container-high) !important;
+    --color-background-button-secondary-default: var(--mat-background) !important;
+    --color-background-button-secondary-hover: var(--mat-surface-container) !important;
+    --color-background-button-secondary-active: var(--mat-surface-container-high) !important;
+    --color-background-button-disabled:        var(--mat-surface-container) !important;
+    --color-background-tag-default:            var(--mat-surface-container) !important;
+    --color-background-tag-hover:              var(--mat-surface-container-high) !important;
+    --color-background-pill-subtle:            var(--mat-on-surface-variant) !important;
+    --color-background-button-text-hover:      var(--mat-surface-container) !important;
+    --color-background-toggle-checked:         var(--mat-surface-container-lowest) !important;
+    --color-background-toggle-handle:          var(--mat-on-surface) !important;
+
+    /* Text */
+    --color-text-base:                         var(--mat-on-surface-variant) !important;
+    --color-text-alt:                          var(--mat-on-surface) !important;
+    --color-text-alt-2:                        var(--mat-on-surface-variant) !important;
+    --color-text-label:                        var(--mat-on-surface) !important;
+    --color-text-overlay:                      var(--mat-surface-container-low) !important;
+    --color-text-overlay-alt:                  var(--mat-on-surface-variant) !important;
+    --color-text-input-placeholder:            var(--mat-on-surface) !important;
+    --color-text-button-primary:               var(--mat-background) !important;
+    --color-text-button-disabled:              var(--mat-on-surface-variant) !important;
+    --color-text-button-overlay:               var(--mat-on-surface) !important;
+    --color-text-interactable-selected:        var(--mat-background) !important;
+    --color-text-interactable-inverted:        var(--mat-surface-container-low) !important;
+    --color-text-tag:                          var(--mat-on-surface-variant) !important;
+    --color-text-number-badge:                 var(--mat-surface-container-low) !important;
+
+    /* Borders */
+    --color-border-input:                      var(--mat-surface-container-low) !important;
+    --color-border-tab:                        var(--mat-surface-container) !important;
+    --color-border-input-checkbox:             var(--mat-on-surface-variant) !important;
+    --color-border-input-checkbox-hover:       var(--mat-on-surface) !important;
+    --color-border-base:                       var(--mat-surface-container) !important;
+    --color-border-overlay:                    var(--mat-surface-container) !important;
+    --color-border-balloon-overlay:            var(--mat-surface-container) !important;
+    --color-border-toggle:                     var(--mat-on-surface) !important;
+    --color-border-toggle-hover:               var(--mat-on-surface) !important;
+    --color-border-input-hover:                var(--mat-surface-container) !important;
+
+    /* Status */
+    --color-error:                             var(--mat-error) !important;
+    --color-warn:                              var(--mat-secondary) !important;
+    --color-success:                           var(--mat-tertiary) !important;
+    --color-info:                              var(--mat-primary) !important;
+
+    /* Brand */
+    --color-twitch-purple:                     var(--mat-primary) !important;
+    --color-twitch-purple-4:                   var(--mat-primary) !important;
+    --color-twitch-purple-5:                   var(--mat-primary) !important;
+    --color-twitch-purple-6:                   var(--mat-primary) !important;
+    --color-twitch-purple-7:                   var(--mat-primary) !important;
+    --color-twitch-purple-8:                   var(--mat-primary) !important;
+    --color-accent:                            var(--mat-primary) !important;
+    --color-text-link:                         var(--mat-primary) !important;
+    --color-text-link-visited:                 var(--mat-primary) !important;
+    --color-text-accessible-red:               var(--mat-primary) !important;
+
+    /* White / black base */
+    --color-white:                             var(--mat-on-surface) !important;
+    --color-black:                             var(--mat-background) !important;
+
+    /* Semantic colors */
+    --color-red:                               var(--mat-error) !important;
+    --color-green:                             var(--mat-tertiary) !important;
+    --color-blue:                              var(--mat-primary) !important;
+    --color-yellow:                            var(--mat-secondary) !important;
+    --color-orange:                            var(--mat-secondary) !important;
+    --color-magenta:                           var(--mat-secondary) !important;
+
+    /* Grays */
+    --color-hinted-grey-2:                     var(--mat-surface-container) !important;
+    --color-hinted-grey-5:                     var(--mat-surface-container) !important;
+    --color-hinted-grey-8:                     var(--mat-on-surface-variant) !important;
+    --color-hinted-grey-12:                    var(--mat-on-surface-variant) !important;
+    --color-hinted-grey-15:                    var(--mat-on-surface) !important;
+    --color-opac-b-14:                         var(--mat-background) !important;
+
+    /* Tooltips */
+    --color-text-tooltip:                      var(--mat-surface-container-low) !important;
+    --color-background-tooltip:                var(--mat-on-surface) !important;
+    --color-background-button-overlay-primary-hover: var(--mat-on-surface-variant) !important;
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  .tw-root--theme-light,
+  .tw-root--theme-light .tw-dialog-layer,
+  .tw-root--theme-light [class*="ScLayoutCssVars-sc-"] {
+    --color-background-body:                   var(--mat-surface-container-lowest) !important;
+    --color-background-base:                   var(--mat-surface-container-low) !important;
+    --color-text-base:                         var(--mat-on-surface-variant) !important;
+    --color-text-alt:                          var(--mat-on-surface) !important;
+    --color-twitch-purple:                     var(--mat-primary) !important;
+    --color-accent:                            var(--mat-primary) !important;
+    --color-text-link:                         var(--mat-primary) !important;
+    --color-error:                             var(--mat-error) !important;
+    --color-white:                             var(--mat-surface-container-lowest) !important;
+    --color-black:                             var(--mat-on-surface) !important;
+  }
+}

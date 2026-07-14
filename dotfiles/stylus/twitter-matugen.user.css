@@ -1,0 +1,239 @@
+/* ==UserStyle==
+@name         Twitter / X — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Twitter/X with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://twitter.com/*
+@match        https://x.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Twitter dark mode: body.LightsOut (user-toggled dark) and @media dark on :root.
+  Light mode: @media light on :root.
+  Twitter uses atomic .r-* CSS classes — no CSS custom property system.
+  This style targets stable structural selectors and the small set of
+  CSS vars Twitter does expose. Atomic class names (.r-*) are best-effort;
+  they may change with deployments. The key visual tokens are covered here.
+  darken() → same color; fade() → color-mix(in srgb, ..., transparent N%).
+*/
+
+@-moz-document domain("twitter.com"), domain("x.com") {
+
+  /* ── Dark mode (system preference) ───────────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    body,
+    body.LightsOut,
+    [data-testid="primaryColumn"],
+    #placeholder,
+    .PageContainer {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Sidebar / right column */
+    .r-g2wdr4 {
+      background-color: var(--mat-surface-container-lowest) !important;
+    }
+
+    /* Search bar */
+    .r-gu4em3,
+    .r-z32n2g,
+    .r-1bnu78o,
+    .r-1m3jxhj {
+      background-color: var(--mat-surface-container) !important;
+    }
+
+    /* Borders */
+    .r-1kqtdi0,
+    .r-1roi411 {
+      border-color: var(--mat-surface-container) !important;
+    }
+    .r-1igl3o0 {
+      border-bottom-color: var(--mat-surface-container) !important;
+    }
+    .r-2sztyj {
+      border-top-color: var(--mat-surface-container) !important;
+    }
+    .r-1aihyag {
+      border-right-color: var(--mat-surface-container) !important;
+    }
+    .r-1wyyjkm {
+      border-left-color: var(--mat-on-surface-variant) !important;
+    }
+    .r-1ccsd61,
+    .r-xzxzvz {
+      border-color: var(--mat-surface-container-highest) !important;
+    }
+    .r-1xc7w19 {
+      border-color: var(--mat-surface-container-low) !important;
+    }
+
+    /* Text */
+    .r-1nao33i {
+      color: var(--mat-on-surface) !important;
+    }
+    .r-jwli3a {
+      color: var(--mat-background) !important;
+    }
+    .r-1bwzh9t {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Accent color (brand blue → mat-primary) */
+    .r-l5o3uw {
+      background-color: var(--mat-primary) !important;
+    }
+    .r-vhj8yc {
+      border-color: var(--mat-primary) !important;
+    }
+    .r-1pbtemp {
+      border-right-color: var(--mat-primary) !important;
+    }
+    .r-1vtznih {
+      background-color: var(--mat-primary) !important;
+    }
+    .r-1peqgm7 {
+      background-color: color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    }
+    .r-yuvema {
+      background-color: var(--mat-primary) !important;
+    }
+    .r-r18ze4 {
+      background-color: color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+    }
+    .r-1cvl2hr {
+      color: var(--mat-primary) !important;
+    }
+
+    /* Element hover states (on base) */
+    .r-1hdo0pc,
+    .r-pjtv4k {
+      background-color: color-mix(in srgb, var(--mat-on-surface), transparent 90%) !important;
+    }
+    .r-11gmi9o {
+      background-color: color-mix(in srgb, var(--mat-on-surface), transparent 80%) !important;
+    }
+    .r-1cuuowz {
+      background-color: color-mix(in srgb, var(--mat-on-surface), transparent 97%) !important;
+    }
+
+    /* Tooltips */
+    .r-1pr99xn {
+      background-color: var(--mat-surface-container-high) !important;
+    }
+
+    /* Likes (red) */
+    .r-vkub15,
+    .r-9l7dzd {
+      color: var(--mat-error) !important;
+    }
+    .r-1krxqcr {
+      background-color: color-mix(in srgb, var(--mat-error), transparent 90%) !important;
+    }
+    .r-uuique {
+      background-color: color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+    }
+
+    /* Retweets (green) */
+    .r-o6sn0f {
+      color: var(--mat-tertiary) !important;
+    }
+    .r-15azkrj {
+      background-color: color-mix(in srgb, var(--mat-tertiary), transparent 90%) !important;
+    }
+    .r-1x669os {
+      background-color: color-mix(in srgb, var(--mat-tertiary), transparent 80%) !important;
+    }
+
+    /* Live indicator */
+    .r-4nw3r4,
+    .r-1dgebii {
+      background-color: var(--mat-error) !important;
+    }
+    .r-b5kvu3 {
+      border-color: var(--mat-error) !important;
+    }
+
+    /* Unfollow hover bg */
+    .r-qqmkd0 {
+      background-color: color-mix(in srgb, var(--mat-error), transparent 90%) !important;
+    }
+
+    /* New notification highlight */
+    .r-1eltapf {
+      background-color: color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    }
+
+    /* Poll active */
+    .r-eok2q2 {
+      background-color: color-mix(in srgb, var(--mat-primary), transparent 40%) !important;
+    }
+    .r-9cip40 {
+      box-shadow: var(--mat-primary) 0 0 0 1px !important;
+    }
+
+    /* Scrollbar */
+    [style*="scrollbar-color: rgb(62, 65, 68) rgb(22, 24, 28)"] {
+      scrollbar-color: var(--mat-primary) transparent !important;
+      scrollbar-width: thin !important;
+    }
+
+    /* Inputs */
+    input,
+    textarea {
+      background-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Draft placeholder */
+    .draftjs-styles_0 .public-DraftEditorPlaceholder-root {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Top nav (semi-transparent) */
+    .r-5zmot {
+      background-color: color-mix(in srgb, var(--mat-surface-container-low), transparent 25%) !important;
+    }
+
+    /* Links */
+    a:link,
+    a:visited {
+      color: var(--mat-primary) !important;
+    }
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    body,
+    [data-testid="primaryColumn"],
+    #placeholder,
+    .PageContainer {
+      background-color: var(--mat-surface-container-lowest) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    .r-g2wdr4 {
+      background-color: var(--mat-surface-container-low) !important;
+    }
+
+    .r-l5o3uw {
+      background-color: var(--mat-primary) !important;
+    }
+
+    .r-vhj8yc {
+      border-color: var(--mat-primary) !important;
+    }
+
+    a:link,
+    a:visited {
+      color: var(--mat-primary) !important;
+    }
+  }
+}

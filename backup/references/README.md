@@ -69,6 +69,7 @@ Completar este listado cuando explore otros dotfiles. Usar el template para cada
 
 ## Pipeline y estrategia
 
+- **[`post-install.md`](post-install.md)** — configuración manual post-bootstrap: secrets, GRUB, Spicetify, Stylus en Zen y Chromium, matugen-server, web apps, primer run de matugen.
 - **[`packages-reference.md`](packages-reference.md)** — lista completa de paquetes del sistema por categoría (pacman + AUR + yay), con one-liners y post-install checklist. Derivada de nvim, yazi, scripts y zsh configs.
 - **[`matugen-pipeline-reference.md`](matugen-pipeline-reference.md)** — pipeline completo de colores: generación → scheme.json/colors.json → Quickshell, Hyprland, terminales, apps. Tokens M3, formato de templates, postHook, decisiones para dotfiles propios.
 - **[`deploy-strategy.md`](deploy-strategy.md)** — estrategia de deploy con GNU Stow, estructura del repo, flujo de trabajo.

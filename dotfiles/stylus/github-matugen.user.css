@@ -1,0 +1,122 @@
+/* ==UserStyle==
+@name         GitHub — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes GitHub with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://github.com/*
+@match        https://gist.github.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  GitHub uses data-color-mode + data-dark-theme / data-light-theme attributes on <html>.
+  Dark: [data-color-mode="dark"][data-dark-theme="dark"]
+  Also covers auto/system preference.
+  Many vars use --fgColor-*, --bgColor-*, --borderColor-* from Primer design system.
+*/
+
+@-moz-document domain("github.com"), domain("gist.github.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  [data-color-mode="dark"][data-dark-theme="dark"],
+  [data-color-mode="light"][data-light-theme="dark"],
+  [data-color-mode="auto"] {
+    @media (prefers-color-scheme: dark) {
+
+      /* Foreground / text */
+      --fgColor-default:           var(--mat-on-surface) !important;
+      --fgColor-muted:             var(--mat-on-surface-variant) !important;
+      --fgColor-disabled:          var(--mat-outline) !important;
+      --fgColor-link:              var(--mat-primary) !important;
+      --fgColor-accent:            var(--mat-primary) !important;
+      --fgColor-success:           var(--mat-tertiary) !important;
+      --fgColor-attention:         var(--mat-secondary) !important;
+      --fgColor-severe:            var(--mat-secondary) !important;
+      --fgColor-danger:            var(--mat-error) !important;
+      --fgColor-open:              var(--mat-tertiary) !important;
+      --fgColor-closed:            var(--mat-error) !important;
+      --fgColor-done:              var(--mat-primary) !important;
+      --fgColor-upsell:            var(--mat-primary) !important;
+      --fgColor-sponsors:          var(--mat-secondary) !important;
+      --fgColor-onEmphasis:        var(--mat-background) !important;
+
+      /* Backgrounds */
+      --bgColor-default:           var(--mat-surface-container-low) !important;
+      --bgColor-muted:             var(--mat-surface-container-lowest) !important;
+      --bgColor-inset:             var(--mat-background) !important;
+      --bgColor-emphasis:          var(--mat-on-surface) !important;
+      --bgColor-inverse:           var(--mat-on-surface) !important;
+      --bgColor-transparent:       transparent !important;
+      --bgColor-neutral-muted:     var(--mat-surface-container-high) !important;
+      --bgColor-accent-muted:      color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
+      --bgColor-success-muted:     color-mix(in srgb, var(--mat-tertiary), transparent 85%) !important;
+      --bgColor-attention-muted:   color-mix(in srgb, var(--mat-secondary), transparent 85%) !important;
+      --bgColor-severe-muted:      color-mix(in srgb, var(--mat-secondary), transparent 85%) !important;
+      --bgColor-danger-muted:      color-mix(in srgb, var(--mat-error), transparent 85%) !important;
+      --bgColor-open-muted:        color-mix(in srgb, var(--mat-tertiary), transparent 85%) !important;
+      --bgColor-closed-muted:      color-mix(in srgb, var(--mat-error), transparent 85%) !important;
+      --bgColor-done-muted:        color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
+      --bgColor-upsell-muted:      color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
+      --bgColor-sponsors-muted:    color-mix(in srgb, var(--mat-secondary), transparent 85%) !important;
+
+      /* Borders */
+      --borderColor-default:       var(--mat-surface-container-highest) !important;
+      --borderColor-muted:         var(--mat-surface-container) !important;
+      --borderColor-emphasis:      var(--mat-on-surface-variant) !important;
+      --borderColor-accent:        var(--mat-primary) !important;
+      --borderColor-accent-muted:  color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+      --borderColor-success:       var(--mat-tertiary) !important;
+      --borderColor-attention:     var(--mat-secondary) !important;
+      --borderColor-danger:        var(--mat-error) !important;
+      --borderColor-open:          var(--mat-tertiary) !important;
+      --borderColor-closed:        var(--mat-error) !important;
+      --borderColor-done:          var(--mat-primary) !important;
+
+      /* Buttons */
+      --button-default-bgColor-rest:     var(--mat-surface-container-high) !important;
+      --button-default-bgColor-hover:    var(--mat-surface-container-highest) !important;
+      --button-default-fgColor-rest:     var(--mat-on-surface) !important;
+      --button-default-borderColor-rest: var(--mat-outline-variant) !important;
+      --button-primary-bgColor-rest:     var(--mat-primary) !important;
+      --button-primary-bgColor-hover:    var(--mat-primary) !important;
+      --button-primary-fgColor-rest:     var(--mat-on-primary) !important;
+      --button-danger-bgColor-rest:      var(--mat-error) !important;
+      --button-danger-fgColor-rest:      var(--mat-on-error) !important;
+
+      /* Controls */
+      --control-bgColor-rest:       var(--mat-surface-container) !important;
+      --control-bgColor-hover:      var(--mat-surface-container-high) !important;
+      --control-bgColor-active:     var(--mat-surface-container-highest) !important;
+      --control-borderColor-rest:   var(--mat-outline-variant) !important;
+      --control-borderColor-emphasis: var(--mat-outline) !important;
+      --control-fgColor-rest:       var(--mat-on-surface) !important;
+      --control-fgColor-placeholder: var(--mat-on-surface-variant) !important;
+      --controlKnob-bgColor-checked: var(--mat-primary) !important;
+
+      /* Header */
+      --header-bgColor:            var(--mat-background) !important;
+      --header-fgColor-default:    var(--mat-on-surface) !important;
+      --header-fgColor-logo:       var(--mat-on-surface) !important;
+      --header-borderColor-divider: var(--mat-surface-container) !important;
+
+      /* Focus */
+      --focus-outlineColor:        var(--mat-primary) !important;
+
+      /* Diff */
+      --diffBlob-addition-bgColor-line: color-mix(in srgb, var(--mat-tertiary), transparent 80%) !important;
+      --diffBlob-addition-bgColor-word: color-mix(in srgb, var(--mat-tertiary), transparent 60%) !important;
+      --diffBlob-deletion-bgColor-line: color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+      --diffBlob-deletion-bgColor-word: color-mix(in srgb, var(--mat-error), transparent 60%) !important;
+      --diffBlob-hunk-bgColor:          var(--mat-surface-container-highest) !important;
+
+      /* Contribution graph */
+      --color-calendar-graph-day-bg:   var(--mat-surface-container) !important;
+      --color-calendar-graph-day-L1-bg: color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+      --color-calendar-graph-day-L2-bg: color-mix(in srgb, var(--mat-primary), transparent 50%) !important;
+      --color-calendar-graph-day-L3-bg: color-mix(in srgb, var(--mat-primary), transparent 25%) !important;
+      --color-calendar-graph-day-L4-bg: var(--mat-primary) !important;
+    }
+  }
+}

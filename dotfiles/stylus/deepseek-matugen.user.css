@@ -1,0 +1,147 @@
+/* ==UserStyle==
+@name         DeepSeek — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes DeepSeek Chat with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://chat.deepseek.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  DeepSeek dark mode: body[data-ds-dark-theme]; light: body:not([data-ds-dark-theme]).
+  Uses two token namespaces: --dsw-alias-* (semantic) and --dsr-* (legacy/specific).
+  --ds-rgb-* vars use rgbify triplet format → skipped (incompatible with var(--mat-*)).
+  darken()/lighten() → same base color; fade() → color-mix; mix() → color-mix.
+*/
+
+@-moz-document url-prefix("https://chat.deepseek.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  body[data-ds-dark-theme] {
+    /* Backgrounds */
+    --dsw-alias-bg-base:                          var(--mat-surface-container-low) !important;
+    --dsw-alias-bg-layer-1:                       var(--mat-surface-container-lowest) !important;
+    --dsw-alias-bg-layer-2:                       var(--mat-surface-container-low) !important;
+    --dsw-alias-bg-layer-3:                       var(--mat-surface-container) !important;
+    --dsw-alias-bg-skeleton:                      color-mix(in srgb, var(--mat-on-surface), transparent 92%) !important;
+    --dsw-alias-bg-multi-select:                  color-mix(in srgb, var(--mat-primary), transparent 92%) !important;
+
+    /* Borders */
+    --dsw-alias-border-l2:                        var(--mat-surface-container-high) !important;
+    --dsw-alias-border-l3:                        var(--mat-surface-container-highest) !important;
+    --dsw-alias-border-l4:                        var(--mat-outline-variant) !important;
+    --dsw-alias-border-inverted:                  color-mix(in srgb, var(--mat-on-surface), transparent 94%) !important;
+    --dsw-alias-border-inverted2:                 color-mix(in srgb, var(--mat-on-surface), transparent 92%) !important;
+    --dsw-alias-border-l1:                        color-mix(in srgb, var(--mat-on-surface), transparent 94%) !important;
+    --dsw-alias-border-l2-darkmode-thin:          color-mix(in srgb, var(--mat-on-surface), transparent 94%) !important;
+
+    /* Brand */
+    --dsw-alias-brand-primary:                    var(--mat-primary) !important;
+    --dsw-alias-brand-primary-invert:             var(--mat-on-surface) !important;
+    --dsw-alias-brand-text:                       var(--mat-primary) !important;
+
+    /* Buttons */
+    --dsw-alias-button-contrast-fill:             var(--mat-on-surface) !important;
+    --dsw-alias-button-elevated-fill:             var(--mat-surface-container-high) !important;
+    --dsw-alias-button-floating-fill:             var(--mat-surface-container-low) !important;
+    --dsw-alias-button-floating-hover:            var(--mat-surface-container) !important;
+    --dsw-alias-button-ghost-active-border:       var(--mat-primary) !important;
+    --dsw-alias-button-ghost-active-fill:         color-mix(in srgb, var(--mat-primary), transparent 86%) !important;
+    --dsw-alias-button-ghost-active-hover:        color-mix(in srgb, var(--mat-primary), transparent 82%) !important;
+    --dsw-alias-button-primary-dimmed:            var(--mat-primary) !important;
+    --dsw-alias-button-primary-fill:              var(--mat-primary) !important;
+    --dsw-alias-button-primary-hover:             var(--mat-primary) !important;
+
+    /* Interactive states */
+    --dsw-alias-interactive-bg-active:            color-mix(in srgb, var(--mat-on-surface), transparent 86%) !important;
+    --dsw-alias-interactive-bg-hover-accent:      color-mix(in srgb, var(--mat-on-surface), transparent 76%) !important;
+    --dsw-alias-interactive-bg-hover-danger:      color-mix(in srgb, var(--mat-error), transparent 85%) !important;
+    --dsw-alias-interactive-bg-hover:             color-mix(in srgb, var(--mat-on-surface), transparent 92%) !important;
+
+    /* Labels / text */
+    --dsw-alias-label-primary:                    var(--mat-on-surface) !important;
+    --dsw-alias-label-secondary:                  var(--mat-on-surface-variant) !important;
+    --dsw-alias-label-tertiary:                   var(--mat-outline) !important;
+    --dsw-alias-label-caption:                    var(--mat-outline-variant) !important;
+    --dsw-alias-label-dimmed:                     var(--mat-surface-container-high) !important;
+
+    /* Markdown */
+    --dsw-alias-markdown-code-block:              var(--mat-surface-container-lowest) !important;
+    --dsw-alias-markdown-code-block-banner:       var(--mat-surface-container) !important;
+    --dsw-alias-markdown-inline-code:             var(--mat-surface-container) !important;
+
+    /* Scrollbar */
+    --dsw-alias-scrollbar-bg-l1:                  var(--mat-surface-container-highest) !important;
+    --dsw-alias-scrollbar-bg-l2:                  var(--mat-outline-variant) !important;
+    --dsw-alias-scrollbar-hover-l1:               var(--mat-outline-variant) !important;
+    --dsw-alias-scrollbar-hover-l2:               var(--mat-outline) !important;
+
+    /* State */
+    --dsw-alias-state-error-primary:              var(--mat-error) !important;
+    --dsw-alias-state-error-secondary:            var(--mat-error) !important;
+    --dsw-alias-state-success-primary:            var(--mat-tertiary) !important;
+    --dsw-alias-state-success-secondary:          var(--mat-tertiary) !important;
+
+    /* Sidebar/menus */
+    --dsw-specific-sidebar-fill:                  var(--mat-surface-container-lowest) !important;
+    --dsw-specific-sidebar-nav-item-active:       var(--mat-surface-container) !important;
+    --dsw-specific-sidebar-nav-item-active-accent: var(--mat-surface-container) !important;
+    --dsw-specific-sidebar-nav-item-hover:        color-mix(in srgb, var(--mat-on-surface), transparent 92%) !important;
+    --dsw-specific-bubble:                        var(--mat-surface-container) !important;
+    --dsw-specific-input-major:                   var(--mat-surface-container) !important;
+    --dsw-specific-selector:                      color-mix(in srgb, var(--mat-on-surface), transparent 86%) !important;
+
+    /* Legacy dsr tokens */
+    --dsr-bg:                                     var(--mat-background) !important;
+    --dsr-text-0:                                 var(--mat-on-surface) !important;
+    --dsr-text-1:                                 var(--mat-on-surface-variant) !important;
+    --dsr-text-2:                                 var(--mat-on-surface-variant) !important;
+    --dsr-text-3:                                 var(--mat-outline) !important;
+    --dsr-text-4:                                 var(--mat-outline-variant) !important;
+
+    /* Non-rgb dsr tokens (safe to override) */
+    --dsr-input-border:                           var(--mat-surface-container-highest) !important;
+    --dsr-input-bg:                               var(--mat-surface-container) !important;
+    --dsr-button-main-bg:                         var(--mat-primary) !important;
+    --dsr-button-main-bg-hover:                   var(--mat-primary) !important;
+    --dsr-tooltip-bg:                             var(--mat-background) !important;
+    --dsr-side-bg:                                var(--mat-surface-container-lowest) !important;
+    --dsr-risk-text:                              var(--mat-secondary) !important;
+    --dsr-risk-border:                            var(--mat-surface-container-highest) !important;
+    --dsr-risk-fill:                              var(--mat-surface-container) !important;
+    --dsr-error-fg:                               var(--mat-error) !important;
+
+    /* Switch component */
+    .ds-switch.ds-switch.ds-switch {
+      --switch-color: var(--mat-surface-container-highest) !important;
+      --switch-thumb-color: var(--mat-on-surface) !important;
+    }
+    .ds-switch.ds-switch.ds-switch.ds-switch--checked {
+      --switch-color: var(--mat-primary) !important;
+      --switch-thumb-color: var(--mat-background) !important;
+    }
+
+    /* Tooltip */
+    .ds-tooltip {
+      --tooltip-text-color: var(--mat-on-surface) !important;
+    }
+
+    /* Fade-out overlays in conversation (stable enough class combos) */
+    .c99b79f8.c99b79f8.c99b79f8 {
+      background: linear-gradient(to bottom, var(--mat-background), transparent) !important;
+    }
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  body:not([data-ds-dark-theme]) {
+    --dsw-alias-brand-primary:       var(--mat-primary) !important;
+    --dsw-alias-brand-text:          var(--mat-primary) !important;
+    --dsw-alias-label-primary:       var(--mat-on-surface) !important;
+    --dsw-alias-label-secondary:     var(--mat-on-surface-variant) !important;
+    --dsw-alias-button-primary-fill: var(--mat-primary) !important;
+    --dsw-alias-state-error-primary: var(--mat-error) !important;
+    --dsw-alias-state-success-primary: var(--mat-tertiary) !important;
+  }
+}

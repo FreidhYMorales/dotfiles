@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name         WhatsApp — matugen
 @namespace    github.com/FreidhYMorales/dotfiles
-@version      1.0.0
+@version      2.0.0
 @description  Themes WhatsApp Web with the active matugen Material 3 palette.
               Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
 @author       deadlock
@@ -14,74 +14,82 @@
   1. Install Stylus extension in Zen Browser.
   2. In Stylus, click "Import" and select this file.
   3. Make sure the matugen post-hook has run at least once (creates userContent.css in Zen's chrome/).
-  4. Reload WhatsApp in Zen — colors should match the current wallpaper palette.
+  4. Enable dark mode in WhatsApp (Settings → Theme → Dark).
+  5. Reload WhatsApp — colors should match the current wallpaper palette.
 
-  NOTE: WhatsApp updates their CSS variable names occasionally.
-  If something looks wrong, open DevTools, inspect the element, and look for
-  the CSS variable being used — then add an override below.
+  NOTE: WhatsApp now uses --WDS-* (WhatsApp Design System) variables.
+  Dark mode is detected via :root:has(> .dark), not body[data-theme="dark"].
 */
 
 @-moz-document domain("web.whatsapp.com") {
 
-  /* ── Backgrounds ─────────────────────────────────────────────────────────── */
-  body[data-theme="dark"],
-  body[data-nightmode="true"] {
-    /* Main app shell */
-    --app-background-color:          var(--mat-background)                !important;
-    --background-default:            var(--mat-surface-container-low)     !important;
-    --background-default-hover:      var(--mat-surface-container)         !important;
-    --background-secondary:          var(--mat-surface-container)         !important;
-    --background-secondary-alt:      var(--mat-surface-container-high)    !important;
-    --background-tertiary:           var(--mat-surface-container-highest) !important;
+  /* ── Dark mode (current WhatsApp Web DOM) ────────────────────────────────── */
+  :root:has(> .dark),
+  .dark.color-refresh,
+  .color-refresh.dark,
+  .dark .app-wrapper-web.app-wrapper-web {
 
-    /* Panels / header */
-    --panel-header-background:       var(--mat-surface-container)         !important;
-    --panel-background-color:        var(--mat-surface-container-low)     !important;
-    --search-input-background:       var(--mat-surface-container-high)    !important;
+    /* Accent */
+    --WDS-accent:                        var(--mat-primary)                                         !important;
+    --WDS-accent-deemphasized:           color-mix(in srgb, var(--mat-primary), transparent 60%)   !important;
+    --WDS-accent-emphasized:             var(--mat-primary)                                         !important;
+    --WDS-persistent-always-branded:     var(--mat-primary)                                         !important;
+
+    /* Content — text and icons */
+    --WDS-content-default:               var(--mat-on-surface)                                      !important;
+    --WDS-content-deemphasized:          var(--mat-on-surface-variant)                              !important;
+    --WDS-content-disabled:              var(--mat-outline)                                         !important;
+    --WDS-content-on-accent:             var(--mat-on-primary)                                      !important;
+    --WDS-content-action-default:        var(--mat-primary)                                         !important;
+    --WDS-content-action-emphasized:     var(--mat-primary)                                         !important;
+    --WDS-content-external-link:         var(--mat-primary)                                         !important;
+    --WDS-content-inverse:               var(--mat-background)                                      !important;
+    --WDS-content-read:                  var(--mat-primary)                                         !important;
+
+    /* Surfaces */
+    --WDS-surface-default:               var(--mat-surface-container-low)                           !important;
+    --WDS-surface-emphasized:            var(--mat-surface-container)                               !important;
+    --WDS-surface-elevated-default:      var(--mat-surface-container)                               !important;
+    --WDS-surface-elevated-emphasized:   var(--mat-surface-container-high)                          !important;
+    --WDS-surface-highlight:             color-mix(in srgb, var(--mat-on-surface), transparent 80%) !important;
+    --WDS-surface-inverse:               var(--mat-on-surface)                                      !important;
+    --WDS-surface-pressed:               color-mix(in srgb, var(--mat-on-surface), transparent 80%) !important;
+
+    /* Backgrounds */
+    --WDS-background-wash-inset:              var(--mat-background)                                 !important;
+    --WDS-background-wash-plain:              var(--mat-background)                                 !important;
+    --WDS-background-elevated-wash-plain:     var(--mat-surface-container-low)                      !important;
+    --WDS-background-elevated-wash-inset:     var(--mat-surface-container-low)                      !important;
+    --WDS-background-dimmer:                  color-mix(in srgb, var(--mat-background), transparent 30%) !important;
+    --WDS-modal-backdrop-solid:               var(--mat-background)                                 !important;
+    --WDS-app-wash:                           var(--mat-surface-container-low)                      !important;
+    --WDS-white:                              var(--mat-background)                                 !important;
+
+    /* Lines */
+    --WDS-lines-divider:              color-mix(in srgb, var(--mat-outline-variant), transparent 70%) !important;
+    --WDS-lines-outline-default:      var(--mat-outline-variant)                                    !important;
+    --WDS-lines-outline-deemphasized: color-mix(in srgb, var(--mat-outline-variant), transparent 50%) !important;
+
+    /* Message bubbles */
+    --WDS-systems-bubble-surface-incoming:     var(--mat-surface-container)                         !important;
+    --WDS-systems-bubble-surface-outgoing:     var(--mat-primary-container)                         !important;
+    --WDS-systems-bubble-content-deemphasized: var(--mat-on-surface-variant)                        !important;
+    --WDS-systems-bubble-surface-overlay:      var(--mat-surface-container-low)                     !important;
+    --WDS-systems-bubble-surface-system:       var(--mat-surface-container-low)                     !important;
 
     /* Chat area */
-    --conversation-panel-background: var(--mat-background)                !important;
-    --compose-input-background:      var(--mat-surface-container)         !important;
-  }
+    --WDS-systems-chat-surface-composer:       var(--mat-surface-container)                         !important;
+    --WDS-systems-chat-background-wallpaper:   var(--mat-background)                                !important;
+    --WDS-systems-chat-foreground-wallpaper:   var(--mat-surface-container-low)                     !important;
+    --WDS-systems-chat-surface-tray:           var(--mat-surface-container-low)                     !important;
 
-  /* ── Text ────────────────────────────────────────────────────────────────── */
-  body[data-theme="dark"],
-  body[data-nightmode="true"] {
-    --text-primary:    var(--mat-on-surface)         !important;
-    --text-secondary:  var(--mat-on-surface-variant) !important;
-    --text-muted:      var(--mat-outline)             !important;
-  }
+    /* Errors */
+    --WDS-secondary-negative:                  var(--mat-error)                                     !important;
+    --WDS-secondary-negative-deemphasized:     color-mix(in srgb, var(--mat-error), transparent 60%) !important;
+    --WDS-secondary-negative-emphasized:       var(--mat-error)                                     !important;
+    --WDS-secondary-negative-surface:          var(--mat-error-container)                           !important;
 
-  /* ── Icons ───────────────────────────────────────────────────────────────── */
-  body[data-theme="dark"],
-  body[data-nightmode="true"] {
-    --icon-primary:    var(--mat-on-surface)         !important;
-    --icon-secondary:  var(--mat-on-surface-variant) !important;
-    --icon-tertiary:   var(--mat-outline)             !important;
-  }
-
-  /* ── Accent (replaces WhatsApp green with matugen primary) ──────────────── */
-  body[data-theme="dark"],
-  body[data-nightmode="true"] {
-    --primary-strong:        var(--mat-primary)               !important;
-    --primary-main:          var(--mat-primary)               !important;
-    --primary-tint:          var(--mat-primary-container)     !important;
-    --active-tab-marker:     var(--mat-primary)               !important;
-    --unread-marker-background: var(--mat-primary)            !important;
-  }
-
-  /* ── Message bubbles ─────────────────────────────────────────────────────── */
-  body[data-theme="dark"],
-  body[data-nightmode="true"] {
-    --message-primary:        var(--mat-primary-container)     !important;
-    --message-primary-strong: var(--mat-on-primary-container)  !important;
-    --message-secondary:      var(--mat-surface-container-high) !important;
-  }
-
-  /* ── Borders / dividers ──────────────────────────────────────────────────── */
-  body[data-theme="dark"],
-  body[data-nightmode="true"] {
-    --border-list-item-top:  var(--mat-outline-variant) !important;
-    --notification-badge:    var(--mat-primary)         !important;
+    /* Nav */
+    --WDS-components-surface-nav-bar:          var(--mat-surface-container-low)                     !important;
   }
 }

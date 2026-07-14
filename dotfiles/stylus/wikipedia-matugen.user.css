@@ -1,0 +1,116 @@
+/* ==UserStyle==
+@name         Wikipedia — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Wikipedia (and Wikimedia family) with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://wikipedia.org/*
+@match        https://*.wikipedia.org/*
+@match        https://*.wiktionary.org/*
+@match        https://*.wikimedia.org/*
+@match        https://*.wikidata.org/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Wikipedia uses MediaWiki Vector 2022.
+  Night mode: :root.skin-theme-clientpref-night
+  OS mode: :root.skin-theme-clientpref-os + @media (prefers-color-scheme: dark)
+  Day mode: :root.skin-theme-clientpref-day
+  Token namespace: --color-*, --background-color-*, --border-*
+*/
+
+@-moz-document domain("wikipedia.org"),
+  domain("wiktionary.org"),
+  domain("www.mediawiki.org"),
+  domain("auth.wikimedia.org"),
+  domain("wikiversity.org"),
+  domain("wikisource.org"),
+  domain("meta.wikimedia.org"),
+  domain("wikidata.org"),
+  domain("wikibooks.org"),
+  domain("wikivoyage.org"),
+  domain("wikinews.org"),
+  domain("wikiquote.org") {
+
+  /* ── Dark / night mode ────────────────────────────────────────────────────── */
+  :root.skin-theme-clientpref-night {
+    --color-base:                                var(--mat-on-surface) !important;
+    --color-base--hover:                         var(--mat-on-surface) !important;
+    --color-emphasized:                          var(--mat-on-surface) !important;
+    --color-subtle:                              var(--mat-on-surface-variant) !important;
+    --color-inverted:                            var(--mat-background) !important;
+    --color-inverted-fixed:                      var(--mat-background) !important;
+    --color-progressive:                         var(--mat-primary) !important;
+    --color-progressive--hover:                  var(--mat-primary) !important;
+    --color-progressive--active:                 var(--mat-primary) !important;
+    --color-progressive--focus:                  var(--mat-primary) !important;
+    --color-destructive:                         var(--mat-error) !important;
+    --color-destructive--hover:                  var(--mat-error) !important;
+    --color-visited:                             var(--mat-primary) !important;
+    --color-error:                               var(--mat-error) !important;
+    --color-warning:                             var(--mat-secondary) !important;
+    --color-success:                             var(--mat-tertiary) !important;
+    --color-notice:                              var(--mat-on-surface) !important;
+    --color-placeholder:                         var(--mat-on-surface-variant) !important;
+    --color-disabled:                            var(--mat-on-surface-variant) !important;
+    --color-content-added:                       var(--mat-tertiary) !important;
+    --color-content-removed:                     var(--mat-error) !important;
+
+    --background-color-base:                     var(--mat-surface-container-low) !important;
+    --background-color-neutral:                  var(--mat-surface-container-low) !important;
+    --background-color-neutral-subtle:           var(--mat-surface-container) !important;
+    --background-color-interactive:              var(--mat-surface-container) !important;
+    --background-color-interactive-subtle:       var(--mat-surface-container) !important;
+    --background-color-interactive-subtle--hover: var(--mat-surface-container-high) !important;
+    --background-color-disabled:                 var(--mat-on-surface-variant) !important;
+    --background-color-disabled-subtle:          var(--mat-surface-container) !important;
+    --background-color-progressive:              var(--mat-primary) !important;
+    --background-color-progressive-subtle:       color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    --background-color-progressive--hover:       color-mix(in srgb, var(--mat-primary), transparent 30%) !important;
+    --background-color-progressive--focus:       color-mix(in srgb, var(--mat-primary), transparent 30%) !important;
+    --background-color-error:                    var(--mat-error) !important;
+    --background-color-error--hover:             var(--mat-error) !important;
+    --background-color-error-subtle:             color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+    --background-color-warning-subtle:           color-mix(in srgb, var(--mat-secondary), transparent 80%) !important;
+    --background-color-success-subtle:           color-mix(in srgb, var(--mat-tertiary), transparent 80%) !important;
+    --background-color-notice-subtle:            var(--mat-surface-container) !important;
+    --background-color-inverted:                 var(--mat-on-surface) !important;
+    --background-color-input-binary--checked:    var(--mat-primary) !important;
+
+    --border-color-base:                         var(--mat-surface-container) !important;
+    --border-color-interactive:                  var(--mat-surface-container-highest) !important;
+    --border-color-interactive--hover:           var(--mat-outline-variant) !important;
+    --border-color-subtle:                       var(--mat-surface-container-high) !important;
+    --border-color-muted:                        var(--mat-surface-container) !important;
+    --border-color-error:                        var(--mat-error) !important;
+    --border-color-warning:                      var(--mat-secondary) !important;
+    --border-color-success:                      var(--mat-tertiary) !important;
+    --border-color-notice:                       var(--mat-surface-container-highest) !important;
+    --border-color-progressive:                  var(--mat-primary) !important;
+    --border-color-progressive--active:          var(--mat-primary) !important;
+    --border-color-progressive--hover:           var(--mat-primary) !important;
+    --border-color-progressive--focus:           var(--mat-primary) !important;
+    --border-color-content-added:                var(--mat-tertiary) !important;
+    --border-color-content-removed:              var(--mat-secondary) !important;
+
+    --box-shadow-color-progressive--focus:       var(--mat-primary) !important;
+  }
+
+  /* OS auto mode */
+  :root.skin-theme-clientpref-os {
+    @media (prefers-color-scheme: dark) {
+      --color-base:                                var(--mat-on-surface) !important;
+      --color-subtle:                              var(--mat-on-surface-variant) !important;
+      --color-progressive:                         var(--mat-primary) !important;
+      --color-error:                               var(--mat-error) !important;
+      --background-color-base:                     var(--mat-surface-container-low) !important;
+      --background-color-neutral:                  var(--mat-surface-container-low) !important;
+      --background-color-interactive:              var(--mat-surface-container) !important;
+      --background-color-progressive:              var(--mat-primary) !important;
+      --border-color-base:                         var(--mat-surface-container) !important;
+      --border-color-progressive:                  var(--mat-primary) !important;
+    }
+  }
+}

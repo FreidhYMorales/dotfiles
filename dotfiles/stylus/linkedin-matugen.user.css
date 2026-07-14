@@ -1,0 +1,222 @@
+/* ==UserStyle==
+@name         LinkedIn — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes LinkedIn with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://www.linkedin.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  LinkedIn dark mode: :root.theme--dark, :root.theme--mercado-dark
+  Light mode: :root:not(.theme--dark, .theme--mercado-dark)
+  LinkedIn uses a massive palette token system where all shades within a
+  color group map to the same semantic value. Tokens covered:
+  --black-*, --white-*, --blue-* → mat-primary, --cool-gray-*, --warm-gray-*,
+  --system-red-*, --system-green-*, plus voyager/artdeco tokens.
+  darken()/lighten() → same color; fade() → color-mix.
+*/
+
+@-moz-document domain("www.linkedin.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  :root.theme--dark,
+  :root.theme--mercado-dark {
+    /* Black (darkest background in LinkedIn's dark scale) */
+    --black:                          var(--mat-background) !important;
+    --black-a90:                      var(--mat-background) !important;
+    --black-a75:                      var(--mat-background) !important;
+    --black-a60:                      color-mix(in srgb, var(--mat-background), transparent 40%) !important;
+    --black-a45:                      var(--mat-background) !important;
+    --black-a30:                      var(--mat-background) !important;
+    --black-a15:                      var(--mat-background) !important;
+    --black-a12:                      var(--mat-background) !important;
+    --black-a08:                      var(--mat-background) !important;
+    --black-a04:                      var(--mat-background) !important;
+    --black-a100:                     var(--mat-background) !important;
+
+    /* White (foreground text in LinkedIn's dark scale) */
+    --white:                          var(--mat-on-surface) !important;
+    --white-a06:                      var(--mat-surface-container) !important;
+    --white-a12:                      var(--mat-surface-container) !important;
+    --white-a18:                      var(--mat-surface-container) !important;
+    --white-a25:                      var(--mat-surface-container) !important;
+    --white-a30:                      var(--mat-on-surface) !important;
+    --white-a40:                      var(--mat-on-surface) !important;
+    --white-a45:                      var(--mat-on-surface) !important;
+    --white-a55:                      var(--mat-on-surface) !important;
+    --white-a60:                      var(--mat-on-surface-variant) !important;
+    --white-a70:                      var(--mat-on-surface) !important;
+    --white-a75:                      var(--mat-on-surface) !important;
+    --white-a85:                      var(--mat-on-surface) !important;
+    --white-a90:                      var(--mat-on-surface) !important;
+    --white-a100:                     var(--mat-on-surface) !important;
+
+    /* Blue (LinkedIn brand → mat-primary) */
+    --blue-10:                        var(--mat-primary) !important;
+    --blue-20:                        var(--mat-primary) !important;
+    --blue-30:                        var(--mat-primary) !important;
+    --blue-40:                        var(--mat-primary) !important;
+    --blue-50:                        var(--mat-primary) !important;
+    --blue-60:                        var(--mat-primary) !important;
+    --blue-70:                        var(--mat-primary) !important;
+    --blue-80:                        var(--mat-primary) !important;
+    --blue-90:                        var(--mat-primary) !important;
+    --blue-100:                       var(--mat-primary) !important;
+    --blue-50-a20:                    color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+    --blue-50-a25:                    color-mix(in srgb, var(--mat-primary), transparent 75%) !important;
+    --blue-50-a30:                    color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+    --blue-50-a40:                    color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+    --blue-60-a10:                    color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    --blue-60-a15:                    color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
+    --blue-60-a20:                    color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+    --blue-60-a25:                    color-mix(in srgb, var(--mat-primary), transparent 75%) !important;
+    --blue-60-a30:                    color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+    --blue-60-a35:                    color-mix(in srgb, var(--mat-primary), transparent 65%) !important;
+    --blue-60-a40:                    color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+    --blue-60-a45:                    color-mix(in srgb, var(--mat-primary), transparent 55%) !important;
+    --blue-70-a30:                    color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+    --blue-70-a40:                    color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+    --blue-70-a50:                    color-mix(in srgb, var(--mat-primary), transparent 50%) !important;
+
+    /* Cool gray (card/container surfaces) */
+    --cool-gray-10:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-20:                   var(--mat-surface-container) !important;
+    --cool-gray-30:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-40:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-50:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-60:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-70:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-80:                   var(--mat-surface-container) !important;
+    --cool-gray-85:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-90:                   var(--mat-surface-container-lowest) !important;
+    --cool-gray-100:                  var(--mat-surface-container-lowest) !important;
+    --cool-gray-60-a10:               color-mix(in srgb, var(--mat-surface-container-lowest), transparent 90%) !important;
+    --cool-gray-60-a15:               color-mix(in srgb, var(--mat-surface-container-lowest), transparent 85%) !important;
+    --cool-gray-60-a20:               color-mix(in srgb, var(--mat-surface-container-lowest), transparent 80%) !important;
+    --cool-gray-60-a25:               color-mix(in srgb, var(--mat-surface-container-lowest), transparent 75%) !important;
+    --cool-gray-60-a30:               color-mix(in srgb, var(--mat-surface-container-lowest), transparent 70%) !important;
+    --cool-gray-60-a35:               color-mix(in srgb, var(--mat-surface-container-lowest), transparent 65%) !important;
+
+    /* Warm gray (subtle text, borders) */
+    --warm-gray-10:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-20:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-30:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-40:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-50:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-60:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-70:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-80:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-90:                   var(--mat-on-surface-variant) !important;
+    --warm-gray-100:                  var(--mat-on-surface-variant) !important;
+    --warm-gray-60-a10:               color-mix(in srgb, var(--mat-on-surface-variant), transparent 90%) !important;
+    --warm-gray-60-a20:               color-mix(in srgb, var(--mat-on-surface-variant), transparent 80%) !important;
+    --warm-gray-60-a30:               color-mix(in srgb, var(--mat-on-surface-variant), transparent 70%) !important;
+
+    /* System red (error / destructive) */
+    --warm-red-10:                    var(--mat-error) !important;
+    --warm-red-20:                    var(--mat-error) !important;
+    --warm-red-30:                    var(--mat-error) !important;
+    --warm-red-40:                    var(--mat-error) !important;
+    --warm-red-50:                    var(--mat-error) !important;
+    --warm-red-60:                    var(--mat-error) !important;
+    --warm-red-70:                    var(--mat-error) !important;
+    --warm-red-80:                    var(--mat-error) !important;
+    --warm-red-90:                    var(--mat-error) !important;
+    --warm-red-100:                   var(--mat-error) !important;
+    --warm-red-60-a10:                color-mix(in srgb, var(--mat-error), transparent 90%) !important;
+    --warm-red-60-a20:                color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+    --system-red-10:                  var(--mat-error) !important;
+    --system-red-20:                  var(--mat-error) !important;
+    --system-red-30:                  var(--mat-error) !important;
+    --system-red-40:                  var(--mat-error) !important;
+    --system-red-50:                  var(--mat-error) !important;
+    --system-red-60:                  var(--mat-error) !important;
+    --system-red-70:                  var(--mat-error) !important;
+    --system-red-80:                  var(--mat-error) !important;
+    --system-red-90:                  var(--mat-error) !important;
+    --system-red-100:                 var(--mat-error) !important;
+    --system-red-60-a10:              color-mix(in srgb, var(--mat-error), transparent 90%) !important;
+    --system-red-60-a20:              color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+
+    /* System green (success / positive) */
+    --system-green-10:                var(--mat-tertiary) !important;
+    --system-green-20:                var(--mat-tertiary) !important;
+    --system-green-30:                var(--mat-tertiary) !important;
+    --system-green-40:                var(--mat-tertiary) !important;
+    --system-green-50:                var(--mat-tertiary) !important;
+    --system-green-60:                var(--mat-tertiary) !important;
+    --system-green-70:                var(--mat-tertiary) !important;
+    --system-green-80:                var(--mat-tertiary) !important;
+    --system-green-90:                var(--mat-tertiary) !important;
+    --system-green-100:               var(--mat-tertiary) !important;
+    --green-10:                       var(--mat-tertiary) !important;
+    --green-60:                       var(--mat-tertiary) !important;
+    --green-100:                      var(--mat-tertiary) !important;
+    --teal-10:                        var(--mat-tertiary) !important;
+    --teal-60:                        var(--mat-tertiary) !important;
+    --teal-100:                       var(--mat-tertiary) !important;
+
+    /* Purple / lavender → primary */
+    --purple-10:                      var(--mat-primary) !important;
+    --purple-60:                      var(--mat-primary) !important;
+    --purple-100:                     var(--mat-primary) !important;
+    --purple-60-a10:                  color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    --purple-60-a20:                  color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+
+    /* Pink / amber / copper → secondary */
+    --pink-10:                        var(--mat-secondary) !important;
+    --pink-60:                        var(--mat-secondary) !important;
+    --amber-10:                       var(--mat-secondary) !important;
+    --amber-60:                       var(--mat-secondary) !important;
+    --copper-10:                      var(--mat-secondary) !important;
+    --copper-60:                      var(--mat-secondary) !important;
+    --system-orange-10:               var(--mat-secondary) !important;
+    --system-orange-60:               var(--mat-secondary) !important;
+
+    /* System gray (surface containers) */
+    --system-gray-10:                 var(--mat-surface-container) !important;
+    --system-gray-60:                 var(--mat-surface-container) !important;
+    --system-gray-100:                var(--mat-surface-container) !important;
+    --system-gray-60-a10:             color-mix(in srgb, var(--mat-surface-container), transparent 90%) !important;
+    --system-gray-60-a20:             color-mix(in srgb, var(--mat-surface-container), transparent 80%) !important;
+
+    /* Smoke (surface-container-high) */
+    --smoke-10:                       var(--mat-surface-container-high) !important;
+    --smoke-60:                       var(--mat-surface-container-high) !important;
+    --smoke-100:                      var(--mat-surface-container-high) !important;
+
+    /* Semantic quality-of-life tokens */
+    --color-border-low-emphasis:      var(--mat-surface-container) !important;
+    --color-signal-positive:          var(--mat-primary) !important;
+    --color-checked:                  var(--mat-primary) !important;
+    --color-checked-hover:            var(--mat-primary) !important;
+    --color-checked-active:           var(--mat-primary) !important;
+    --color-element:                  var(--mat-background) !important;
+    --color-text-on-dark:             var(--mat-on-surface) !important;
+
+    /* Notification badge */
+    --voyager-color-background-badge-notification: var(--mat-primary) !important;
+
+    /* Button hover fix */
+    --artdeco-button-secondary-default-hover-background-color: color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+
+    /* Code blocks */
+    pre {
+      --color-text-on-dark:                    var(--mat-on-surface) !important;
+      --color-background-container-dark-tint:  var(--mat-background) !important;
+    }
+  }
+
+  /* ── Light mode (minimal — accent/links) ─────────────────────────────────── */
+  :root:not(.theme--dark, .theme--mercado-dark) {
+    --blue-60:          var(--mat-primary) !important;
+    --blue-100:         var(--mat-primary) !important;
+    --color-checked:    var(--mat-primary) !important;
+    --color-signal-positive: var(--mat-primary) !important;
+    --system-red-60:    var(--mat-error) !important;
+    --system-green-60:  var(--mat-tertiary) !important;
+  }
+}

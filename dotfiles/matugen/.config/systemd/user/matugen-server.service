@@ -1,0 +1,11 @@
+[Unit]
+Description=matugen output HTTP server for Stylus auto-update
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=python3 -m http.server 9119 --directory %h/.config/matugen/output
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

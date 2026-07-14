@@ -1,0 +1,252 @@
+/* ==UserStyle==
+@name         Google Drive — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Google Drive with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://drive.google.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Google Drive dark mode: .vhoiae.LgGVmb (also .yYWAMb.bvmRsc, .dif24c.bvmRsc).
+  Light mode: .vhoiae.KkxPLb.
+  Two design token namespaces:
+    --dt-* (Drive Tokens) — plain hex values; safe to override.
+    --gm3-sys-color-* — hex + rgb-triplet pairs; only non-rgb variants overridden.
+  The -rgb triplet vars (--gm3-sys-color-X-rgb) are used for alpha compositing
+  inside rgb() — incompatible with var(--mat-*) and left untouched.
+  fade() → color-mix; selection highlight also overridden.
+*/
+
+@-moz-document domain("drive.google.com") {
+
+  /* ── Dark mode selector ───────────────────────────────────────────────────── */
+  .vhoiae.LgGVmb,
+  .vhoiae .yYWAMb.bvmRsc,
+  .vhoiae .dif24c.bvmRsc {
+
+    /* ── Selection highlight ────────────────────────────────────────────────── */
+    ::selection {
+      background-color: color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* ── Drive tokens (--dt-*) ────────────────────────────────────────────── */
+    /* Backgrounds */
+    --dt-background:                    var(--mat-surface-container-low) !important;
+    --dt-surface:                       var(--mat-surface-container-low) !important;
+    --dt-surface-bright:                var(--mat-surface-container-low) !important;
+    --dt-surface-dim:                   var(--mat-background) !important;
+    --dt-surface-variant:               var(--mat-surface-container) !important;
+    --dt-surface-container-lowest:      var(--mat-background) !important;
+    --dt-surface-container-low:         var(--mat-surface-container-lowest) !important;
+    --dt-surface-container:             var(--mat-surface-container) !important;
+    --dt-surface-container-high:        var(--mat-surface-container-high) !important;
+    --dt-surface-container-highest:     var(--mat-surface-container-highest) !important;
+
+    /* Text */
+    --dt-on-background:                 var(--mat-on-surface) !important;
+    --dt-on-background-secondary:       var(--mat-on-surface-variant) !important;
+    --dt-on-surface:                    var(--mat-on-surface) !important;
+    --dt-on-surface-secondary:          var(--mat-on-surface-variant) !important;
+    --dt-on-surface-variant:            var(--mat-on-surface) !important;
+    --dt-inverse-surface:               var(--mat-on-surface) !important;
+    --dt-inverse-on-surface:            var(--mat-surface-container) !important;
+    --dt-on-disabled:                   var(--mat-on-surface) !important;
+    --dt-disabled:                      var(--mat-outline-variant) !important;
+    --dt-outline:                       var(--mat-outline-variant) !important;
+    --dt-outline-variant:               var(--mat-surface-container-highest) !important;
+
+    /* Primary (accent) */
+    --dt-primary:                       var(--mat-primary) !important;
+    --dt-primary-action:                var(--mat-primary) !important;
+    --dt-primary-action-stateful:       var(--mat-primary) !important;
+    --dt-primary-outline:               var(--mat-primary) !important;
+    --dt-primary-action-state-layer:    var(--mat-primary) !important;
+    --dt-primary-container:             var(--mat-surface-container) !important;
+    --dt-on-primary:                    var(--mat-background) !important;
+    --dt-primary-icon:                  var(--mat-background) !important;
+    --dt-primary-link:                  var(--mat-background) !important;
+    --dt-on-primary-container:          var(--mat-on-surface) !important;
+    --dt-primary-container-icon:        var(--mat-on-surface) !important;
+    --dt-primary-container-link:        var(--mat-on-surface) !important;
+    --dt-surface-tint:                  var(--mat-primary) !important;
+
+    /* Secondary */
+    --dt-secondary:                     var(--mat-secondary) !important;
+    --dt-secondary-action:              var(--mat-secondary) !important;
+    --dt-secondary-action-stateful:     var(--mat-secondary) !important;
+    --dt-secondary-outline:             var(--mat-secondary) !important;
+    --dt-secondary-action-state-layer:  var(--mat-secondary) !important;
+    --dt-secondary-container:           var(--mat-surface-container) !important;
+    --dt-on-secondary:                  var(--mat-background) !important;
+    --dt-secondary-icon:                var(--mat-background) !important;
+    --dt-secondary-link:                var(--mat-background) !important;
+    --dt-on-secondary-container:        var(--mat-on-surface) !important;
+    --dt-secondary-container-icon:      var(--mat-on-surface) !important;
+    --dt-secondary-container-link:      var(--mat-on-surface) !important;
+
+    /* Tertiary */
+    --dt-tertiary:                      var(--mat-tertiary) !important;
+    --dt-tertiary-action:               var(--mat-tertiary) !important;
+    --dt-tertiary-action-stateful:      var(--mat-tertiary) !important;
+    --dt-tertiary-outline:              var(--mat-tertiary) !important;
+    --dt-tertiary-action-state-layer:   var(--mat-tertiary) !important;
+    --dt-tertiary-container:            var(--mat-surface-container) !important;
+    --dt-on-tertiary:                   var(--mat-background) !important;
+    --dt-tertiary-icon:                 var(--mat-background) !important;
+    --dt-tertiary-link:                 var(--mat-background) !important;
+    --dt-on-tertiary-container:         var(--mat-on-surface) !important;
+    --dt-tertiary-container-icon:       var(--mat-on-surface) !important;
+    --dt-tertiary-container-link:       var(--mat-on-surface) !important;
+
+    /* Neutral */
+    --dt-neutral:                       var(--mat-surface-container) !important;
+    --dt-neutral-action:                var(--mat-on-surface) !important;
+    --dt-neutral-action-stateful:       var(--mat-on-surface) !important;
+    --dt-neutral-outline:               var(--mat-surface-container) !important;
+    --dt-neutral-action-state-layer:    var(--mat-surface-container) !important;
+    --dt-neutral-container:             var(--mat-surface-container) !important;
+    --dt-on-neutral:                    var(--mat-on-surface) !important;
+    --dt-neutral-icon:                  var(--mat-surface-container) !important;
+    --dt-neutral-link:                  var(--mat-surface-container) !important;
+    --dt-on-neutral-container:          var(--mat-on-surface) !important;
+    --dt-neutral-container-icon:        var(--mat-on-surface) !important;
+    --dt-neutral-container-link:        var(--mat-on-surface) !important;
+
+    /* Error */
+    --dt-error:                         var(--mat-error) !important;
+    --dt-error-action:                  var(--mat-error) !important;
+    --dt-error-action-stateful:         var(--mat-error) !important;
+    --dt-error-outline:                 var(--mat-error) !important;
+    --dt-error-action-state-layer:      var(--mat-surface-container-high) !important;
+    --dt-error-container:               var(--mat-surface-container-high) !important;
+    --dt-on-error:                      var(--mat-background) !important;
+    --dt-error-icon:                    var(--mat-background) !important;
+    --dt-error-link:                    var(--mat-background) !important;
+    --dt-on-error-container:            var(--mat-error) !important;
+    --dt-error-container-icon:          var(--mat-error) !important;
+    --dt-error-container-link:          var(--mat-error) !important;
+
+    /* Warning */
+    --dt-warning:                       var(--mat-secondary) !important;
+    --dt-warning-action:                var(--mat-secondary) !important;
+    --dt-warning-action-stateful:       var(--mat-secondary) !important;
+    --dt-warning-outline:               var(--mat-secondary) !important;
+    --dt-warning-action-state-layer:    var(--mat-secondary) !important;
+    --dt-warning-container:             var(--mat-surface-container) !important;
+    --dt-on-warning:                    var(--mat-background) !important;
+    --dt-warning-icon:                  var(--mat-secondary) !important;
+    --dt-warning-link:                  var(--mat-secondary) !important;
+    --dt-on-warning-container:          var(--mat-secondary) !important;
+    --dt-warning-container-icon:        var(--mat-secondary) !important;
+    --dt-warning-container-link:        var(--mat-secondary) !important;
+
+    /* MIME type colors */
+    --dt-mime-type-blue:                var(--mat-primary) !important;
+    --dt-mime-type-dark-blue:           var(--mat-primary) !important;
+    --dt-mime-type-green:               var(--mat-tertiary) !important;
+    --dt-mime-type-grey:                var(--mat-outline-variant) !important;
+    --dt-mime-type-purple:              var(--mat-secondary) !important;
+    --dt-mime-type-deep-purple:         var(--mat-secondary) !important;
+    --dt-mime-type-red:                 var(--mat-error) !important;
+    --dt-mime-type-yellow:              var(--mat-secondary) !important;
+
+    /* Scrim */
+    --dt-scrim:                         color-mix(in srgb, var(--mat-background), transparent 50%) !important;
+    --dt-scrim-2x:                      color-mix(in srgb, var(--mat-background), transparent 50%) !important;
+
+    /* Shadows (transparent overlays on dark bg) */
+    --dt-shadow-elevation-1:
+      0px 3px 1px -2px color-mix(in srgb, var(--mat-background), transparent 80%),
+      0px 2px 2px 0px color-mix(in srgb, var(--mat-background), transparent 86%),
+      0px 1px 5px 0px color-mix(in srgb, var(--mat-background), transparent 88%) !important;
+    --dt-shadow-elevation-2:
+      0px 2px 4px -1px color-mix(in srgb, var(--mat-background), transparent 80%),
+      0px 4px 5px 0px color-mix(in srgb, var(--mat-background), transparent 86%),
+      0px 1px 10px 0px color-mix(in srgb, var(--mat-background), transparent 88%) !important;
+
+    /* Banner buttons */
+    --dt-light-info-banner-button:      var(--mat-on-surface) !important;
+    --dt-light-neutral-banner-button:   var(--mat-on-surface) !important;
+    --dt-light-success-banner-button:   var(--mat-tertiary) !important;
+    --dt-light-warning-banner-button:   var(--mat-secondary) !important;
+    --dt-light-error-banner-button:     var(--mat-error) !important;
+
+    /* ── gm3 system tokens (hex only — skip -rgb variants) ────────────────── */
+    --gm3-sys-color-background:              var(--mat-surface-container-low) !important;
+    --gm3-sys-color-on-background:           var(--mat-on-surface) !important;
+    --gm3-sys-color-primary:                 var(--mat-primary) !important;
+    --gm3-sys-color-on-primary:              var(--mat-background) !important;
+    --gm3-sys-color-primary-container:       var(--mat-surface-container) !important;
+    --gm3-sys-color-on-primary-container:    var(--mat-on-surface) !important;
+    --gm3-sys-color-primary-fixed:           var(--mat-primary) !important;
+    --gm3-sys-color-primary-fixed-dim:       var(--mat-primary) !important;
+    --gm3-sys-color-on-primary-fixed:        var(--mat-background) !important;
+    --gm3-sys-color-on-primary-fixed-variant: var(--mat-background) !important;
+    --gm3-sys-color-secondary:               var(--mat-secondary) !important;
+    --gm3-sys-color-on-secondary:            var(--mat-background) !important;
+    --gm3-sys-color-secondary-container:     var(--mat-surface-container) !important;
+    --gm3-sys-color-on-secondary-container:  var(--mat-on-surface) !important;
+    --gm3-sys-color-on-secondary-fixed:      var(--mat-background) !important;
+    --gm3-sys-color-on-secondary-fixed-variant: var(--mat-background) !important;
+    --gm3-sys-color-tertiary:                var(--mat-tertiary) !important;
+    --gm3-sys-color-on-tertiary:             var(--mat-background) !important;
+    --gm3-sys-color-tertiary-container:      var(--mat-surface-container) !important;
+    --gm3-sys-color-on-tertiary-container:   var(--mat-on-surface) !important;
+    --gm3-sys-color-tertiary-fixed:          var(--mat-tertiary) !important;
+    --gm3-sys-color-tertiary-fixed-dim:      var(--mat-tertiary) !important;
+    --gm3-sys-color-on-tertiary-fixed:       var(--mat-background) !important;
+    --gm3-sys-color-on-tertiary-fixed-variant: var(--mat-background) !important;
+    --gm3-sys-color-error:                   var(--mat-error) !important;
+    --gm3-sys-color-on-error:                var(--mat-background) !important;
+    --gm3-sys-color-error-container:         var(--mat-surface-container-high) !important;
+    --gm3-sys-color-on-error-container:      var(--mat-error) !important;
+    --gm3-sys-color-surface:                 var(--mat-surface-container-low) !important;
+    --gm3-sys-color-surface-bright:          var(--mat-surface-container-low) !important;
+    --gm3-sys-color-surface-dim:             var(--mat-background) !important;
+    --gm3-sys-color-surface-container:       var(--mat-surface-container) !important;
+    --gm3-sys-color-surface-container-high:  var(--mat-surface-container-high) !important;
+    --gm3-sys-color-surface-container-highest: var(--mat-surface-container-highest) !important;
+    --gm3-sys-color-surface-container-low:   var(--mat-surface-container-lowest) !important;
+    --gm3-sys-color-surface-container-lowest: var(--mat-background) !important;
+    --gm3-sys-color-surface-variant:         var(--mat-surface-container) !important;
+    --gm3-sys-color-surface-tint:            var(--mat-primary) !important;
+    --gm3-sys-color-on-surface:              var(--mat-on-surface) !important;
+    --gm3-sys-color-on-surface-variant:      var(--mat-on-surface) !important;
+    --gm3-sys-color-inverse-surface:         var(--mat-on-surface) !important;
+    --gm3-sys-color-inverse-on-surface:      var(--mat-surface-container) !important;
+    --gm3-sys-color-inverse-primary:         var(--mat-primary) !important;
+    --gm3-sys-color-outline:                 var(--mat-outline-variant) !important;
+    --gm3-sys-color-outline-variant:         var(--mat-surface-container-highest) !important;
+    --gm3-sys-color-scrim:                   var(--mat-background) !important;
+    --gm3-sys-color-shadow:                  var(--mat-background) !important;
+
+    /* Header icons (stable class combos) */
+    .gb_Pc svg,
+    .gb_Uc.gb_Zc svg,
+    .gb_Pc .gb_gd .gb_od,
+    .gb_Pc .gb_gd .gb_Oc,
+    .gb_Pc .gb_gd .gb_id,
+    .gb_Uc.gb_Zc .gb_od {
+      color: var(--mat-on-surface) !important;
+    }
+  }
+
+  /* ── Light mode (minimal) ─────────────────────────────────────────────────── */
+  .vhoiae.KkxPLb {
+    --dt-primary:            var(--mat-primary) !important;
+    --dt-on-primary:         var(--mat-background) !important;
+    --dt-error:              var(--mat-error) !important;
+    --dt-on-surface:         var(--mat-on-surface) !important;
+    --gm3-sys-color-primary: var(--mat-primary) !important;
+    --gm3-sys-color-error:   var(--mat-error) !important;
+    --gm3-sys-color-on-surface: var(--mat-on-surface) !important;
+  }
+}

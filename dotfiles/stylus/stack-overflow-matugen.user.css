@@ -1,0 +1,130 @@
+/* ==UserStyle==
+@name         Stack Overflow — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Stack Overflow (and Stack Exchange network) with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://stackoverflow.com/*
+@match        https://stackexchange.com/*
+@match        https://serverfault.com/*
+@match        https://superuser.com/*
+@match        https://askubuntu.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Stack Overflow dark mode: body.unified-theme.theme-dark
+  Light mode: body.unified-theme (without .theme-dark)
+  System/auto: body.unified-theme.theme-system + @media
+  Token namespace: --theme-*, --black-*, --white, color palette vars
+  fade() -> color-mix with transparent; darken() approximated with same color
+*/
+
+@-moz-document domain("stackoverflow.com"),
+  domain("stackexchange.com"),
+  domain("serverfault.com"),
+  domain("superuser.com"),
+  domain("askubuntu.com"),
+  domain("stackapps.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  body:not(.theme-highcontrast).unified-theme.theme-dark,
+  body:not(.theme-highcontrast).unified-theme.theme-system {
+    @media (prefers-color-scheme: dark) {
+      --theme-background-color:              var(--mat-surface-container-lowest) !important;
+      --theme-content-background-color:      var(--mat-surface-container-low) !important;
+      --theme-content-border-color:          var(--mat-surface-container) !important;
+      --theme-topbar-background-color:       var(--mat-surface-container-lowest) !important;
+      --theme-topbar-search-background:      var(--mat-surface-container-lowest) !important;
+      --theme-topbar-search-border:          var(--mat-surface-container-highest) !important;
+      --theme-topbar-search-placeholder:     var(--mat-on-surface-variant) !important;
+      --theme-topbar-item-color:             var(--mat-on-surface) !important;
+      --theme-topbar-item-color-hover:       var(--mat-on-surface) !important;
+      --theme-topbar-item-background-hover:  var(--mat-surface-container) !important;
+
+      --theme-button-primary-background-color: var(--mat-primary) !important;
+      --theme-button-primary-hover-background-color: var(--mat-primary) !important;
+      --theme-button-primary-active-background-color: var(--mat-on-surface) !important;
+
+      --theme-link-color:                    var(--mat-primary) !important;
+      --theme-link-color-hover:              var(--mat-primary) !important;
+      --theme-link-color-visited:            var(--mat-primary) !important;
+
+      --theme-footer-title-color:            var(--mat-on-surface) !important;
+      --theme-footer-text-color:             var(--mat-on-surface-variant) !important;
+      --theme-footer-link-color:             var(--mat-on-surface-variant) !important;
+      --theme-footer-link-color-hover:       var(--mat-on-surface-variant) !important;
+      --theme-footer-background-color:       var(--mat-surface-container-lowest) !important;
+
+      --theme-tag-background-color:          var(--mat-primary) !important;
+      --theme-tag-border-color:              var(--mat-primary) !important;
+      --theme-tag-color:                     var(--mat-background) !important;
+      --theme-tag-hover-background-color:    var(--mat-primary) !important;
+      --theme-tag-hover-border-color:        var(--mat-primary) !important;
+      --theme-tag-hover-color:               var(--mat-background) !important;
+
+      --theme-post-title-color:              var(--mat-on-surface) !important;
+      --theme-post-title-color-hover:        var(--mat-on-surface-variant) !important;
+      --theme-post-title-color-visited:      var(--mat-primary) !important;
+
+      --theme-primary:                       var(--mat-primary) !important;
+      --theme-primary-100:                   color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+      --theme-primary-200:                   color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+      --theme-primary-300:                   color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+      --theme-primary-400:                   var(--mat-primary) !important;
+      --theme-primary-500:                   color-mix(in srgb, var(--mat-primary), transparent 10%) !important;
+      --theme-primary-600:                   var(--mat-primary) !important;
+
+      --translucent-secondary:               color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+      --theme-secondary-100:                 color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+      --theme-secondary-200:                 color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+      --theme-secondary-300:                 color-mix(in srgb, var(--mat-primary), transparent 60%) !important;
+      --theme-secondary-400:                 color-mix(in srgb, var(--mat-primary), transparent 50%) !important;
+      --theme-secondary-500:                 color-mix(in srgb, var(--mat-primary), transparent 40%) !important;
+      --theme-secondary-600:                 color-mix(in srgb, var(--mat-primary), transparent 30%) !important;
+
+      --white:                               var(--mat-surface-container-lowest) !important;
+      --black:                               var(--mat-on-surface) !important;
+      --black-100:                           var(--mat-surface-container-low) !important;
+      --black-150:                           var(--mat-surface-container) !important;
+      --black-200:                           var(--mat-surface-container-high) !important;
+      --black-225:                           var(--mat-surface-container-high) !important;
+      --black-250:                           var(--mat-surface-container-highest) !important;
+      --black-300:                           var(--mat-outline-variant) !important;
+      --black-350:                           var(--mat-on-surface-variant) !important;
+      --black-400:                           var(--mat-on-surface-variant) !important;
+      --black-500:                           var(--mat-on-surface-variant) !important;
+      --black-600:                           var(--mat-on-surface) !important;
+
+      --green-100:                           var(--mat-tertiary) !important;
+      --green-400:                           var(--mat-tertiary) !important;
+      --green-500:                           var(--mat-tertiary) !important;
+
+      --red-200:                             color-mix(in srgb, var(--mat-error), transparent 60%) !important;
+      --red-400:                             color-mix(in srgb, var(--mat-error), transparent 30%) !important;
+      --red-500:                             color-mix(in srgb, var(--mat-error), transparent 20%) !important;
+
+      --scrollbar:                           var(--mat-surface-container-high) !important;
+      --highlight-bg:                        var(--mat-surface-container-lowest) !important;
+    }
+  }
+
+  body:not(.theme-highcontrast).unified-theme.theme-dark {
+    --theme-background-color:              var(--mat-surface-container-lowest) !important;
+    --theme-content-background-color:      var(--mat-surface-container-low) !important;
+    --theme-content-border-color:          var(--mat-surface-container) !important;
+    --theme-topbar-background-color:       var(--mat-surface-container-lowest) !important;
+    --theme-link-color:                    var(--mat-primary) !important;
+    --theme-primary:                       var(--mat-primary) !important;
+    --white:                               var(--mat-surface-container-lowest) !important;
+    --black:                               var(--mat-on-surface) !important;
+    --black-100:                           var(--mat-surface-container-low) !important;
+    --black-200:                           var(--mat-surface-container-high) !important;
+    --black-250:                           var(--mat-surface-container-highest) !important;
+    --black-300:                           var(--mat-outline-variant) !important;
+    --highlight-bg:                        var(--mat-surface-container-lowest) !important;
+    --green-400:                           var(--mat-tertiary) !important;
+    --scrollbar:                           var(--mat-surface-container-high) !important;
+  }
+}
