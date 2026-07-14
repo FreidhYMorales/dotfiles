@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name         YouTube — matugen
 @namespace    github.com/FreidhYMorales/dotfiles
-@version      2.0.0
+@version      3.4.0
 @description  Themes YouTube with the active matugen Material 3 palette.
               Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
 @author       deadlock
@@ -12,89 +12,202 @@
 ==/UserStyle== */
 
 /*
-  YouTube dark mode: :root[dark] attribute on <html>.
-  Light mode: :root:not([dark]).
-  Covers studio.youtube.com and m.youtube.com as well.
-  Main token namespace: --yt-spec-*, --yt-sys-color-baseline--*
+  YouTube dark mode selectors:
+    - Legacy: [dark], html[dark]
+    - Cobalt v2 (current): html[color-version="v2_0"][dark]
+  The v2_0 selector has higher specificity (2 attrs + element) so it must be
+  targeted explicitly. The actual backgrounds are served via hashed tokens
+  (e.g. --t3e41d7b17b187f69) that resolve to --yt-sys-color-baseline--*.
+  Overriding the baseline vars with !important propagates through the chain.
 */
 
 @-moz-document domain("youtube.com"), domain("m.youtube.com"), domain("studio.youtube.com") {
 
-  /* ── Dark mode ────────────────────────────────────────────────────────────── */
-  :root[dark] {
-    /* Base backgrounds */
-    --yt-spec-base-background:               var(--mat-background) !important;
-    --yt-spec-raised-background:             var(--mat-surface-container-lowest) !important;
-    --yt-spec-menu-background:               var(--mat-surface-container-lowest) !important;
-    --yt-spec-inverted-background:           var(--mat-on-surface) !important;
-    --yt-spec-additive-background:           var(--mat-surface-container) !important;
-    --yt-spec-additive-background-alpha-dark: color-mix(in srgb, var(--mat-surface-container), transparent 50%) !important;
-    --yt-spec-additive-background-alpha-light: color-mix(in srgb, var(--mat-surface-container), transparent 70%) !important;
-    --yt-spec-static-overlay-background-heavy: color-mix(in srgb, var(--mat-background), transparent 20%) !important;
-    --yt-spec-static-overlay-background-medium: color-mix(in srgb, var(--mat-background), transparent 40%) !important;
-    --yt-spec-static-overlay-background-light: color-mix(in srgb, var(--mat-background), transparent 60%) !important;
-    --yt-spec-static-overlay-background-button: color-mix(in srgb, var(--mat-background), transparent 30%) !important;
+  /* ── Hashed token overrides (Cobalt build tokens — may change on YouTube deploys) ── */
+  html[dark], [dark] {
+    --t3e41d7b17b187f69: var(--mat-background)                                         !important;
+    --ta889dfda9605a358: color-mix(in srgb, var(--mat-background), transparent 20%)   !important;
+    --tffc2fd3a644f6275: var(--mat-on-surface)                                         !important;
+    --t4a6da19e16bf221a: var(--mat-on-surface-variant)                                 !important;
+  }
+
+  /* --t6216186c28b3834b is set on :root:root (high specificity) — needs !important to win */
+  :root {
+    --t6216186c28b3834b: var(--mat-background)                                         !important;
+    --t832f22ce6618e99e: var(--mat-on-surface)                                         !important;
+  }
+
+  /* Scrollbar — hardcoded hsl() on html[dark], not read from vars */
+  html[dark] {
+    scrollbar-color: var(--mat-on-surface-variant) transparent !important;
+  }
+
+  /* ── Cobalt v2 dark (current YouTube) ────────────────────────────────────── */
+  html[color-version="v2_0"][dark] {
+
+    /* Backgrounds — these feed the hashed token chain used by the actual UI */
+    --yt-sys-color-baseline--base-background:        var(--mat-background)                 !important;
+    --yt-sys-color-baseline--raised-background:      var(--mat-surface-container-lowest)   !important;
+    --yt-sys-color-baseline--menu-background:        var(--mat-surface-container-low)      !important;
+    --yt-sys-color-baseline--inverted-background:    var(--mat-on-surface)                 !important;
+    --yt-sys-color-baseline--inverted-background-hover: color-mix(in srgb, var(--mat-on-surface), transparent 15%) !important;
+    --yt-sys-color-baseline--keyboard-background:    var(--mat-surface-container)          !important;
+    --yt-sys-color-baseline--keyboard-background-key: var(--mat-surface-container-high)   !important;
+    --yt-sys-color-baseline--keyboard-background-bar: var(--mat-surface-container-high)   !important;
+    --yt-sys-color-baseline--keyboard-background-action: var(--mat-primary-container)     !important;
+    --yt-sys-color-baseline--keyboard-background-emoji: var(--mat-surface-container)      !important;
+    --yt-sys-color-baseline--keyboard-background-key-alt: var(--mat-surface-container-highest) !important;
+    --yt-sys-color-baseline--button-chip-background-hover: color-mix(in srgb, var(--mat-on-surface), transparent 80%) !important;
+
+    /* Surfaces */
+    --yt-sys-color-baseline--surface:                var(--mat-surface-container-low)      !important;
+    --yt-sys-color-baseline--surface-container:      var(--mat-surface-container)          !important;
+    --yt-sys-color-baseline--surface-container-low:  var(--mat-surface-container-low)      !important;
+    --yt-sys-color-baseline--surface-container-high: var(--mat-surface-container-high)     !important;
 
     /* Text */
-    --yt-spec-text-primary:                  var(--mat-on-surface) !important;
-    --yt-spec-text-secondary:                var(--mat-on-surface-variant) !important;
-    --yt-spec-text-disabled:                 var(--mat-outline) !important;
-    --yt-spec-text-primary-inverse:          var(--mat-background) !important;
+    --yt-sys-color-baseline--on-surface:             var(--mat-on-surface)                 !important;
+    --yt-sys-color-baseline--on-surface-variant:     var(--mat-on-surface-variant)         !important;
 
-    /* Call-to-action / accent */
-    --yt-spec-call-to-action:                var(--mat-primary) !important;
-    --yt-spec-call-to-action-inverse:        var(--mat-on-primary) !important;
+    /* Accent */
+    --yt-sys-color-baseline--primary:                var(--mat-primary)                    !important;
+    --yt-sys-color-baseline--on-primary:             var(--mat-on-primary)                 !important;
+    --yt-sys-color-baseline--primary-container:      var(--mat-primary-container)          !important;
+    --yt-sys-color-baseline--on-primary-container:   var(--mat-on-primary-container)       !important;
 
-    /* Buttons & controls */
-    --yt-spec-static-brand-red:              var(--mat-error) !important;
+    /* Error */
+    --yt-sys-color-baseline--error:                  var(--mat-error)                      !important;
+
+    /* Borders */
+    --yt-sys-color-baseline--outline-variant:        var(--mat-outline-variant)            !important;
+
+    /* Deprecated aliases — still referenced by some components */
+    --yt-deprecated-general-background-a:            var(--mat-surface-container-low)      !important;
+    --yt-deprecated-general-background-b:            var(--mat-background)                 !important;
+    --yt-deprecated-general-background-c:            var(--mat-background)                 !important;
+  }
+
+  /* ── Legacy dark (pre-v2_0 fallback) ─────────────────────────────────────── */
+  :root[dark] {
+    --yt-spec-base-background:               var(--mat-background)                         !important;
+    --yt-spec-raised-background:             var(--mat-surface-container-lowest)           !important;
+    --yt-spec-menu-background:               var(--mat-surface-container-low)              !important;
+    --yt-spec-inverted-background:           var(--mat-on-surface)                         !important;
+    --yt-spec-additive-background:           var(--mat-surface-container)                  !important;
+    --yt-spec-text-primary:                  var(--mat-on-surface)                         !important;
+    --yt-spec-text-secondary:                var(--mat-on-surface-variant)                 !important;
+    --yt-spec-text-disabled:                 var(--mat-outline)                            !important;
+    --yt-spec-text-primary-inverse:          var(--mat-background)                         !important;
+    --yt-spec-call-to-action:                var(--mat-primary)                            !important;
+    --yt-spec-call-to-action-inverse:        var(--mat-on-primary)                         !important;
+    --yt-spec-static-brand-red:              var(--mat-error)                              !important;
     --yt-spec-suggested-action:              color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
-
-    /* Overlays / sheets */
-    --yt-spec-10-percent-layer:              color-mix(in srgb, var(--mat-on-surface), transparent 90%) !important;
-    --yt-spec-focused-layer:                 color-mix(in srgb, var(--mat-on-surface), transparent 92%) !important;
-    --yt-spec-pressed-layer:                 color-mix(in srgb, var(--mat-on-surface), transparent 88%) !important;
-
-    /* Badges */
-    --yt-spec-badge-chip-background:         var(--mat-surface-container-high) !important;
-    --yt-spec-badge-chip-foreground:         var(--mat-on-surface) !important;
+    --yt-spec-badge-chip-background:         var(--mat-surface-container-high)             !important;
+    --yt-spec-badge-chip-foreground:         var(--mat-on-surface)                         !important;
+    --yt-thumbnail-default-background:       var(--mat-surface-container)                  !important;
 
     /* Search box */
-    --ytd-searchbox-background:              var(--mat-surface-container) !important;
-    --ytd-searchbox-legacy-background:       var(--mat-surface-container) !important;
-    --ytd-searchbox-text-color:              var(--mat-on-surface) !important;
-    --ytd-searchbox-placeholder-color:       var(--mat-on-surface-variant) !important;
-    --ytd-searchbox-border-color:            var(--mat-outline-variant) !important;
-
-    /* Thumbnails */
-    --yt-thumbnail-default-background:       var(--mat-surface-container) !important;
+    --ytd-searchbox-background:              var(--mat-surface-container)                  !important;
+    --ytd-searchbox-legacy-background:       var(--mat-surface-container)                  !important;
+    --ytd-searchbox-text-color:              var(--mat-on-surface)                         !important;
+    --ytd-searchbox-placeholder-color:       var(--mat-on-surface-variant)                 !important;
+    --ytd-searchbox-border-color:            var(--mat-outline-variant)                    !important;
 
     /* Live chat */
-    --yt-live-chat-background-color:         var(--mat-background) !important;
-    --yt-live-chat-banner-background:        var(--mat-surface-container-lowest) !important;
-    --yt-live-chat-primary-text-color:       var(--mat-on-surface) !important;
-    --yt-live-chat-secondary-text-color:     var(--mat-on-surface-variant) !important;
+    --yt-live-chat-background-color:         var(--mat-background)                         !important;
+    --yt-live-chat-banner-background:        var(--mat-surface-container-lowest)           !important;
+    --yt-live-chat-primary-text-color:       var(--mat-on-surface)                         !important;
+    --yt-live-chat-secondary-text-color:     var(--mat-on-surface-variant)                 !important;
+    --yt-live-chat-secondary-background-color: var(--mat-surface-container-low)           !important;
+    --yt-live-chat-header-background-color:  var(--mat-surface-container-low)             !important;
+    --yt-live-chat-action-panel-background-color: var(--mat-surface-container)            !important;
+    --yt-live-chat-sub-panel-background-color: var(--mat-surface-container)               !important;
+  }
 
-    /* M3 system colors used by YouTube */
-    --yt-sys-color-baseline--surface:                 var(--mat-surface-container-low) !important;
-    --yt-sys-color-baseline--surface-container:       var(--mat-surface-container) !important;
-    --yt-sys-color-baseline--surface-container-low:   var(--mat-surface-container-low) !important;
-    --yt-sys-color-baseline--surface-container-high:  var(--mat-surface-container-high) !important;
-    --yt-sys-color-baseline--on-surface:              var(--mat-on-surface) !important;
-    --yt-sys-color-baseline--on-surface-variant:      var(--mat-on-surface-variant) !important;
-    --yt-sys-color-baseline--primary:                 var(--mat-primary) !important;
-    --yt-sys-color-baseline--on-primary:              var(--mat-on-primary) !important;
-    --yt-sys-color-baseline--error:                   var(--mat-error) !important;
-    --yt-sys-color-baseline--outline-variant:         var(--mat-outline-variant) !important;
+  /* ── Contextual sheet / popup menus ──────────────────────────────────────── */
+  /* Background is in Shadow DOM; direct class override is the only option */
+  .ytSheetViewModelContextual {
+    background-color: color-mix(in srgb, var(--mat-surface-container), transparent 15%) !important;
+  }
+
+  /* ── Search box (dark variant uses hardcoded hsl/hsla — not CSS vars) ─────── */
+  /* May not apply if component is in a closed Shadow DOM */
+  .ytSearchboxComponentHostDark {
+    color: var(--mat-on-surface) !important;
+  }
+
+  .ytSearchboxComponentSearchButtonDark {
+    background-color: color-mix(in srgb, var(--mat-surface-container), transparent 50%) !important;
+    border-color: var(--mat-outline-variant) !important;
+  }
+
+  .ytSearchboxComponentSearchButtonDark:hover {
+    background-color: var(--mat-surface-container) !important;
+    border-color: var(--mat-outline) !important;
+  }
+
+  /* ── Masthead / topbar ───────────────────────────────────────────────────── */
+  #background.ytd-masthead {
+    background: var(--mat-background) !important;
+  }
+  #frosted-glass {
+    background: var(--mat-background) !important;
+    backdrop-filter: none !important;
+  }
+
+  /* ── Filter chips (home feed) ────────────────────────────────────────────── */
+  yt-chip-cloud-chip-renderer[chip-style="STYLE_DEFAULT"][selected] #chip-container.yt-chip-cloud-chip-renderer,
+  yt-chip-cloud-chip-renderer[chip-style="STYLE_HOME_FILTER"][selected] #chip-container.yt-chip-cloud-chip-renderer {
+    background: var(--mat-primary-container) !important;
+    color: var(--mat-on-primary-container) !important;
+    outline: 1px solid var(--mat-primary) !important;
+    outline-offset: -1px;
+  }
+
+  /* ── Search box — input and suggestions ──────────────────────────────────── */
+  .ytSearchboxComponentInputBox {
+    background: var(--mat-surface-container) !important;
+  }
+  .ytSearchboxComponentSuggestionsContainer {
+    background: var(--mat-surface-container-low) !important;
+  }
+  .ytSuggestionComponentSuggestion:hover {
+    background: color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
+  }
+
+  /* ── Player — progress bar and scrubber ──────────────────────────────────── */
+  .ytp-play-progress {
+    background: var(--mat-primary) !important;
+  }
+  .ytp-scrubber-button {
+    background-color: var(--mat-primary) !important;
+  }
+
+  /* ── Player — context menu and popups ────────────────────────────────────── */
+  .ytp-popup.ytp-contextmenu,
+  .ytd-popup-container {
+    background-color: var(--mat-surface-container-high) !important;
+  }
+  .ytp-menuitem:hover,
+  .ytd-menu-service-item-renderer:hover {
+    background-color: color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
   }
 
   /* ── Light mode ───────────────────────────────────────────────────────────── */
+  html[color-version="v2_0"]:not([dark]) {
+    --yt-sys-color-baseline--base-background:        var(--mat-surface-container-lowest)   !important;
+    --yt-sys-color-baseline--raised-background:      var(--mat-surface-container-low)      !important;
+    --yt-sys-color-baseline--menu-background:        var(--mat-surface-container-low)      !important;
+    --yt-sys-color-baseline--on-surface:             var(--mat-on-surface)                 !important;
+    --yt-sys-color-baseline--on-surface-variant:     var(--mat-on-surface-variant)         !important;
+    --yt-sys-color-baseline--primary:                var(--mat-primary)                    !important;
+  }
+
   :root:not([dark]) {
-    --yt-spec-base-background:               var(--mat-surface-container-lowest) !important;
-    --yt-spec-raised-background:             var(--mat-surface-container-low) !important;
-    --yt-spec-menu-background:               var(--mat-surface-container-low) !important;
-    --yt-spec-text-primary:                  var(--mat-on-surface) !important;
-    --yt-spec-text-secondary:                var(--mat-on-surface-variant) !important;
-    --yt-spec-call-to-action:                var(--mat-primary) !important;
-    --yt-spec-static-brand-red:              var(--mat-error) !important;
+    --yt-spec-base-background:               var(--mat-surface-container-lowest)           !important;
+    --yt-spec-raised-background:             var(--mat-surface-container-low)              !important;
+    --yt-spec-text-primary:                  var(--mat-on-surface)                         !important;
+    --yt-spec-text-secondary:                var(--mat-on-surface-variant)                 !important;
+    --yt-spec-call-to-action:                var(--mat-primary)                            !important;
   }
 }
