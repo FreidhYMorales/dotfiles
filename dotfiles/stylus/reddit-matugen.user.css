@@ -1,0 +1,122 @@
+/* ==UserStyle==
+@name         Reddit — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Reddit with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://www.reddit.com/*
+@match        https://reddit.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Reddit dark mode: .theme-dark class on :root.
+  Light mode: .theme-rpl (without .theme-dark ancestor).
+  Reddit uses --color-* (Shreddit design tokens).
+  darken()/lighten() approximated with the same base color.
+*/
+
+@-moz-document domain("reddit.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  :root:not(.theme-light) .theme-rpl,
+  :root:not(.theme-light).theme-rpl,
+  :root:not(.theme-light) .theme-beta,
+  :root:not(.theme-light).theme-beta,
+  .theme-dark {
+    /* Brand / accent */
+    --color-pizzaRed:                          var(--mat-error) !important;
+    --color-global-brand-orangered:            var(--mat-primary) !important;
+    --color-global-orangered:                  var(--mat-primary) !important;
+    --color-primary:                           var(--mat-primary) !important;
+    --color-primary-hover:                     var(--mat-primary) !important;
+    --color-primary-visited:                   var(--mat-primary) !important;
+    --color-primary-background:                var(--mat-primary) !important;
+    --color-primary-background-hover:          var(--mat-primary) !important;
+    --color-primary-background-selected:       var(--mat-primary) !important;
+    --color-primary-onBackground:              var(--mat-background) !important;
+    --color-primary-onBackground-selected:     var(--mat-background) !important;
+    --color-brand-background:                  var(--mat-primary) !important;
+    --color-brand-background-hover:            var(--mat-primary) !important;
+    --color-brand-onBackground:                var(--mat-background) !important;
+    --color-action-upvote:                     var(--mat-primary) !important;
+    --color-upvote-content:                    var(--mat-primary) !important;
+    --color-upvote-background:                 var(--mat-surface-container-low) !important;
+    --color-upvote-background-hover:           var(--mat-primary) !important;
+    --color-action-downvote:                   var(--mat-primary) !important;
+    --color-downvote-background:               var(--mat-surface-container-low) !important;
+    --shreddit-color-wordmark:                 var(--mat-primary) !important;
+
+    /* Neutral content */
+    --color-neutral-content:                   var(--mat-on-surface) !important;
+    --color-neutral-content-strong:            var(--mat-on-surface) !important;
+    --color-neutral-content-weak:              var(--mat-on-surface-variant) !important;
+    --color-neutral-content-disabled:          var(--mat-outline) !important;
+    --color-interactive-content-disabled:      var(--mat-outline) !important;
+    --color-tone-1:                            var(--mat-on-surface) !important;
+    --color-tone-2:                            var(--mat-on-surface-variant) !important;
+    --color-tone-3:                            var(--mat-on-surface-variant) !important;
+    --color-tone-4:                            var(--mat-surface-container) !important;
+    --color-tone-5:                            var(--mat-surface-container-high) !important;
+    --color-tone-6:                            var(--mat-surface-container-highest) !important;
+    --color-tone-7:                            var(--mat-surface-container-low) !important;
+
+    /* Backgrounds */
+    --color-global-white:                      var(--mat-background) !important;
+    --color-neutral-background:                var(--mat-surface-container-low) !important;
+    --color-neutral-background-selected:       var(--mat-surface-container) !important;
+    --color-neutral-background-weak:           var(--mat-surface-container-lowest) !important;
+    --color-neutral-background-medium:         var(--mat-surface-container-low) !important;
+    --color-neutral-background-strong:         var(--mat-background) !important;
+    --color-neutral-background-hover:          var(--mat-surface-container) !important;
+    --color-secondary-background:              var(--mat-surface-container-lowest) !important;
+    --color-secondary-background-hover:        var(--mat-surface-container-high) !important;
+    --color-secondary-background-selected:     var(--mat-surface-container-high) !important;
+
+    /* Borders */
+    --color-neutral-border:                    var(--mat-surface-container) !important;
+    --color-neutral-border-medium:             var(--mat-surface-container) !important;
+    --color-neutral-border-weak:               var(--mat-surface-container) !important;
+    --color-neutral-border-strong:             var(--mat-surface-container-highest) !important;
+    --color-global-focus:                      var(--mat-surface-container-high) !important;
+    --color-interactive-pressed:               var(--mat-surface-container-highest) !important;
+
+    /* Secondary */
+    --color-secondary:                         var(--mat-on-surface-variant) !important;
+    --color-secondary-hover:                   var(--mat-on-surface-variant) !important;
+    --color-secondary-weak:                    var(--mat-on-surface-variant) !important;
+    --color-secondary-onBackground:            var(--mat-on-surface) !important;
+    --color-secondary-plain:                   var(--mat-on-surface-variant) !important;
+
+    /* Status */
+    --color-danger-background:                 var(--mat-error) !important;
+    --color-danger-content:                    var(--mat-error) !important;
+    --color-danger-onBackground:               var(--mat-on-surface) !important;
+    --color-success-content:                   var(--mat-tertiary) !important;
+    --color-success-background:                var(--mat-tertiary) !important;
+    --color-warning-content:                   var(--mat-secondary) !important;
+    --color-warning-background:                var(--mat-secondary) !important;
+    --color-warning-onBackground:              var(--mat-surface-container-low) !important;
+    --color-online:                            var(--mat-primary) !important;
+    --color-favorite:                          var(--mat-primary) !important;
+    --color-avatar-gradient:                   var(--mat-primary) !important;
+    --color-opacity-50:                        color-mix(in srgb, var(--mat-surface-container-low), transparent 50%) !important;
+    --color-transparent-background-hover:      color-mix(in srgb, var(--mat-surface-container), transparent 70%) !important;
+    --color-interactive-background-disabled:   color-mix(in srgb, var(--mat-surface-container-highest), transparent 30%) !important;
+    --color-banner-error-text:                 var(--mat-background) !important;
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  :root:not(.theme-dark) .theme-rpl,
+  :root:not(.theme-dark).theme-rpl,
+  :root:not(.theme-dark) .theme-beta,
+  :root:not(.theme-dark).theme-beta,
+  .theme-light {
+    --color-neutral-content:                   var(--mat-on-surface) !important;
+    --color-neutral-background:                var(--mat-surface-container-low) !important;
+    --color-primary:                           var(--mat-primary) !important;
+    --color-global-brand-orangered:            var(--mat-primary) !important;
+    --color-danger-content:                    var(--mat-error) !important;
+  }
+}

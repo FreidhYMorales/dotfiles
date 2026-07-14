@@ -1,0 +1,79 @@
+/* ==UserStyle==
+@name         Spotify Web — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Spotify Web Player with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://open.spotify.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Spotify uses the Encore design system.
+  Dark mode: .encore-dark-theme class on <body>.
+  Light mode: .encore-light-theme class on <body>.
+  Token namespace: --background-*, --text-*, --essential-*, --decorative-*
+*/
+
+@-moz-document domain("open.spotify.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  .encore-dark-theme {
+    /* Backgrounds */
+    --background-base:         var(--mat-background) !important;
+    --background-highlight:    var(--mat-surface-container-lowest) !important;
+    --background-press:        var(--mat-surface-container-low) !important;
+    --background-elevated-base: var(--mat-surface-container-lowest) !important;
+    --background-elevated-highlight: var(--mat-surface-container) !important;
+    --background-elevated-press: var(--mat-surface-container-high) !important;
+    --background-tinted-base:  color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    --background-tinted-highlight: color-mix(in srgb, var(--mat-primary), transparent 85%) !important;
+    --background-tinted-press: color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+
+    /* Text */
+    --text-base:               var(--mat-on-surface) !important;
+    --text-subdued:            var(--mat-on-surface-variant) !important;
+    --text-bright-accent:      var(--mat-primary) !important;
+    --text-negative:           var(--mat-error) !important;
+    --text-warning:            var(--mat-secondary) !important;
+    --text-positive:           var(--mat-tertiary) !important;
+    --text-announcement:       var(--mat-primary) !important;
+
+    /* Essential (icons, controls) */
+    --essential-base:          var(--mat-on-surface) !important;
+    --essential-subdued:       var(--mat-on-surface-variant) !important;
+    --essential-bright-accent: var(--mat-primary) !important;
+    --essential-negative:      var(--mat-error) !important;
+    --essential-warning:       var(--mat-secondary) !important;
+    --essential-positive:      var(--mat-tertiary) !important;
+    --essential-announcement:  var(--mat-primary) !important;
+
+    /* Decorative (borders) */
+    --decorative-base:         var(--mat-outline) !important;
+    --decorative-subdued:      var(--mat-outline-variant) !important;
+
+    /* Encore component variables */
+    --encore-color-background-base:      var(--mat-background) !important;
+    --encore-color-background-elevated:  var(--mat-surface-container-lowest) !important;
+    --encore-color-text-base:            var(--mat-on-surface) !important;
+    --encore-color-text-subdued:         var(--mat-on-surface-variant) !important;
+    --encore-color-essential-base:       var(--mat-on-surface) !important;
+    --encore-color-essential-subdued:    var(--mat-on-surface-variant) !important;
+    --encore-color-essential-bright-accent: var(--mat-primary) !important;
+    --encore-color-decorative-subdued:   var(--mat-outline-variant) !important;
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  .encore-light-theme {
+    --background-base:         var(--mat-surface-container-lowest) !important;
+    --background-highlight:    var(--mat-surface-container-low) !important;
+    --background-elevated-base: var(--mat-surface-container-low) !important;
+    --text-base:               var(--mat-on-surface) !important;
+    --text-subdued:            var(--mat-on-surface-variant) !important;
+    --text-bright-accent:      var(--mat-primary) !important;
+    --essential-base:          var(--mat-on-surface) !important;
+    --essential-bright-accent: var(--mat-primary) !important;
+    --decorative-subdued:      var(--mat-outline-variant) !important;
+  }
+}

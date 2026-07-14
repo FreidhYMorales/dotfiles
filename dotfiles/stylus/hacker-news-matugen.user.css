@@ -1,0 +1,128 @@
+/* ==UserStyle==
+@name         Hacker News — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Hacker News with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://news.ycombinator.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  HN has no dark mode toggle — uses system preference only.
+  No CSS variables: overrides specific element selectors and HTML bgcolor attrs.
+  The orange header (#ff6600) is replaced with mat-primary.
+  Link colors use mat-primary; visited links use mat-primary as well.
+*/
+
+@-moz-document domain("news.ycombinator.com") {
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    /* Page background */
+    [bgcolor="#fafaf0"],
+    [bgcolor="#f6f6ef"],
+    body {
+      background-color: var(--mat-surface-container-lowest) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Tables / cells */
+    td {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Orange header bar */
+    td[bgcolor="#ff6600"] {
+      background-color: var(--mat-primary) !important;
+    }
+    td[bgcolor="#ff6600"] .pagetop,
+    td[bgcolor="#ff6600"] .pagetop a {
+      color: var(--mat-on-primary) !important;
+    }
+    table[bgcolor="#ff6600"] {
+      background-color: var(--mat-primary) !important;
+    }
+
+    /* Yellow notification row */
+    td[bgcolor="#ffffaa"] {
+      background-color: var(--mat-secondary) !important;
+    }
+    td[bgcolor="#ffffaa"] td {
+      color: var(--mat-background) !important;
+    }
+
+    /* Links */
+    a:link {
+      color: var(--mat-primary) !important;
+    }
+    a:visited,
+    .hnmore a:link {
+      color: var(--mat-primary) !important;
+    }
+
+    /* Subtext (metadata: points, time, author) */
+    .subtext,
+    .comhead,
+    .subtext a:link,
+    .subtext a:visited,
+    .comhead a:link,
+    .comhead a:visited {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Score / points */
+    .score {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Story rank number */
+    .title {
+      color: var(--mat-primary) !important;
+    }
+
+    /* Comment text */
+    .commtext {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Comment / input boxes */
+    input,
+    textarea,
+    select {
+      background-color: var(--mat-surface-container-lowest) !important;
+      color: var(--mat-on-surface) !important;
+      border: 1px solid var(--mat-surface-container) !important;
+      border-radius: 2px !important;
+    }
+
+    /* Poll question text */
+    td.comment > div > font {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Text post body */
+    .toptext {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Bold text */
+    b {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Footer links */
+    .yclinks {
+      color: var(--mat-surface-container-highest) !important;
+    }
+
+    /* Green color (used for some status indicators) */
+    [color="#3c963c"] {
+      color: var(--mat-tertiary) !important;
+    }
+  }
+}

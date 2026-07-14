@@ -1,0 +1,206 @@
+/* ==UserStyle==
+@name         Ollama — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Ollama.com with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://ollama.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Ollama uses @media (prefers-color-scheme) on :root.
+  The site is Tailwind-based — overrides target utility class selectors and
+  a small set of CSS variables (--tw-prose-*, --tw-ring-color).
+  The --tw-ring-color rgba(rgbify) LESS pattern is replaced with color-mix.
+  Llama logo filter: is skipped (requires LESS computed SVG filter).
+  darken()/lighten() → same color; fade() → color-mix.
+*/
+
+@-moz-document domain("ollama.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    html,
+    body {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Prose / typography */
+    .prose {
+      --tw-prose-headings: var(--mat-on-surface) !important;
+      --tw-prose-links: var(--mat-primary) !important;
+    }
+
+    /* Code / preformatted */
+    code,
+    pre {
+      background-color: var(--mat-surface-container-lowest) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Global border color */
+    * {
+      border-color: var(--mat-surface-container-high) !important;
+    }
+    .border-neutral-200,
+    .border-neutral-300,
+    .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+    .divide-neutral-200 > :not([hidden]) ~ :not([hidden]) {
+      border-color: var(--mat-surface-container-high) !important;
+    }
+    .border {
+      border-color: var(--mat-primary) !important;
+    }
+    .focus\:border-blue-400:focus {
+      border-color: var(--mat-primary) !important;
+    }
+    .focus\:border-red-400:focus {
+      border-color: var(--mat-error) !important;
+    }
+
+    /* Inputs */
+    input,
+    select,
+    textarea,
+    #query,
+    #filter,
+    #search {
+      background-color: var(--mat-surface-container-lowest) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Text utilities */
+    main,
+    section,
+    strong,
+    h3,
+    ul,
+    button,
+    li,
+    li::marker,
+    .command,
+    .truncate,
+    #readme,
+    #display,
+    #file-explorer {
+      color: var(--mat-on-surface) !important;
+    }
+    blockquote {
+      color: var(--mat-on-surface-variant) !important;
+    }
+    a[class~=""] {
+      color: var(--mat-primary) !important;
+    }
+
+    .text-white,
+    .text-black {
+      color: var(--mat-on-surface) !important;
+    }
+    .text-gray-900,
+    .text-neutral-700,
+    .text-neutral-800,
+    .text-neutral-900 {
+      color: var(--mat-on-surface-variant) !important;
+    }
+    .text-neutral-300,
+    .text-neutral-400,
+    .text-neutral-500 {
+      color: var(--mat-on-surface-variant) !important;
+    }
+    .text-green-500,
+    .text-emerald-500,
+    .text-green-700 {
+      color: var(--mat-tertiary) !important;
+    }
+    .text-yellow-900 {
+      color: var(--mat-secondary) !important;
+    }
+    .text-red-500 {
+      color: var(--mat-error) !important;
+    }
+    .text-blue-500,
+    .text-blue-600,
+    .text-indigo-600 {
+      color: var(--mat-primary) !important;
+    }
+
+    /* Background utilities */
+    .bg-white {
+      background-color: var(--mat-surface-container-lowest) !important;
+    }
+    .bg-black,
+    .hover\:bg-black:hover {
+      background-color: var(--mat-surface-container) !important;
+    }
+    .bg-neutral-50 {
+      background-color: var(--mat-surface-container) !important;
+    }
+    .bg-neutral-100,
+    .hover\:bg-neutral-100:hover {
+      background-color: var(--mat-surface-container-highest) !important;
+    }
+    .bg-neutral-700,
+    .bg-neutral-800 {
+      background-color: var(--mat-surface-container-high) !important;
+    }
+    .bg-indigo-50 {
+      background-color: var(--mat-primary) !important;
+    }
+    .bg-green-50 {
+      background-color: color-mix(in srgb, var(--mat-tertiary), transparent 90%) !important;
+    }
+    .bg-yellow-50 {
+      background-color: color-mix(in srgb, var(--mat-secondary), transparent 90%) !important;
+    }
+    .bg-\[\#ddf4ff\] {
+      background-color: color-mix(in srgb, var(--mat-primary), transparent 90%) !important;
+    }
+    .bg-neutral-100 pre,
+    .bg-neutral-100 .command {
+      background-color: unset !important;
+    }
+
+    /* Ring utilities */
+    .ring-neutral-300 {
+      --tw-ring-color: var(--mat-surface-container-high) !important;
+    }
+    .ring-green-600\/20 {
+      --tw-ring-color: var(--mat-tertiary) !important;
+    }
+    .ring-yellow-600\/20 {
+      --tw-ring-color: var(--mat-secondary) !important;
+    }
+    select:focus,
+    .ring-blue-300,
+    .focus\:ring-blue-300:focus {
+      --tw-ring-color: var(--mat-primary) !important;
+    }
+    .focus\:ring-red-300:focus {
+      --tw-ring-color: var(--mat-error) !important;
+    }
+  }
+
+  /* ── Light mode (minimal) ─────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    .prose {
+      --tw-prose-links: var(--mat-primary) !important;
+    }
+    a[class~=""] {
+      color: var(--mat-primary) !important;
+    }
+    .text-blue-500,
+    .text-blue-600 {
+      color: var(--mat-primary) !important;
+    }
+    .bg-indigo-50 {
+      background-color: var(--mat-primary) !important;
+    }
+  }
+}

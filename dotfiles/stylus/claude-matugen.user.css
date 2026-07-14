@@ -1,0 +1,66 @@
+/* ==UserStyle==
+@name         Claude — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Claude.ai with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://claude.ai/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Claude dark mode: :root[data-color-version="v2"][data-mode="dark"]
+  Variables use HSL format in the original (--bg-000 through --bg-500).
+  Mapped to equivalent flat mat-* roles.
+  --danger-*, --success-*, --warning-* are semantic status vars.
+*/
+
+@-moz-document domain("claude.ai") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  :root[data-color-version="v2"][data-mode="dark"] {
+    /* Backgrounds (darkest to lightest) */
+    --bg-000:        var(--mat-background) !important;
+    --bg-100:        var(--mat-surface-container-lowest) !important;
+    --bg-200:        var(--mat-surface-container-low) !important;
+    --bg-300:        var(--mat-surface-container) !important;
+    --bg-400:        var(--mat-surface-container-high) !important;
+    --bg-500:        var(--mat-surface-container-highest) !important;
+
+    /* Text (lightest to darkest) */
+    --text-000:      var(--mat-on-surface) !important;
+    --text-100:      var(--mat-on-surface) !important;
+    --text-200:      var(--mat-on-surface-variant) !important;
+    --text-300:      var(--mat-on-surface-variant) !important;
+    --text-400:      var(--mat-outline) !important;
+    --text-500:      var(--mat-outline-variant) !important;
+
+    /* Accent */
+    --accent-main-000:   var(--mat-primary) !important;
+    --accent-main-100:   var(--mat-primary) !important;
+    --accent-main-200:   var(--mat-primary) !important;
+    --accent-pro-000:    var(--mat-secondary) !important;
+    --accent-secondary-000: var(--mat-secondary) !important;
+
+    /* Borders */
+    --border-000:    var(--mat-surface-container) !important;
+    --border-100:    var(--mat-surface-container-high) !important;
+    --border-200:    var(--mat-surface-container-highest) !important;
+    --border-300:    var(--mat-outline-variant) !important;
+
+    /* Status */
+    --danger-000:    var(--mat-error) !important;
+    --danger-100:    var(--mat-error) !important;
+    --danger-bg-000: color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+    --danger-bg-100: color-mix(in srgb, var(--mat-error), transparent 85%) !important;
+
+    --success-000:   var(--mat-tertiary) !important;
+    --success-100:   var(--mat-tertiary) !important;
+    --success-bg-000: color-mix(in srgb, var(--mat-tertiary), transparent 80%) !important;
+
+    --warning-000:   var(--mat-secondary) !important;
+    --warning-100:   var(--mat-secondary) !important;
+    --warning-bg-000: color-mix(in srgb, var(--mat-secondary), transparent 80%) !important;
+  }
+}

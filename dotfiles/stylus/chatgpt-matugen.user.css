@@ -1,0 +1,82 @@
+/* ==UserStyle==
+@name         ChatGPT — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes ChatGPT with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://chatgpt.com/*
+@match        https://auth.openai.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  ChatGPT dark mode: .dark class on <html>.
+  Light mode: .light class on <html>.
+  Vars are set on * selector.
+  Also covers auth.openai.com.
+*/
+
+@-moz-document domain("chatgpt.com"), domain("auth.openai.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  .dark * {
+    --text-primary:                  var(--mat-on-surface) !important;
+    --text-secondary:                var(--mat-on-surface-variant) !important;
+    --text-tertiary:                 var(--mat-on-surface-variant) !important;
+    --text-quaternary:               var(--mat-outline) !important;
+    --text-placeholder:              var(--mat-on-surface-variant) !important;
+    --text-disabled:                 var(--mat-outline) !important;
+    --text-error:                    var(--mat-error) !important;
+    --text-warning:                  var(--mat-secondary) !important;
+    --text-success:                  var(--mat-tertiary) !important;
+    --text-on-color:                 var(--mat-background) !important;
+    --text-interactive:              var(--mat-primary) !important;
+    --text-brand:                    var(--mat-primary) !important;
+
+    --bg-primary:                    var(--mat-surface-container-low) !important;
+    --bg-secondary:                  var(--mat-surface-container-lowest) !important;
+    --bg-secondary-alt:              var(--mat-surface-container-lowest) !important;
+    --bg-tertiary:                   var(--mat-background) !important;
+    --bg-quaternary:                 var(--mat-surface-container) !important;
+    --bg-secondary-surface:          var(--mat-surface-container) !important;
+    --bg-elevated:                   var(--mat-surface-container-high) !important;
+    --bg-sunken:                     var(--mat-background) !important;
+
+    --border-light:                  var(--mat-surface-container-high) !important;
+    --border-medium:                 var(--mat-surface-container-highest) !important;
+    --border-heavy:                  var(--mat-outline-variant) !important;
+    --border-xheavy:                 var(--mat-outline) !important;
+    --border-sharp:                  var(--mat-on-surface-variant) !important;
+
+    --main-surface-primary:          var(--mat-surface-container-low) !important;
+    --main-surface-secondary:        var(--mat-surface-container-lowest) !important;
+    --main-surface-tertiary:         var(--mat-background) !important;
+
+    --sidebar-surface-primary:       var(--mat-background) !important;
+    --sidebar-surface-secondary:     var(--mat-surface-container-lowest) !important;
+    --sidebar-surface-tertiary:      var(--mat-surface-container) !important;
+
+    --theme-bg-base:                 var(--mat-background) !important;
+    --theme-bg-secondary:            var(--mat-surface-container-lowest) !important;
+
+    --button-primary-bg:             var(--mat-primary) !important;
+    --button-primary-text:           var(--mat-on-primary) !important;
+    --button-secondary-bg:           var(--mat-surface-container-high) !important;
+    --button-secondary-text:         var(--mat-on-surface) !important;
+
+    --link-fg:                       var(--mat-primary) !important;
+    --error-bg:                      color-mix(in srgb, var(--mat-error), transparent 80%) !important;
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  .light * {
+    --text-primary:                  var(--mat-on-surface) !important;
+    --text-secondary:                var(--mat-on-surface-variant) !important;
+    --text-interactive:              var(--mat-primary) !important;
+    --bg-primary:                    var(--mat-surface-container-lowest) !important;
+    --bg-secondary:                  var(--mat-surface-container-low) !important;
+    --border-light:                  var(--mat-surface-container) !important;
+    --border-medium:                 var(--mat-surface-container-high) !important;
+  }
+}

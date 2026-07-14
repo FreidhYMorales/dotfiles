@@ -1,0 +1,89 @@
+/* ==UserStyle==
+@name         Instagram — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Instagram with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://www.instagram.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Instagram dark mode: ._aa4d (root container class for dark), light: ._aa4c.
+  IMPORTANT LIMITATION: Most Instagram color vars use the Catppuccin #lib.rgbify()
+  pattern — they store values as bare "R G B" triplets (e.g. "30 30 46") so the
+  site can use them as rgb(var(--ig-primary-background)). Replacing those with
+  var(--mat-*) hex values inside rgb() won't work in plain CSS.
+  This style overrides: (a) the vars that use plain color values (not rgbify),
+  (b) key element selectors directly.
+  Core backgrounds (--ig-primary-background etc.) cannot be overridden this way.
+  darken() → same color; fade() → color-mix.
+*/
+
+@-moz-document domain("instagram.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  ._aa4d,
+  ._aa4d .x1qjc9v5,
+  ._aa4d .x9f619 {
+    /* Plain-value vars (no rgbify — safe to override) */
+    --wbloks-primary-text:         var(--mat-on-surface) !important;
+    --secondary-text:              var(--mat-on-surface-variant) !important;
+    --primary-text:                var(--mat-on-surface) !important;
+    --primary-icon:                var(--mat-primary) !important;
+    --primary-button:              var(--mat-primary) !important;
+    --primary-button-text:         var(--mat-background) !important;
+    --ig-primary-button-hover:     color-mix(in srgb, var(--mat-primary), transparent 20%) !important;
+    --hover-overlay:               color-mix(in srgb, var(--mat-surface-container), transparent 80%) !important;
+    --overlay-alpha-80:            color-mix(in srgb, var(--mat-background), transparent 50%) !important;
+    --mwp-primary-theme-color:     var(--mat-primary) !important;
+    --chat-composer-button-color:  var(--mat-primary) !important;
+    scrollbar-color:               var(--mat-primary) var(--mat-background) !important;
+
+    /* Link color */
+    --ig-link:                     var(--mat-primary) !important;
+  }
+
+  /* Element-level overrides (stable selectors from source) */
+  ._aa4d {
+    /* Sidebar / navigation */
+    .x1xgvd2v {
+      background-color: var(--mat-background) !important;
+    }
+    .x1zvrr1 {
+      background-color: var(--mat-surface-container-lowest) !important;
+    }
+
+    /* Inputs */
+    input,
+    textarea {
+      background-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface) !important;
+      border-color: var(--mat-outline-variant) !important;
+    }
+
+    /* Links */
+    a {
+      color: var(--mat-primary) !important;
+    }
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  ._aa4c,
+  ._aa4c .x1qjc9v5 {
+    --wbloks-primary-text:         var(--mat-on-surface) !important;
+    --secondary-text:              var(--mat-on-surface-variant) !important;
+    --primary-text:                var(--mat-on-surface) !important;
+    --primary-icon:                var(--mat-primary) !important;
+    --primary-button:              var(--mat-primary) !important;
+    --primary-button-text:         var(--mat-background) !important;
+    --ig-link:                     var(--mat-primary) !important;
+  }
+
+  ._aa4c {
+    a {
+      color: var(--mat-primary) !important;
+    }
+  }
+}

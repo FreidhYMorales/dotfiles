@@ -1,0 +1,132 @@
+/* ==UserStyle==
+@name         DuckDuckGo — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes DuckDuckGo with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://duckduckgo.com/*
+@match        https://duck.ai/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  DuckDuckGo dark mode: :root.dark-bg
+  Light mode: :root:not(.dark-bg, .no-theme)
+  OS/auto: :root.no-theme + @media
+  Very large file (~1200 lines) mixing CSS vars and element selectors.
+  This style covers the CSS variable layer; element overrides for
+  complex widgets (calculator, stocks, maps) are skipped for brevity.
+*/
+
+@-moz-document domain("duckduckgo.com"), domain("duck.ai") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  :root.dark-bg {
+    --sds-color-text-01:               var(--mat-on-surface) !important;
+    --sds-color-text-02:               var(--mat-on-surface) !important;
+    --sds-color-text-03:               var(--mat-on-surface-variant) !important;
+    --sds-color-text-04:               var(--mat-on-surface-variant) !important;
+    --sds-color-text-disabled:         var(--mat-outline) !important;
+    --sds-color-text-on-color:         var(--mat-background) !important;
+    --sds-color-text-on-dark-01:       var(--mat-on-surface) !important;
+    --sds-color-text-link-01:          var(--mat-primary) !important;
+    --sds-color-text-link-02:          var(--mat-on-surface) !important;
+    --sds-color-text-link-02--hover:   var(--mat-on-surface-variant) !important;
+    --sds-color-text-accent-01:        var(--mat-primary) !important;
+    --sds-color-text-destructive:      var(--mat-error) !important;
+    --sds-color-text-success:          var(--mat-tertiary) !important;
+
+    --theme-col-txt-title:             var(--mat-primary) !important;
+    --theme-col-txt-title-visited:     var(--mat-primary) !important;
+    --theme-col-txt-url:               var(--mat-on-surface) !important;
+    --theme-col-txt-url-domain:        var(--mat-on-surface-variant) !important;
+    --theme-col-txt-url-path:          var(--mat-on-surface-variant) !important;
+    --theme-col-txt-snippet:           var(--mat-on-surface) !important;
+    --theme-col-txt-page-separator:    var(--mat-on-surface) !important;
+    --theme-col-page-separator:        var(--mat-on-surface) !important;
+    --theme-col-txt-card-title:        var(--mat-on-surface) !important;
+    --theme-col-txt-card-body:         var(--mat-on-surface) !important;
+    --theme-col-txt-card:              var(--mat-on-surface) !important;
+    --theme-col-txt-button-secondary:  var(--mat-primary) !important;
+    --theme-col-txt-button-tertiary:   var(--mat-on-surface) !important;
+    --theme-col-txt-msg:               var(--mat-on-surface) !important;
+    --theme-col-txt-qna-details:       var(--mat-on-surface-variant) !important;
+
+    --theme-col-bg-page:               var(--mat-surface-container-low) !important;
+    --theme-col-bg-card:               var(--mat-surface-container) !important;
+    --theme-col-bg-ui:                 var(--mat-surface-container-lowest) !important;
+    --theme-col-bg-header:             var(--mat-surface-container-lowest) !important;
+    --theme-col-bg-header-modal:       var(--mat-surface-container) !important;
+    --theme-col-bg-expandcollapse:     var(--mat-surface-container) !important;
+    --theme-col-bg-button-primary:     var(--mat-primary) !important;
+    --theme-bg-legacy-home:            var(--mat-surface-container-low) !important;
+    --theme-bg-cta-cards:              var(--mat-surface-container) !important;
+    --theme-bg-home-bottom:            var(--mat-surface-container-low) !important;
+    --theme-bg-info-snippet:           var(--mat-surface-container-highest) !important;
+    --theme-bg-legacy-home-searchbox:  var(--mat-surface-container) !important;
+    --theme-sidemenu-bg:               var(--mat-surface-container) !important;
+    --theme-accordion-background:      var(--mat-surface-container-high) !important;
+    --theme-accordion-background--expanded: var(--mat-surface-container) !important;
+    --theme-dc-color-background-dark:  var(--mat-surface-container-low) !important;
+
+    --theme-col-border-ui:             var(--mat-surface-container-high) !important;
+    --theme-col-border-expandcollapse: var(--mat-surface-container-high) !important;
+    --theme-col-card-inner-border:     var(--mat-surface-container-highest) !important;
+    --theme-border-color-legacy-home-searchbox: var(--mat-surface-container-highest) !important;
+
+    --theme-searchbox-bg:              var(--mat-surface-container) !important;
+    --theme-searchbox-bg--hover:       var(--mat-surface-container) !important;
+    --theme-searchbox-bg--focused:     var(--mat-surface-container) !important;
+
+    --theme-button-primary-bg:         var(--mat-primary) !important;
+    --theme-button-primary-bg--hover:  var(--mat-primary) !important;
+    --theme-button-primary-text:       var(--mat-background) !important;
+    --theme-button-link-text:          var(--mat-primary) !important;
+    --theme-button-tertiary-txt:       var(--mat-on-surface) !important;
+
+    --sds-color-palette-gray-60:       var(--mat-primary) !important;
+    --sds-color-palette-gray-85:       var(--mat-surface-container-high) !important;
+    --sds-color-palette-white:         var(--mat-background) !important;
+    --sds-color-palette-yellow-50:     var(--mat-secondary) !important;
+    --sds-color-palette-red-40:        var(--mat-error) !important;
+    --sds-color-palette-green-60:      var(--mat-tertiary) !important;
+
+    --sds-color-background-dark:       var(--mat-background) !important;
+    --sds-color-background-01:         var(--mat-surface-container-low) !important;
+    --sds-color-background-02:         var(--mat-surface-container-lowest) !important;
+    --sds-color-background-container-01: var(--mat-surface-container) !important;
+    --sds-color-background-accent-01:  var(--mat-primary) !important;
+    --sds-color-background-destructive: var(--mat-error) !important;
+    --sds-color-background-utility:    var(--mat-surface-container) !important;
+
+    --sds-color-border-01:             var(--mat-surface-container) !important;
+    --sds-color-border-accent-01:      var(--mat-primary) !important;
+
+    --sds-color-text-link-02-hover:    var(--mat-on-surface) !important;
+    --theme-footer-link-text:          var(--mat-primary) !important;
+
+    /* AI chat specific */
+    --theme-dc-color-gpt-main:         var(--mat-primary) !important;
+    --theme-dc-color-claude-main:      var(--mat-tertiary) !important;
+    --theme-dc-color-container-message: var(--mat-surface-container) !important;
+    --theme-dc-color-anchor-sleep:     var(--mat-on-surface-variant) !important;
+    --theme-assist-bg-chat-system:     var(--mat-surface-container-lowest) !important;
+    --theme-assist-gradient-stop:      var(--mat-surface-container-lowest) !important;
+    --theme-spp-high-contrast-bg:      var(--mat-surface-container) !important;
+    --theme-spp-high-contrast-text-secondary: var(--mat-primary) !important;
+    --theme-spp-high-contrast-title-span-text: var(--mat-on-surface) !important;
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  :root:not(.dark-bg, .no-theme) {
+    --sds-color-text-01:               var(--mat-on-surface) !important;
+    --sds-color-text-link-01:          var(--mat-primary) !important;
+    --theme-col-bg-page:               var(--mat-surface-container-lowest) !important;
+    --theme-col-bg-card:               var(--mat-surface-container-low) !important;
+    --theme-col-bg-header:             var(--mat-surface-container-lowest) !important;
+    --theme-col-txt-title:             var(--mat-primary) !important;
+    --theme-button-primary-bg:         var(--mat-primary) !important;
+    --theme-button-primary-text:       var(--mat-on-primary) !important;
+  }
+}

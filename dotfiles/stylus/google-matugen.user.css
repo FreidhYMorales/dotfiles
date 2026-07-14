@@ -1,0 +1,140 @@
+/* ==UserStyle==
+@name         Google — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Google Search (and Google domains) with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://www.google.com/*
+@match        https://www.google.*/*
+@match        https://images.google.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Google uses @media (prefers-color-scheme) on :root for light/dark.
+  Most obfuscated class names (.CvDJxb, .xhUGwc, etc.) change with deployments.
+  This style overrides the stable --uv-styles-* and --gm3-sys-color-* tokens,
+  plus a minimal set of key element selectors that are historically stable.
+  The periodic table and other widget colors are skipped (obfuscated, often reset).
+  darken() approximated with the same base color.
+*/
+
+@-moz-document regexp("^https?://(www\\.|images\\.)?google\\..*") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    body,
+    html {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Google Material 3 system color tokens (stable across many Google apps) */
+    :root,
+    body {
+      --gm3-sys-color-primary:               var(--mat-primary) !important;
+      --gm3-sys-color-on-primary:            var(--mat-on-primary) !important;
+      --gm3-sys-color-primary-container:     color-mix(in srgb, var(--mat-primary), transparent 80%) !important;
+      --gm3-sys-color-on-primary-container:  var(--mat-on-surface) !important;
+      --gm3-sys-color-secondary:             var(--mat-secondary) !important;
+      --gm3-sys-color-on-secondary:          var(--mat-background) !important;
+      --gm3-sys-color-secondary-container:   color-mix(in srgb, var(--mat-secondary), transparent 80%) !important;
+      --gm3-sys-color-tertiary:              var(--mat-tertiary) !important;
+      --gm3-sys-color-on-tertiary:           var(--mat-background) !important;
+      --gm3-sys-color-tertiary-container:    color-mix(in srgb, var(--mat-tertiary), transparent 80%) !important;
+      --gm3-sys-color-error:                 var(--mat-error) !important;
+      --gm3-sys-color-on-error:              var(--mat-background) !important;
+      --gm3-sys-color-surface:               var(--mat-surface-container-low) !important;
+      --gm3-sys-color-on-surface:            var(--mat-on-surface) !important;
+      --gm3-sys-color-surface-container:     var(--mat-surface-container) !important;
+      --gm3-sys-color-surface-container-low: var(--mat-surface-container-low) !important;
+      --gm3-sys-color-surface-container-high: var(--mat-surface-container-high) !important;
+      --gm3-sys-color-surface-container-highest: var(--mat-surface-container-highest) !important;
+      --gm3-sys-color-outline:               var(--mat-outline) !important;
+      --gm3-sys-color-outline-variant:       var(--mat-outline-variant) !important;
+
+      /* Unified Views (search results) stable tokens */
+      --uv-styles-color-surface:             var(--mat-background) !important;
+      --uv-styles-color-tertiary:            var(--mat-surface-container) !important;
+      --uv-styles-color-secondary:           color-mix(in srgb, var(--mat-primary), transparent 75%) !important;
+      --uv-styles-color-primary:             var(--mat-surface-container-low) !important;
+      --uv-styles-color-on-primary:          var(--mat-primary) !important;
+      --uv-styles-color-text-primary:        var(--mat-primary) !important;
+      --uv-styles-color-icon-default:        var(--mat-on-surface) !important;
+      --uv-styles-color-text-emphasis:       var(--mat-on-surface) !important;
+      --uv-styles-color-icon-on-secondary:   var(--mat-on-surface-variant) !important;
+      --uv-styles-color-on-tertiary:         var(--mat-on-surface) !important;
+      --uv-styles-color-icon-on-tertiary:    var(--mat-on-surface) !important;
+      --uv-styles-color-scrim:               color-mix(in srgb, var(--mat-background), transparent 25%) !important;
+      --uv-styles-color-on-scrim:            var(--mat-on-surface) !important;
+      --uv-styles-color-icon-on-scrim:       var(--mat-on-surface) !important;
+      --uv-styles-color-text-default:        var(--mat-on-surface-variant) !important;
+      --uv-styles-color-review-stars:        var(--mat-secondary) !important;
+
+      /* Obfuscated design-token vars (may rotate, best-effort) */
+      --xhUGwc: var(--mat-surface-container-low) !important;
+      --bbQxAb: var(--mat-on-surface) !important;
+      --IXoxUe: var(--mat-on-surface-variant) !important;
+      --COEmY:  var(--mat-on-surface) !important;
+      --YLNNHc: var(--mat-on-surface) !important;
+      --JKqx2:  var(--mat-primary) !important;
+      --gS5jXb: var(--mat-surface-container) !important;
+      --mXZkqc: var(--mat-surface-container) !important;
+      --EpFNW:  var(--mat-surface-container-lowest) !important;
+      --XKMDxc: var(--mat-surface-container-lowest) !important;
+      --TSWZIb: var(--mat-surface-container-lowest) !important;
+      --Nsm0ce: var(--mat-primary) !important;
+
+      /* Themed template vars (--te*, --ta*) used by some widgets */
+      --te8f1ea4d4928be48: var(--mat-on-surface) !important;
+      --ta884a309a24f44f4: var(--mat-on-surface-variant) !important;
+      --tdee01b39543f1cac: var(--mat-surface-container-low) !important;
+      --tcc8c9ef487836e2b: var(--mat-surface-container) !important;
+      --ta83cba65577ef850: var(--mat-primary) !important;
+      --t7d1a3050c2c1c0a5: var(--mat-on-surface) !important;
+      --t6a0469853a1a02c1: var(--mat-on-surface) !important;
+      --t5feec22832a0fdd6: var(--mat-surface-container) !important;
+      --t342c96645d13ae13: var(--mat-primary) !important;
+      --t6c7325fca9d536d4: var(--mat-on-surface) !important;
+      --tf7148cf5018d5074: var(--mat-on-surface) !important;
+      --t62e84c71989f1975: var(--mat-error) !important;
+      --tc9db399ed82142e1: var(--mat-tertiary) !important;
+    }
+
+    /* Search results link color */
+    a:link {
+      color: var(--mat-primary) !important;
+    }
+
+    /* Search bar */
+    input[type="text"],
+    input[type="search"],
+    textarea {
+      background-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface) !important;
+      border-color: var(--mat-outline-variant) !important;
+    }
+  }
+
+  /* ── Light mode ───────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    :root,
+    body {
+      --gm3-sys-color-primary:              var(--mat-primary) !important;
+      --gm3-sys-color-surface:              var(--mat-surface-container-lowest) !important;
+      --gm3-sys-color-on-surface:           var(--mat-on-surface) !important;
+      --gm3-sys-color-outline:              var(--mat-outline) !important;
+      --uv-styles-color-text-primary:       var(--mat-primary) !important;
+      --uv-styles-color-text-default:       var(--mat-on-surface-variant) !important;
+    }
+
+    a:link {
+      color: var(--mat-primary) !important;
+    }
+  }
+}

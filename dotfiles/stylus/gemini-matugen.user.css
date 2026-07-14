@@ -1,0 +1,298 @@
+/* ==UserStyle==
+@name         Google Gemini — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      1.0.0
+@description  Themes Google Gemini with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://gemini.google.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  NOTE: Gemini uses --bard-color-*, --gem-sys-color--, --mdc-*, and --mat-*
+  CSS tokens. RGB triplet vars (--*-rgb) are skipped — they can't accept
+  var(--mat-*) inside rgb(). Dark mode selector: :root .dark-theme
+*/
+
+@-moz-document domain("gemini.google.com") {
+
+  /* ── Dark mode ───────────────────────────────────────────────────────────── */
+  :root .dark-theme {
+
+    /* ── Bard / main layout ──────────────────────────────────────────────── */
+    --bard-color-neutral-90:                            var(--mat-surface-container-lowest) !important;
+    --bard-color-neutral-96:                            var(--mat-background)               !important;
+    --bard-color-on-selected-conversation-metadata-v2:  var(--mat-on-surface)               !important;
+    --bard-color-surface-container:                     var(--mat-surface-container-lowest) !important;
+    --bard-color-on-surface-opacity-38:                 var(--mat-surface-container-highest) !important;
+    --bard-color-surface-container-highest:             var(--mat-surface-container)        !important;
+    --bard-color-response-container-flipped-background: var(--mat-surface-container)        !important;
+    --bard-color-inverse-on-surface:                    var(--mat-surface-container-lowest) !important;
+    --bard-color-sidenav-mobile-controls:               var(--mat-on-surface)               !important;
+    --bard-color-main-container-background:             var(--mat-surface-container-low)    !important;
+    --bard-color-window-container-background:           var(--mat-surface-container-low)    !important;
+    --bard-color-response-container-background:         var(--mat-surface-container-low)    !important;
+    --bard-color-footer-background:                     var(--mat-surface-container-lowest) !important;
+
+    /* Sidebar / conversation list */
+    --bard-color-onhover-conversation-metadata-button-v2: var(--mat-surface-container-high)                          !important;
+    --bard-color-selected-conversation-metadata-button-v2: color-mix(in srgb, var(--mat-primary), transparent 60%)  !important;
+    --bard-color-onhover-conversation-metadata-v2:         var(--mat-surface-container)                              !important;
+    --bard-color-new-conversation-button:                  var(--mat-surface-container)                              !important;
+    --bard-color-on-new-conversation-button:               var(--mat-on-surface)                                     !important;
+    --bard-color-sidenav-upgrade-button:                   var(--mat-surface-container)                              !important;
+
+    /* Input / prompts */
+    --bard-color-form-field-placeholder:          var(--mat-on-surface-variant)                                   !important;
+    --bard-color-input-area-buttons-selected-background: color-mix(in srgb, var(--mat-primary), transparent 30%) !important;
+    --bard-color-zero-state-card-selected:        color-mix(in srgb, var(--mat-primary), transparent 70%)        !important;
+    --bard-color-zero-state-prompt-chip-background: color-mix(in srgb, var(--mat-primary), transparent 50%)      !important;
+    --bard-color-zero-state-prompt-chip-text:     var(--mat-primary)                                             !important;
+
+    /* Discovery / carousel */
+    --bard-color-discovery-carousel-background:   var(--mat-surface-container-lowest) !important;
+    --bard-color-discovery-carousel-icon:         var(--mat-primary)                  !important;
+    --bard-color-example-prompt-background:       var(--mat-background)               !important;
+    --bard-color-bard-mode-logo-prefix:           var(--mat-on-surface-variant)       !important;
+
+    /* Marketing */
+    --bard-color-adv-marketing-basic-background:  var(--mat-surface-container) !important;
+    --bard-color-adv-marketing-product-background: var(--mat-surface-container) !important;
+    --bard-color-adv-marketing-disclaimer:        var(--mat-on-surface-variant) !important;
+    --bard-color-adv-marketing-check:             var(--mat-on-surface)         !important;
+
+    /* Banner */
+    --bard-color-regular-banner:                  var(--mat-primary)    !important;
+    --bard-color-regular-banner-text:             var(--mat-background)  !important;
+
+    /* Gradient brand text (Gemini logo colors) */
+    --bard-color-brand-text-gradient-stop-1:      var(--mat-primary)   !important;
+    --bard-color-brand-text-gradient-stop-2:      var(--mat-primary)   !important;
+    --bard-color-brand-text-gradient-stop-3:      var(--mat-secondary)  !important;
+
+    /* Misc */
+    --bard-color-on-surface-opacity-12:  color-mix(in srgb, var(--mat-tertiary), transparent 90%) !important;
+    --bard-color-draft-chip-background:  var(--mat-surface-container)        !important;
+    --bard-color-onegooglebar-product-controls: var(--mat-on-surface)        !important;
+
+    /* Processing animation */
+    --bard-color-processing-animation-color-1: var(--mat-surface-container-high) !important;
+    --bard-color-processing-animation-color-2: var(--mat-background)             !important;
+
+    /* Tunable selection */
+    --bard-color-tunable-selection-button:            var(--mat-surface-container-lowest) !important;
+    --bard-color-tunable-selection-button-icon:       var(--mat-on-surface)               !important;
+    --bard-color-tunable-selection-menu-text:         var(--mat-on-surface)               !important;
+    --bard-color-tunable-selection-menu-background:   var(--mat-surface-container-lowest) !important;
+    --bard-color-tunable-selection-textarea-background: var(--mat-surface-container-low)  !important;
+    --bard-color-tunable-selection-shimmer-non-advanced: var(--mat-primary)               !important;
+
+    /* Feedback / fact-check */
+    --bard-color-feedback-form-container-background:       var(--mat-surface-container-lowest)                    !important;
+    --bard-color-factuality-form-background:               var(--mat-surface-container-lowest)                    !important;
+    --bard-color-fact-check-button-complete:               var(--mat-surface-container)                           !important;
+    --bard-color-fact-check-button-loading:                var(--mat-surface-container-high)                      !important;
+    --bard-color-fact-check-tooltip-entailed-highlight:    color-mix(in srgb, var(--mat-tertiary), transparent 75%) !important;
+    --bard-color-fact-check-tooltip-entailed-selected:     color-mix(in srgb, var(--mat-tertiary), transparent 65%) !important;
+    --bard-color-fact-check-tooltip-contradictory-highlight: color-mix(in srgb, var(--mat-error), transparent 75%) !important;
+    --bard-color-fact-check-tooltip-contradictory-selected:  color-mix(in srgb, var(--mat-error), transparent 60%) !important;
+
+    /* ── gem-sys-color tokens ────────────────────────────────────────────── */
+    --gem-sys-color--surface:                    var(--mat-surface-container-low)    !important;
+    --gem-sys-color--surface-container:          var(--mat-surface-container-lowest) !important;
+    --gem-sys-color--surface-container-high:     var(--mat-surface-container)        !important;
+    --gem-sys-color--surface-container-highest:  var(--mat-surface-container)        !important;
+    --gem-sys-color--surface-container-low:      var(--mat-surface-container-low)    !important;
+    --gem-sys-color--surface-variant:            var(--mat-surface-container)        !important;
+    --gem-sys-color--surface-bright:             var(--mat-surface-container)        !important;
+    --gem-sys-color--on-surface:                 var(--mat-on-surface)               !important;
+    --gem-sys-color--on-surface-variant:         var(--mat-on-surface-variant)       !important;
+    --gem-sys-color--outline-variant:            var(--mat-surface-container-high)   !important;
+    --gem-sys-color--outline:                    var(--mat-outline)                  !important;
+    --gem-sys-color--primary:                    var(--mat-primary)                  !important;
+    --gem-sys-color--primary-container:          var(--mat-primary-container)        !important;
+    --gem-sys-color--on-primary:                 var(--mat-on-primary)               !important;
+    --gem-sys-color--on-primary-fixed:           var(--mat-on-primary)               !important;
+    --gem-sys-color--on-primary-container:       var(--mat-on-primary-container)     !important;
+    --gem-sys-color--primary-fixed:              var(--mat-on-surface)               !important;
+    --gem-sys-color--on-secondary:               color-mix(in srgb, var(--mat-primary), transparent 70%) !important;
+    --og-theme-color:                            var(--mat-on-surface)               !important;
+
+    /* ── MDC switches ────────────────────────────────────────────────────── */
+    --mdc-switch-selected-handle-color:           var(--mat-primary)                                         !important;
+    --mdc-switch-selected-hover-handle-color:     var(--mat-primary)                                         !important;
+    --mdc-switch-selected-focus-handle-color:     var(--mat-primary)                                         !important;
+    --mdc-switch-selected-pressed-handle-color:   var(--mat-primary)                                         !important;
+    --mdc-switch-selected-track-color:            color-mix(in srgb, var(--mat-primary), transparent 50%)   !important;
+    --mdc-switch-selected-hover-track-color:      color-mix(in srgb, var(--mat-primary), transparent 50%)   !important;
+    --mdc-switch-selected-focus-track-color:      color-mix(in srgb, var(--mat-primary), transparent 50%)   !important;
+    --mdc-switch-selected-pressed-track-color:    color-mix(in srgb, var(--mat-primary), transparent 50%)   !important;
+    --mdc-switch-unselected-handle-color:         var(--mat-on-surface-variant) !important;
+    --mdc-switch-unselected-hover-handle-color:   var(--mat-on-surface-variant) !important;
+    --mdc-switch-unselected-focus-handle-color:   var(--mat-on-surface)         !important;
+    --mdc-switch-unselected-pressed-handle-color: var(--mat-on-surface)         !important;
+    --mdc-switch-unselected-track-color:          var(--mat-surface-container-highest) !important;
+    --mdc-switch-unselected-hover-track-color:    var(--mat-surface-container-highest) !important;
+    --mdc-switch-unselected-pressed-track-color:  var(--mat-surface-container-highest) !important;
+    --mdc-switch-unselected-focus-track-color:    var(--mat-surface-container-highest) !important;
+
+    /* ── MDC checkboxes ──────────────────────────────────────────────────── */
+    --mdc-checkbox-selected-icon-color:                   var(--mat-primary)         !important;
+    --mdc-checkbox-selected-hover-icon-color:             var(--mat-primary)         !important;
+    --mdc-checkbox-selected-pressed-icon-color:           var(--mat-primary)         !important;
+    --mdc-checkbox-selected-focus-icon-color:             var(--mat-primary)         !important;
+    --mdc-checkbox-selected-focus-state-layer-color:      var(--mat-primary)         !important;
+    --mdc-checkbox-selected-hover-state-layer-color:      var(--mat-primary)         !important;
+    --mdc-checkbox-selected-pressed-state-layer-color:    var(--mat-on-surface)      !important;
+    --mdc-checkbox-unselected-icon-color:                 var(--mat-on-surface-variant) !important;
+    --mdc-checkbox-unselected-hover-icon-color:           var(--mat-on-surface)      !important;
+    --mdc-checkbox-unselected-focus-icon-color:           var(--mat-on-surface)      !important;
+    --mdc-checkbox-unselected-focus-state-layer-color:    var(--mat-on-surface)      !important;
+    --mdc-checkbox-unselected-hover-state-layer-color:    var(--mat-on-surface)      !important;
+    --mdc-checkbox-unselected-pressed-state-layer-color:  var(--mat-primary)         !important;
+
+    /* ── MDC buttons / text fields / misc ────────────────────────────────── */
+    --mdc-text-button-label-text-color:          var(--mat-on-surface-variant) !important;
+    --mdc-text-button-hover-label-text-color:    var(--mat-on-surface-variant) !important;
+    --mdc-filled-button-label-text-color:        var(--mat-background)         !important;
+    --mdc-circular-progress-active-indicator-color: var(--mat-primary)         !important;
+    --mdc-outlined-button-focus-outline-color:   var(--mat-on-surface)         !important;
+    --mdc-outlined-button-hover-label-text-color: var(--mat-on-surface-variant) !important;
+    --mdc-icon-button-disabled-icon-color:       var(--mat-surface-container-highest) !important;
+    --mdc-outlined-text-field-input-text-color:  var(--mat-on-surface)         !important;
+    --mdc-outlined-text-field-focus-outline-color: var(--mat-primary)          !important;
+    --mdc-outlined-text-field-outline-color:     var(--mat-outline)            !important;
+    --mdc-list-list-item-hover-label-text-color: var(--mat-on-surface)         !important;
+    --mdc-list-list-item-focus-label-text-color: var(--mat-on-surface)         !important;
+
+    /* ── Angular Material (--mat-*) tokens ───────────────────────────────── */
+    --mat-app-text-color:                       var(--mat-on-surface)         !important;
+    --mat-text-button-state-layer-color:        var(--mat-on-surface-variant) !important;
+    --mat-sidenav-container-text-color:         var(--mat-on-surface)         !important;
+    --mat-expansion-header-text-color:          var(--mat-on-surface)         !important;
+    --mat-expansion-header-indicator-color:     var(--mat-on-surface)         !important;
+    --mat-expansion-container-text-color:       var(--mat-on-surface)         !important;
+    --mat-checkbox-label-text-color:            var(--mat-on-surface)         !important;
+    --mat-bottom-sheet-container-text-color:    var(--mat-on-surface)         !important;
+    --mat-bottom-sheet-container-background-color: var(--mat-surface-container-low) !important;
+    --mat-menu-item-hover-state-layer-color:    var(--mat-surface-container)  !important;
+    --mat-menu-item-focus-state-layer-color:    var(--mat-surface-container)  !important;
+    --mat-menu-item-label-text-color:           var(--mat-on-surface)         !important;
+    --mat-menu-container-color:                 var(--mat-surface-container-low) !important;
+    --mat-menu-item-icon-color:                 var(--mat-on-surface)         !important;
+    --mat-filled-button-state-layer-color:      var(--mat-on-surface-variant) !important;
+    --mat-focus-indicator-border-color:         var(--mat-primary)            !important;
+    --mat-divider-color:                        var(--mat-on-surface-variant) !important;
+
+    /* ── Google Material / outlined text fields ──────────────────────────── */
+    --gm-outlinedtextfield-outline-color:          var(--mat-on-surface-variant) !important;
+    --gm-outlinedtextfield-outline-color--stateful: var(--mat-primary)           !important;
+    --gm-outlinedtextfield-ink-color:              var(--mat-on-surface)         !important;
+    --gm3-sys-color-on-secondary-container:        var(--mat-background)         !important;
+    --gm3-sys-color-secondary-container:           var(--mat-on-surface)         !important;
+  }
+
+  /* ── Element overrides (dark mode) ───────────────────────────────────────── */
+  :root .dark-theme {
+    .action-icon {
+      --gem-sys-color--on-primary:          var(--mat-primary)               !important;
+      --gem-sys-color--on-surface-variant:  var(--mat-surface-container-lowest) !important;
+    }
+
+    .mdc-dialog__surface {
+      background-color: var(--mat-surface-container-low) !important;
+    }
+
+    .mat-mdc-menu-panel {
+      background-color: var(--mat-surface-container-low) !important;
+    }
+
+    .mat-mdc-progress-bar {
+      --mdc-linear-progress-active-indicator-color: var(--mat-primary)                                       !important;
+      --mdc-linear-progress-track-color:            color-mix(in srgb, var(--mat-primary), transparent 50%) !important;
+    }
+
+    .mdc-list-item,
+    .gmat-mdc-list {
+      --mdc-list-list-item-hover-state-layer-color:  var(--mat-outline)        !important;
+      --mdc-list-list-item-label-text-color:         var(--mat-on-surface)     !important;
+      --mdc-list-list-item-leading-icon-color:       var(--mat-on-surface)     !important;
+      --mdc-list-list-item-focus-state-layer-color:  var(--mat-on-surface-variant) !important;
+    }
+
+    .gmat-mdc-button.mat-mdc-button.mat-primary {
+      --mdc-text-button-label-text-color:       var(--mat-primary) !important;
+      --mdc-text-button-hover-label-text-color: var(--mat-primary) !important;
+      --mdc-text-button-focus-label-text-color: var(--mat-primary) !important;
+    }
+
+    .gmat-mdc-button.mat-mdc-button.mat-unthemed {
+      --mat-text-button-state-layer-color: var(--mat-on-surface-variant) !important;
+    }
+
+    .gmat-mdc-button.mat-mdc-icon-button {
+      --mat-icon-button-state-layer-color: var(--mat-on-surface-variant) !important;
+    }
+
+    .gmat-mdc-button.mat-mdc-fab:not(.mat-mdc-button-disabled).mat-primary.gmat-mdc-fab-fill {
+      --mdc-fab-container-color: var(--mat-primary)     !important;
+      --mat-fab-foreground-color: var(--mat-on-primary) !important;
+    }
+
+    .gmat-mdc-button.mat-mdc-outlined-button.mat-unthemed {
+      --mdc-outlined-button-outline-color:      var(--mat-outline-variant)    !important;
+      --mdc-outlined-button-label-text-color:   var(--mat-on-surface-variant) !important;
+    }
+
+    .gmat-mdc-chip {
+      --mdc-chip-label-text-color: var(--mat-on-surface-variant) !important;
+    }
+
+    .gmat-mdc-chip.gmat-hairline-chip {
+      --mdc-chip-outline-color: var(--mat-on-surface-variant) !important;
+    }
+
+    .gmat-mdc-chip.cdk-focused {
+      --mdc-chip-label-text-color: var(--mat-on-surface) !important;
+    }
+
+    .mat-mdc-standard-chip {
+      --mdc-chip-hover-state-layer-color: var(--mat-outline)         !important;
+      --mdc-chip-focus-state-layer-color: var(--mat-on-surface-variant) !important;
+    }
+
+    .mdc-tooltip__surface {
+      --mdc-plain-tooltip-container-color:        var(--mat-surface-container-high) !important;
+      --mdc-plain-tooltip-supporting-text-color:  var(--mat-on-surface)             !important;
+    }
+
+    .mdc-form-field {
+      --mdc-form-field-label-text-color: var(--mat-on-surface) !important;
+    }
+
+    .mdc-icon-button {
+      --mdc-icon-button-icon-color: var(--mat-on-surface) !important;
+    }
+
+    .xap-count-badge-dot {
+      background-color: var(--mat-error) !important;
+    }
+
+    .mdc-text-field--outlined:hover:not(.mdc-text-field--disabled, .mdc-text-field--focused) {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__trailing {
+        border-color: var(--mat-on-surface) !important;
+      }
+    }
+
+    .gmat-mdc-dialog .mat-mdc-dialog-container {
+      .mdc-dialog__content { color: var(--mat-on-surface-variant) !important; }
+      .mdc-dialog__title   { color: var(--mat-on-surface)         !important; }
+    }
+
+    /* Remove Gemini Advanced input shadows — interfere with bg color */
+    chat-window > div > input-container { background: unset !important; }
+    input-container::before             { background: unset !important; }
+  }
+}

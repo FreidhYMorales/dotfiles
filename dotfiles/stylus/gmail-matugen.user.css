@@ -1,0 +1,280 @@
+/* ==UserStyle==
+@name         Gmail — matugen
+@namespace    github.com/FreidhYMorales/dotfiles
+@version      2.0.0
+@description  Themes Gmail with the active matugen Material 3 palette.
+              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+@author       deadlock
+@match        https://mail.google.com/*
+@preprocessor default
+==/UserStyle== */
+
+/*
+  Gmail has no dark mode CSS tokens — uses OS @media and element-level class selectors.
+  Icon colorization via SVG `filter:` is skipped (needs compiled hex values from LESS).
+  Selectors (.bkL, .T-I-atl, etc.) are Google's stable class names used for years.
+  darken() → same color; fade() → color-mix.
+*/
+
+@-moz-document domain("mail.google.com") {
+
+  /* ── Dark mode ────────────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    /* Page background */
+    html,
+    body,
+    .no {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Header and sidebar backgrounds */
+    .w-asV,
+    .bkL,
+    .bhZ.bym,
+    .bhZ.bjB,
+    .bhZ.bym.baA {
+      background-color: var(--mat-surface-container-lowest) !important;
+    }
+
+    /* Header search bar */
+    .gb_Kc .gb_hd {
+      background-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface) !important;
+    }
+    .gb_hd.gb_id {
+      background-color: var(--mat-surface-container-low) !important;
+    }
+    .gb_Kc .gb_je,
+    .gb_Kc .gb_qe {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Header icons / text */
+    .gb_Lc .gb_rd .gb_sd,
+    .gb_Kc svg,
+    .gb_Pc.gb_Uc svg {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Tooltips */
+    .T-ays-iP,
+    .gb_Ac {
+      background-color: var(--mat-background) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Compose button (primary accent) */
+    .z0 > .L3 {
+      background-color: var(--mat-primary) !important;
+      color: var(--mat-background) !important;
+    }
+
+    /* Solid primary button (Send button, etc.) */
+    .T-I-atl {
+      background-color: var(--mat-primary) !important;
+      color: var(--mat-background) !important;
+    }
+
+    /* Transparent primary (accent links/icons) */
+    .l0,
+    div.b8 .a8k,
+    .bAo > .ad {
+      color: var(--mat-primary) !important;
+    }
+
+    /* Transparent secondary buttons */
+    .bs0 > .acM,
+    .bti > .btg,
+    .a8Y > .T-I-ax7 {
+      color: var(--mat-on-surface) !important;
+    }
+    .bs0 > .acM.acN,
+    .bti > .btg.acN {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Top section of inbox */
+    .bkK > .nH {
+      background-color: var(--mat-surface-container) !important;
+    }
+
+    /* Inbox category tabs */
+    .aKx > .aKz {
+      color: var(--mat-on-surface) !important;
+    }
+    .J-KU-KO::before {
+      background-color: var(--mat-on-surface) !important;
+    }
+    .aRz.J-KU:hover {
+      background-color: var(--mat-surface-container-high) !important;
+    }
+
+    /* Read emails (inbox rows) */
+    .yO {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+      box-shadow: inset 0 -1px 0 0 var(--mat-surface-container) !important;
+    }
+    .yO:hover {
+      box-shadow:
+        inset 1px 0 0 var(--mat-surface-container),
+        inset -1px 0 0 var(--mat-surface-container),
+        0 0 4px 0 var(--mat-surface-container-high),
+        0 0 6px 2px var(--mat-surface-container-high) !important;
+    }
+    .zE {
+      color: var(--mat-on-surface) !important;
+    }
+    .yO > .xW {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Unread emails */
+    .zE {
+      font-weight: 600;
+    }
+
+    /* Sidebar navigation items */
+    .TK .TO.nZ,
+    .TK .TO.ol,
+    .byl .TK .nZ.aBP,
+    .VDSZAf.H5o3mc {
+      background-color: var(--mat-surface-container) !important;
+    }
+    .TO.NQ,
+    .n6 .ah9:hover,
+    .TK .TO:active,
+    .H5o3mc:not(.VDSZAf):hover {
+      background-color: var(--mat-surface-container-high) !important;
+    }
+
+    /* Sidebar item labels */
+    .TK .nZ > .aHS-bnt .bsU,
+    .TK .nZ .nU > .n0,
+    .TK .ol .nU > .n0,
+    .TO .nU > .n0,
+    .bsU,
+    .aAv {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Pill / chip filters */
+    .H2 {
+      background-color: var(--mat-surface-container-low) !important;
+      border-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface-variant) !important;
+    }
+    .H2.bws {
+      background-color: var(--mat-primary) !important;
+      color: var(--mat-background) !important;
+    }
+
+    /* Email list pagination */
+    .h0 {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Inbox footer */
+    .md.mj,
+    .aeU .ma,
+    .ma .mb,
+    .ae3 .l6,
+    .l9,
+    .l8,
+    .aiD {
+      color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Storage progress bar */
+    .aiC {
+      background-color: var(--mat-surface-container) !important;
+    }
+    .aiC .aiA {
+      background-color: var(--mat-on-surface-variant) !important;
+    }
+
+    /* Search results / autocomplete */
+    .gssb_c .aRp,
+    .gssb_c .gssb_e,
+    .gssb_c .gssb_m {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+    }
+    .gssb_c .gssb_i {
+      background-color: var(--mat-surface-container) !important;
+    }
+    .gssb_c .gssb_i > .gssb_a {
+      border-left-color: var(--mat-primary) !important;
+    }
+    .gssb_c .gssb_l {
+      background-color: var(--mat-surface-container) !important;
+    }
+    .gssb_c .asor_e {
+      color: var(--mat-on-surface-variant) !important;
+    }
+    .gssb_c .aSP,
+    .gssb_c .gssb_e {
+      border-color: var(--mat-surface-container-highest) !important;
+    }
+
+    /* Advanced search modal */
+    .ZF-z6,
+    .ZF-zT,
+    .ZF-Av .lJ,
+    .ZF-Av .lN {
+      background-color: var(--mat-surface-container-low) !important;
+      color: var(--mat-on-surface) !important;
+    }
+    .ZF-z6 .nr:focus {
+      box-shadow: inset 0 -1px 0 0 var(--mat-primary) !important;
+    }
+
+    /* Email body */
+    .nH .if .a3s,
+    .ii .a3s {
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Compose window */
+    .aDh,
+    .dw,
+    .Am .Ak {
+      background-color: var(--mat-surface-container-lowest) !important;
+      color: var(--mat-on-surface) !important;
+    }
+
+    /* Inputs */
+    input,
+    textarea,
+    select {
+      background-color: var(--mat-surface-container) !important;
+      color: var(--mat-on-surface) !important;
+      border-color: var(--mat-outline-variant) !important;
+    }
+
+    /* Links */
+    a:link {
+      color: var(--mat-primary) !important;
+    }
+  }
+
+  /* ── Light mode (minimal) ─────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    .T-I-atl {
+      background-color: var(--mat-primary) !important;
+      color: var(--mat-background) !important;
+    }
+    .z0 > .L3 {
+      background-color: var(--mat-primary) !important;
+      color: var(--mat-background) !important;
+    }
+    a:link {
+      color: var(--mat-primary) !important;
+    }
+  }
+}
