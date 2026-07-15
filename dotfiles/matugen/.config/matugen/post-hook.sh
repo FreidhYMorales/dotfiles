@@ -198,6 +198,15 @@ if [[ -f "$ZEN_UC_SRC" ]]; then
 METAEOF
         cat "$ZEN_UC_SRC"
     } > "$CHROMIUM_VARS"
+
+    # Plain CSS for the matugen-vars Chrome extension (no @-moz-document wrapper)
+    PLAIN_VARS="$HOME/.config/matugen/output/matugen-vars.css"
+    python3 -c "
+import re
+content = open('$ZEN_UC_SRC').read()
+m = re.search(r':root\s*\{[^}]+\}', content, re.DOTALL)
+if m: print(m.group())
+" > "$PLAIN_VARS"
 fi
 
 # ── hyprpaper — sync wallpaper (extract first frame if video) ────────────────
