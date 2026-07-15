@@ -98,25 +98,32 @@ Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for Styl
 
 ---
 
-## 7. Chromium — Stylus setup for web apps
+## 7. Chromium — extension + Stylus setup for web apps
 
-Web apps launched via `webapp-launch` (`chromium --app=<url>`) use Chromium's extension ecosystem. Stylus applies there too, but needs the `--mat-*` vars separately since Chromium has no `userContent.css`.
+Web apps launched via `webapp-launch` (`chromium --app=<url>`) use Chromium's extension ecosystem. Stylus applies there, but `--mat-*` vars are now injected by a dedicated Chrome extension instead of a Stylus global style — this gives ~1s live updates instead of 30+ minutes.
 
 **Steps (one-time):**
 
 1. Install **Stylus** from the Chrome Web Store in Chromium.
 2. `chrome://extensions` → Stylus → **Details** → enable **"Allow access to file URLs"**.
-3. Import the global vars style:
+3. Install the **matugen-vars extension** (injects `--mat-*` vars into all pages, live):
+   - `chrome://extensions` → enable **Developer mode**
+   - **Load unpacked** → select `dotfiles/chromium-extension/matugen-vars/`
+4. Import the userstyles for the sites you use as web apps:
    - Stylus → Manage → Import
-   - Select `~/.config/matugen/output/chromium-vars.user.css`
-4. Import the userstyles for the sites you use as web apps (same files as Zen).
-5. In Stylus → **Settings** → enable **"Check for updates automatically"** (30 min interval is fine).
+   - Select each `*-matugen.user.css` from `dotfiles/stylus/`
+5. In Stylus → **Settings** → enable **"Check for updates automatically"** (for per-site style updates from the local server).
 
-**How auto-update works:**
-- Each wallpaper change → matugen post-hook regenerates `chromium-vars.user.css`
-- `chromium-vars.user.css` has `@updateURL http://localhost:9119/chromium-vars.user.css`
-- Stylus fetches the new version from the local server on the next check cycle
+> **No global vars Stylus import needed for Chromium.** The `matugen-vars` extension replaces it — it injects `--mat-*` into every page automatically. Stylus per-site styles (WhatsApp, YouTube, etc.) reference those vars and just work.
+
+**How live updates work:**
+- Wallpaper change → matugen post-hook generates `matugen-vars.css` → calls `/notify` on the local server
+- Extension's offscreen document polls `/version` every 1s → detects the change
+- Background service worker fetches the new CSS → saves to `chrome.storage.local`
+- `content.js` in every active tab receives `storage.onChanged` → updates `<style>` in the DOM live — no page reload needed
 - `matugen-server.service` (step 5 above) must be running
+
+See `dotfiles/chromium-extension/matugen-vars/README.md` for full architecture details.
 
 ---
 
