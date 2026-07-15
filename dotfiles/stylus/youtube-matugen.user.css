@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name         YouTube — matugen
 @namespace    github.com/FreidhYMorales/dotfiles
-@version      3.5.0
+@version      3.18.0
 @description  Themes YouTube with the active matugen Material 3 palette.
               Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
 @author       deadlock
@@ -57,6 +57,13 @@
        these vars directly (shadow DOM, not reachable via #frosted-glass selector) */
     --yt-sys-color-baseline--frosted-glass-desktop: color-mix(in srgb, var(--mat-background), transparent 15%) !important;
     --yt-sys-color-baseline--frosted-glass-mobile:  color-mix(in srgb, var(--mat-background), transparent 25%) !important;
+
+    /* Scrim gradients — used for sidebar/guide fade effects; default is rgba(15,15,15,X) */
+    --yt-sys-color-baseline--scrim-background-gradient-1: color-mix(in srgb, var(--mat-background), transparent 100%) !important;
+    --yt-sys-color-baseline--scrim-background-gradient-2: color-mix(in srgb, var(--mat-background), transparent 70%)  !important;
+    --yt-sys-color-baseline--scrim-background-gradient-3: color-mix(in srgb, var(--mat-background), transparent 40%)  !important;
+    --yt-sys-color-baseline--scrim-background-gradient-4: color-mix(in srgb, var(--mat-background), transparent 10%)  !important;
+    --yt-sys-color-baseline--scrim-background-gradient-5: var(--mat-background)                                        !important;
   }
 
   html[color-version="v2_0"][dark] {
@@ -163,12 +170,71 @@
   }
 
   /* ── Masthead / topbar ───────────────────────────────────────────────────── */
-  #background.ytd-masthead {
+  #background.ytd-masthead,
+  #container.ytd-masthead {
     background: var(--mat-background) !important;
   }
-  #frosted-glass {
+  /* ytd-masthead shadow DOM (non-Shorts) + ytd-app direct child (Shorts overlay) */
+  #frosted-glass.ytd-masthead,
+  #frosted-glass.ytd-app {
     background: var(--mat-background) !important;
     backdrop-filter: none !important;
+  }
+
+  /* ── Ambient / Cinematic mode — video color glow around player ──────────── */
+  /*
+   * YouTube's ambient effect has at least two rendering paths:
+   *   1. ytd-cinematics element (canvas-based, outside the player)
+   *   2. --yt-light-wash-* CSS vars set via JS on ytd-watch-flexy
+   *   3. background-image injected by JS on the primary/columns containers
+   * We cover all three to ensure the gradient never shows on a themed bg.
+   */
+  /* Disables the cinematic/ambient gradient. YouTube fills the canvas with
+     black programmatically (not via CSS), so background-color override does
+     not work — the gradient always fades to black, clashing with themed bg.
+     User keeps Cinematic Mode OFF in YouTube settings. */
+  ytd-cinematics {
+    display: none !important;
+  }
+  ytd-watch-flexy {
+    --yt-light-wash-opacity: 0 !important;
+    --yt-light-rim-color: transparent !important;
+  }
+  ytd-watch-flexy,
+  #primary.ytd-watch-flexy,
+  #columns.ytd-watch-flexy {
+    background-image: none !important;
+  }
+
+  /* ── Sidebar / guide drawer ──────────────────────────────────────────────── */
+  /* Persistent mode overrides the background to transparent — restore it */
+  tp-yt-app-drawer.ytd-app[persistent] {
+    --app-drawer-content-container-background-color: var(--mat-background) !important;
+  }
+
+  /* ── Shorts — container background ──────────────────────────────────────── */
+  /* ytd-page-manager is the parent of ytd-shorts; its background shows in ytd-shorts's margin area */
+  ytd-page-manager,
+  ytd-shorts {
+    background: var(--mat-background) !important;
+  }
+
+  /* ── Playlist panel header ───────────────────────────────────────────────── */
+  /* Uses --t518e925f61bdcb91 (raised-surface hashed token, not overridden globally) */
+  .header.ytd-playlist-panel-renderer {
+    background-color: var(--mat-surface-container-low) !important;
+  }
+
+  /* ── Notifications panel header ─────────────────────────────────────────── */
+  /* Same token as playlist header — element-specific override avoids side effects */
+  #header.ytd-multi-page-menu-renderer {
+    background-color: var(--mat-surface-container-low) !important;
+  }
+
+  /* ── Live chat — item list ───────────────────────────────────────────────── */
+  /* Component shadow DOM sets its own host background; override it directly */
+  yt-live-chat-item-list-renderer {
+    background: var(--mat-background) !important;
   }
 
   /* ── Filter chips (home feed) ────────────────────────────────────────────── */
