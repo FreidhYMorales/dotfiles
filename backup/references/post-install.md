@@ -78,14 +78,21 @@ Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for Styl
 1. Install the **Stylus** extension from Firefox Add-ons.
 2. In `about:config`: set `toolkit.legacyUserProfileCustomizations.stylesheets = true`
    *(The matugen post-hook does this automatically on first run via `user.js`, but verify if styles don't load.)*
-3. Import all userstyles from `dotfiles/stylus/`:
+3. Import the **global vars style** (same file used by Chromium):
+   - Stylus → Manage → Import
+   - Select `~/.config/matugen/output/chromium-vars.user.css`
+   - This injects `--mat-*` into all pages and auto-updates via `@updateURL` when the wallpaper changes.
+4. Import all userstyles from `dotfiles/stylus/`:
    - Stylus → Manage → Import
    - Select each `*-matugen.user.css` file for the sites you use
-4. Run the matugen post-hook once to generate `userContent.css`:
+5. In Stylus → **Settings** → enable **"Check for updates automatically"** (30 min interval is fine).
+6. Run the matugen post-hook once to generate the CSS files:
    ```bash
    ~/.config/matugen/post-hook.sh
    ```
-5. Reload Zen.
+7. Reload Zen.
+
+> **Why the global vars style?** `userContent.css` (Firefox's native mechanism) only loads at browser startup — it won't pick up wallpaper changes until Zen restarts. The Stylus global style auto-updates via the local HTTP server instead, so color changes apply without restarting the browser.
 
 > **Requires dark mode** to be enabled in each app (WhatsApp, etc.) for the dark selectors to match.
 
