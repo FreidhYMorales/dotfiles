@@ -86,6 +86,8 @@ Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for Styl
    - Stylus → Manage → Import
    - Select each `*-matugen.user.css` file for the sites you use
 5. In Stylus → **Settings** → enable **"Check for updates automatically"** (30 min interval is fine).
+
+> **YouTube**: After importing `youtube-matugen.user.css`, disable **Cinematic/Ambient Mode** in YouTube settings (Settings → Playback and performance → Ambient mode → off). YouTube fills the ambient gradient canvas via JavaScript — CSS cannot override it, so the gradient would clash with the themed background if left enabled.
 6. Run the matugen post-hook once to generate the CSS files:
    ```bash
    ~/.config/matugen/post-hook.sh
@@ -106,13 +108,16 @@ Web apps launched via `webapp-launch` (`chromium --app=<url>`) use Chromium's ex
 
 1. Install **Stylus** from the Chrome Web Store in Chromium.
 2. `chrome://extensions` → Stylus → **Details** → enable **"Allow access to file URLs"**.
-3. Install the **matugen-vars extension** (injects `--mat-*` vars into all pages, live):
+3. Install the **matugen-vars extension** (injects `--mat-*` vars into all pages and iframes, live):
    - `chrome://extensions` → enable **Developer mode**
    - **Load unpacked** → select `dotfiles/chromium-extension/matugen-vars/`
+   - The extension uses `"all_frames": true` — required for iframes like YouTube live chat to receive `--mat-*` vars.
 4. Import the userstyles for the sites you use as web apps:
    - Stylus → Manage → Import
    - Select each `*-matugen.user.css` from `dotfiles/stylus/`
 5. In Stylus → **Settings** → enable **"Check for updates automatically"** (for per-site style updates from the local server).
+
+> **YouTube**: See the YouTube note in step 6 — Cinematic Mode must be disabled in YouTube settings for the userstyle to work without visual artifacts.
 
 > **No global vars Stylus import needed for Chromium.** The `matugen-vars` extension replaces it — it injects `--mat-*` into every page automatically. Stylus per-site styles (WhatsApp, YouTube, etc.) reference those vars and just work.
 
