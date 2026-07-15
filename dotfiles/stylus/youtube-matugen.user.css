@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name         YouTube — matugen
 @namespace    github.com/FreidhYMorales/dotfiles
-@version      3.4.0
+@version      3.5.0
 @description  Themes YouTube with the active matugen Material 3 palette.
               Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
 @author       deadlock
@@ -26,7 +26,8 @@
   /* ── Hashed token overrides (Cobalt build tokens — may change on YouTube deploys) ── */
   html[dark], [dark] {
     --t3e41d7b17b187f69: var(--mat-background)                                         !important;
-    --ta889dfda9605a358: color-mix(in srgb, var(--mat-background), transparent 20%)   !important;
+    --ta889dfda9605a358: color-mix(in srgb, var(--mat-background), transparent 15%)   !important; /* frosted-glass-desktop */
+    --t5978da8d584b8fe9: color-mix(in srgb, var(--mat-background), transparent 25%)   !important; /* frosted-glass-mobile */
     --tffc2fd3a644f6275: var(--mat-on-surface)                                         !important;
     --t4a6da19e16bf221a: var(--mat-on-surface-variant)                                 !important;
   }
@@ -43,6 +44,21 @@
   }
 
   /* ── Cobalt v2 dark (current YouTube) ────────────────────────────────────── */
+  /*
+   * Two selectors are needed:
+   *   html[color-version="v2_0"][dark]   — regular YouTube (dark attr on html)
+   *   [color-version="v2_0"] [dark]      — Shorts (dark attr on ytd-app child, not html)
+   * YouTube itself uses this same pair to set its own baseline vars.
+   */
+  html[color-version="v2_0"][dark],
+  [color-version="v2_0"] [dark] {
+
+    /* Frosted-glass masthead — Shorts overlays the masthead on the video using
+       these vars directly (shadow DOM, not reachable via #frosted-glass selector) */
+    --yt-sys-color-baseline--frosted-glass-desktop: color-mix(in srgb, var(--mat-background), transparent 15%) !important;
+    --yt-sys-color-baseline--frosted-glass-mobile:  color-mix(in srgb, var(--mat-background), transparent 25%) !important;
+  }
+
   html[color-version="v2_0"][dark] {
 
     /* Backgrounds — these feed the hashed token chain used by the actual UI */
