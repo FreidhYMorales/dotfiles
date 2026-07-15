@@ -18,33 +18,40 @@ SKIP_GRUB=false
 GRUB_RESOLUTION="1920x1080x32"
 
 for arg in "$@"; do
-  case "$arg" in
-    --no-gpu)         SKIP_GPU=true ;;
-    --no-grub)        SKIP_GRUB=true ;;
-    --grub-res=*)     GRUB_RESOLUTION="${arg#--grub-res=}x32" ;;
-  esac
+    case "$arg" in
+    --no-gpu) SKIP_GPU=true ;;
+    --no-grub) SKIP_GRUB=true ;;
+    --grub-res=*) GRUB_RESOLUTION="${arg#--grub-res=}x32" ;;
+    esac
 done
 
-step() { echo ""; echo "==> $*"; }
+step() {
+    echo ""
+    echo "==> $*"
+}
 
 # Cache sudo credentials once and keep them alive for the full run
 sudo -v
-while true; do sudo -n true; sleep 60; kill -0 "$$" 2>/dev/null || exit; done &
+while true; do
+    sudo -n true
+    sleep 60
+    kill -0 "$$" 2>/dev/null || exit
+done &
 SUDO_KEEPALIVE_PID=$!
 trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
 
 # ── 0. pacman config ──────────────────────────────────────────────────────────
 step "pacman: color, parallel downloads, ILoveCandy"
-sudo sed -i 's/^#Color$/Color/'                                  /etc/pacman.conf
+sudo sed -i 's/^#Color$/Color/' /etc/pacman.conf
 sudo sed -i 's/^#ParallelDownloads = 5$/ParallelDownloads = 5/' /etc/pacman.conf
-grep -q "^ILoveCandy" /etc/pacman.conf || \
-  sudo sed -i '/^Color/a ILoveCandy' /etc/pacman.conf
+grep -q "^ILoveCandy" /etc/pacman.conf ||
+    sudo sed -i '/^Color/a ILoveCandy' /etc/pacman.conf
 
 # ── 0b. Locale & timezone ─────────────────────────────────────────────────────
 step "Locale (en_US.UTF-8) + timezone (America/Guatemala)"
 sudo sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' /etc/locale.gen
 sudo locale-gen
-echo 'LANG=en_US.UTF-8' | sudo tee /etc/locale.conf > /dev/null
+echo 'LANG=en_US.UTF-8' | sudo tee /etc/locale.conf >/dev/null
 sudo timedatectl set-timezone America/Guatemala
 sudo timedatectl set-ntp true
 
@@ -55,52 +62,52 @@ sudo pacman -S --needed --noconfirm git base-devel stow unzip
 # ── 2. AUR helper ────────────────────────────────────────────────────────────
 step "yay"
 if ! command -v yay &>/dev/null; then
-  git clone https://aur.archlinux.org/yay.git /tmp/yay
-  (cd /tmp/yay && makepkg -si --noconfirm)
+    git clone https://aur.archlinux.org/yay.git /tmp/yay
+    (cd /tmp/yay && makepkg -si --noconfirm)
 fi
 
 # ── 3. Hyprland / Wayland ────────────────────────────────────────────────────
 step "Hyprland stack"
 sudo pacman -S --needed --noconfirm \
-  hyprland xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
-  uwsm wayland-utils qt6-wayland polkit-gnome \
-  hyprpaper
+    hyprland xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
+    uwsm wayland-utils qt6-wayland polkit-gnome \
+    hyprpaper
 
 # ── 4. GPU ────────────────────────────────────────────────────────────────────
 if [[ "$SKIP_GPU" == false ]]; then
-  step "GPU drivers (auto-detect)"
-  sudo pacman -S --needed --noconfirm pciutils
+    step "GPU drivers (auto-detect)"
+    sudo pacman -S --needed --noconfirm pciutils
 
-  GPU_INFO=$(lspci | grep -Ei "VGA|3D|Display")
-  HAS_NVIDIA=false
-  HAS_AMD=false
-  HAS_INTEL=false
+    GPU_INFO=$(lspci | grep -Ei "VGA|3D|Display")
+    HAS_NVIDIA=false
+    HAS_AMD=false
+    HAS_INTEL=false
 
-  if echo "$GPU_INFO" | grep -qi "nvidia";      then HAS_NVIDIA=true; fi
-  if echo "$GPU_INFO" | grep -Eqi "amd|radeon"; then HAS_AMD=true;    fi
-  if echo "$GPU_INFO" | grep -qi "intel";       then HAS_INTEL=true;  fi
+    if echo "$GPU_INFO" | grep -qi "nvidia"; then HAS_NVIDIA=true; fi
+    if echo "$GPU_INFO" | grep -Eqi "amd|radeon"; then HAS_AMD=true; fi
+    if echo "$GPU_INFO" | grep -qi "intel"; then HAS_INTEL=true; fi
 
-  if [[ "$HAS_NVIDIA" == true ]]; then
-    step "GPU: NVIDIA"
-    sudo pacman -S --needed --noconfirm \
-      nvidia nvidia-utils nvidia-settings libva-nvidia-driver
-  fi
+    if [[ "$HAS_NVIDIA" == true ]]; then
+        step "GPU: NVIDIA"
+        sudo pacman -S --needed --noconfirm \
+            nvidia nvidia-utils nvidia-settings libva-nvidia-driver
+    fi
 
-  if [[ "$HAS_AMD" == true ]]; then
-    step "GPU: AMD"
-    sudo pacman -S --needed --noconfirm \
-      mesa vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu
-  fi
+    if [[ "$HAS_AMD" == true ]]; then
+        step "GPU: AMD"
+        sudo pacman -S --needed --noconfirm \
+            mesa vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu
+    fi
 
-  if [[ "$HAS_INTEL" == true ]]; then
-    step "GPU: Intel"
-    sudo pacman -S --needed --noconfirm \
-      mesa vulkan-intel intel-media-driver libva-intel-driver
-  fi
+    if [[ "$HAS_INTEL" == true ]]; then
+        step "GPU: Intel"
+        sudo pacman -S --needed --noconfirm \
+            mesa vulkan-intel intel-media-driver libva-intel-driver
+    fi
 
-  if [[ "$HAS_NVIDIA" == false && "$HAS_AMD" == false && "$HAS_INTEL" == false ]]; then
-    echo "No recognized GPU found — skipping GPU drivers"
-  fi
+    if [[ "$HAS_NVIDIA" == false && "$HAS_AMD" == false && "$HAS_INTEL" == false ]]; then
+        echo "No recognized GPU found — skipping GPU drivers"
+    fi
 fi
 
 # ── 5. Shell & Terminal ───────────────────────────────────────────────────────
@@ -108,13 +115,13 @@ step "Shell & terminal"
 sudo pacman -S --needed --noconfirm zsh kitty fish zoxide
 
 if [[ "$SHELL" != "$(which zsh)" ]]; then
-  sudo usermod --shell "$(which zsh)" "$USER"
+    sudo usermod --shell "$(which zsh)" "$USER"
 fi
 
 step "Oh My Zsh"
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-  RUNZSH=no CHSH=no sh -c \
-    "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    RUNZSH=no CHSH=no sh -c \
+        "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
 yay -S --needed --noconfirm zsh-theme-powerlevel10k
@@ -122,20 +129,20 @@ yay -S --needed --noconfirm zsh-theme-powerlevel10k
 step "Zsh plugins"
 PLUGINS_DIR="$HOME/.oh-my-zsh/custom/plugins"
 declare -A ZSH_PLUGINS=(
-  [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
-  [zsh-syntax-highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
-  [zsh-256color]="https://github.com/chrissicool/zsh-256color"
-  [zsh-completions]="https://github.com/zsh-users/zsh-completions"
+    [zsh - autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
+    [zsh - syntax - highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
+    [zsh - 256color]="https://github.com/chrissicool/zsh-256color"
+    [zsh - completions]="https://github.com/zsh-users/zsh-completions"
 )
 for plugin in "${!ZSH_PLUGINS[@]}"; do
-  [[ -d "$PLUGINS_DIR/$plugin" ]] || git clone "${ZSH_PLUGINS[$plugin]}" "$PLUGINS_DIR/$plugin"
+    [[ -d "$PLUGINS_DIR/$plugin" ]] || git clone "${ZSH_PLUGINS[$plugin]}" "$PLUGINS_DIR/$plugin"
 done
 
 # ── 6. CLI Tools ──────────────────────────────────────────────────────────────
 step "CLI tools"
 sudo pacman -S --needed --noconfirm \
-  eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
-  rsync aria2 p7zip tealdeer procs dust qrencode poppler pacman-contrib
+    eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
+    rsync aria2 p7zip tealdeer procs dust qrencode poppler pacman-contrib
 sudo systemctl enable paccache.timer
 
 step "CLI tools: AUR"
@@ -144,14 +151,14 @@ yay -S --needed --noconfirm gping
 # ── 7. Neovim ─────────────────────────────────────────────────────────────────
 step "Neovim & runtimes"
 sudo pacman -S --needed --noconfirm \
-  neovim nodejs npm python python-pip go rust cargo luarocks
+    neovim nodejs npm python python-pip go rust cargo luarocks
 
 # ── 8. Yazi ───────────────────────────────────────────────────────────────────
 step "Yazi"
 sudo pacman -S --needed --noconfirm \
-  yazi gvfs gvfs-mtp udisks2 util-linux \
-  glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard \
-  python-pipx
+    yazi gvfs gvfs-mtp udisks2 util-linux \
+    glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard \
+    python-pipx
 pipx install rich-cli
 
 # ── 9. Audio ──────────────────────────────────────────────────────────────────
@@ -159,13 +166,13 @@ step "Audio (PipeWire + MPD)"
 # Remove known conflicting packages so pacman doesn't pause asking for confirmation
 sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
-  pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
-  mpd ncmpcpp wiremix sof-firmware
+    pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
+    mpd ncmpcpp wiremix sof-firmware
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
 step "Screenshot tools"
 sudo pacman -S --needed --noconfirm \
-  grim slurp hyprpicker satty wl-clipboard
+    grim slurp hyprpicker satty wl-clipboard
 
 # ── 11. Clipboard ─────────────────────────────────────────────────────────────
 step "Clipboard"
@@ -196,13 +203,13 @@ sudo pacman -S --needed --noconfirm mpv libreoffice-fresh gnome-keyring libsecre
 step "Quickshell"
 yay -S --needed --noconfirm quickshell-git
 sudo pacman -S --needed --noconfirm \
-  qt6-base qt6-declarative qt6-wayland qt6-multimedia qt6-svg qt5-wayland
+    qt6-base qt6-declarative qt6-wayland qt6-multimedia qt6-svg qt5-wayland
 
 # ── 18. System utils ──────────────────────────────────────────────────────────
 step "System utils"
 sudo pacman -S --needed --noconfirm \
-  upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon \
-  geoclue python-gobject
+    upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon \
+    geoclue python-gobject
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
 
@@ -217,7 +224,7 @@ sudo ufw --force enable
 # ── 20. zram (compressed swap) ───────────────────────────────────────────────
 step "zram (compressed swap in RAM)"
 sudo pacman -S --needed --noconfirm zram-generator
-sudo tee /etc/systemd/zram-generator.conf > /dev/null << 'EOF'
+sudo tee /etc/systemd/zram-generator.conf >/dev/null <<'EOF'
 [zram0]
 zram-size = min(ram / 2, 4096)
 compression-algorithm = zstd
@@ -228,7 +235,7 @@ sudo systemctl start systemd-zram-setup@zram0 2>/dev/null || true
 # ── 21. Mirror ranking ────────────────────────────────────────────────────────
 step "reflector (mirror ranking)"
 sudo pacman -S --needed --noconfirm reflector
-sudo tee /etc/xdg/reflector/reflector.conf > /dev/null << 'EOF'
+sudo tee /etc/xdg/reflector/reflector.conf >/dev/null <<'EOF'
 --country Guatemala,Mexico,US
 --protocol https
 --latest 20
@@ -241,8 +248,8 @@ sudo systemctl start reflector 2>/dev/null || true
 # ── 22. Fonts ─────────────────────────────────────────────────────────────────
 step "Fonts"
 sudo pacman -S --needed --noconfirm \
-  ttf-iosevkaterm-nerd noto-fonts noto-fonts-emoji noto-fonts-cjk \
-  ttf-nerd-fonts-symbols
+    ttf-iosevkaterm-nerd noto-fonts noto-fonts-emoji noto-fonts-cjk \
+    ttf-nerd-fonts-symbols
 yay -S --needed --noconfirm redhat-fonts
 
 # ── 23. System info ───────────────────────────────────────────────────────────
@@ -256,9 +263,9 @@ sudo pacman -S --needed --noconfirm sddm qt6-virtualkeyboard
 step "SDDM: install silent theme"
 SDDM_THEME_SRC="$REPO_ROOT/system/sddm/themes/silent"
 if [[ -d "$SDDM_THEME_SRC" ]]; then
-  sudo cp -r "$SDDM_THEME_SRC" /usr/share/sddm/themes/
-  sudo chown -R root:root /usr/share/sddm/themes/silent
-  sudo chmod -R a+rX /usr/share/sddm/themes/silent
+    sudo cp -r "$SDDM_THEME_SRC" /usr/share/sddm/themes/
+    sudo chown -R root:root /usr/share/sddm/themes/silent
+    sudo chmod -R a+rX /usr/share/sddm/themes/silent
 fi
 
 step "SDDM: write config"
@@ -314,7 +321,7 @@ sudo pacman -S --needed --noconfirm pnpm
 
 step "Dev tools"
 sudo pacman -S --needed --noconfirm \
-  git-delta hyperfine tokei watchexec xh sqlite
+    git-delta hyperfine tokei watchexec xh sqlite
 
 step "Dev: Docker"
 sudo pacman -S --needed --noconfirm docker docker-compose
@@ -330,43 +337,43 @@ sudo usermod -aG docker "$USER"
 
 # ── 30. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
-  step "GRUB: packages"
-  sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
+    step "GRUB: packages"
+    sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
 
-  step "GRUB: Star Wars Posters theme"
-  GRUB_THEME_TMP="$(mktemp -d)"
-  git clone --depth=1 \
-    https://github.com/hashirsajid58200p/star-wars-posters-grub-theme \
-    "$GRUB_THEME_TMP"
-  THEME_DEST="/boot/grub/themes/StarWarsPosters"
-  sudo mkdir -p "$THEME_DEST"
-  sudo cp -r "$GRUB_THEME_TMP"/. "$THEME_DEST/"
-  rm -rf "$GRUB_THEME_TMP"
+    step "GRUB: Star Wars Posters theme"
+    GRUB_THEME_TMP="$(mktemp -d)"
+    git clone --depth=1 \
+        https://github.com/hashirsajid58200p/star-wars-posters-grub-theme \
+        "$GRUB_THEME_TMP"
+    THEME_DEST="/boot/grub/themes/StarWarsPosters"
+    sudo mkdir -p "$THEME_DEST"
+    sudo cp -r "$GRUB_THEME_TMP"/. "$THEME_DEST/"
+    rm -rf "$GRUB_THEME_TMP"
 
-  step "GRUB: configure theme + dual boot"
-  GRUB_DEFAULTS="/etc/default/grub"
-  # Theme + resolution (remove old entries first to avoid duplicates)
-  sudo sed -i '/^GRUB_THEME=/d'   "$GRUB_DEFAULTS"
-  sudo sed -i '/^GRUB_GFXMODE=/d' "$GRUB_DEFAULTS"
-  printf 'GRUB_THEME="%s/theme.txt"\n' "$THEME_DEST" | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
-  printf 'GRUB_GFXMODE="%s"\n' "$GRUB_RESOLUTION"    | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
-  # OS prober — detects Windows and other distros
-  if grep -q "^#\?GRUB_DISABLE_OS_PROBER" "$GRUB_DEFAULTS"; then
-    sudo sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=.*/GRUB_DISABLE_OS_PROBER=false/' "$GRUB_DEFAULTS"
-  else
-    echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
-  fi
-  # Remember last selected OS across reboots
-  sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$GRUB_DEFAULTS"
-  grep -q "^GRUB_SAVEDEFAULT" "$GRUB_DEFAULTS" || \
-    echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$GRUB_DEFAULTS" > /dev/null
-  # 3s — enough to select Windows on dual boot, fast enough on single boot
-  sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' "$GRUB_DEFAULTS"
-  # Quiet boot + disable NMI watchdog (saves ~200ms, reduces kernel log spam)
-  sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog"/' "$GRUB_DEFAULTS"
+    step "GRUB: configure theme + dual boot"
+    GRUB_DEFAULTS="/etc/default/grub"
+    # Theme + resolution (remove old entries first to avoid duplicates)
+    sudo sed -i '/^GRUB_THEME=/d' "$GRUB_DEFAULTS"
+    sudo sed -i '/^GRUB_GFXMODE=/d' "$GRUB_DEFAULTS"
+    printf 'GRUB_THEME="%s/theme.txt"\n' "$THEME_DEST" | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
+    printf 'GRUB_GFXMODE="%s"\n' "$GRUB_RESOLUTION" | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
+    # OS prober — detects Windows and other distros
+    if grep -q "^#\?GRUB_DISABLE_OS_PROBER" "$GRUB_DEFAULTS"; then
+        sudo sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=.*/GRUB_DISABLE_OS_PROBER=false/' "$GRUB_DEFAULTS"
+    else
+        echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
+    fi
+    # Remember last selected OS across reboots
+    sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$GRUB_DEFAULTS"
+    grep -q "^GRUB_SAVEDEFAULT" "$GRUB_DEFAULTS" ||
+        echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
+    # 3s — enough to select Windows on dual boot, fast enough on single boot
+    sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' "$GRUB_DEFAULTS"
+    # Quiet boot + disable NMI watchdog (saves ~200ms, reduces kernel log spam)
+    sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog"/' "$GRUB_DEFAULTS"
 
-  step "GRUB: regenerate config"
-  sudo grub-mkconfig -o /boot/grub/grub.cfg
+    step "GRUB: regenerate config"
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
 # ── 31. Boot optimization ────────────────────────────────────────────────────
@@ -375,13 +382,13 @@ step "Boot optimization: systemd services"
 # all interfaces — no desktop service needs full network before the session starts
 sudo systemctl mask systemd-networkd-wait-online.service
 # CUPS: socket activation — printer daemon starts on demand, not at every boot
-sudo systemctl enable cups.socket  2>/dev/null || true
+sudo systemctl enable cups.socket 2>/dev/null || true
 sudo systemctl disable cups.service 2>/dev/null || true
 
 step "Boot optimization: journald limits"
 # Without a size cap, journal flush at boot can take 1-2s and grow unbounded
 sudo mkdir -p /etc/systemd/journald.conf.d
-sudo tee /etc/systemd/journald.conf.d/size.conf > /dev/null <<'EOF'
+sudo tee /etc/systemd/journald.conf.d/size.conf >/dev/null <<'EOF'
 [Journal]
 SystemMaxUse=50M
 RuntimeMaxUse=20M
@@ -391,13 +398,13 @@ step "Boot optimization: mkinitcpio lz4 compression"
 # lz4 decompresses faster than zstd at the cost of slightly larger initramfs —
 # on SSD the decompression speed wins; kms hook handles Early KMS automatically
 sudo sed -i 's/^#\?COMPRESSION=.*/COMPRESSION="lz4"/' /etc/mkinitcpio.conf
-grep -q "^COMPRESSION_OPTIONS" /etc/mkinitcpio.conf \
-  && sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=(-9)/' /etc/mkinitcpio.conf \
-  || echo 'COMPRESSION_OPTIONS=(-9)' | sudo tee -a /etc/mkinitcpio.conf > /dev/null
+grep -q "^COMPRESSION_OPTIONS" /etc/mkinitcpio.conf &&
+    sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=(-9)/' /etc/mkinitcpio.conf ||
+    echo 'COMPRESSION_OPTIONS=(-9)' | sudo tee -a /etc/mkinitcpio.conf >/dev/null
 sudo mkinitcpio -P
 
 step "Boot optimization: sysctl tuning"
-sudo tee /etc/sysctl.d/99-performance.conf > /dev/null <<'EOF'
+sudo tee /etc/sysctl.d/99-performance.conf >/dev/null <<'EOF'
 # Rarely swap with plenty of RAM — avoid latency spikes from swapping
 vm.swappiness = 10
 # Retain more dentries/inodes in RAM instead of reclaiming them aggressively
@@ -414,8 +421,8 @@ step "Boot optimization: noatime on root filesystem"
 ROOT_UUID=$(findmnt -no UUID /)
 ROOT_TYPE=$(findmnt -no FSTYPE /)
 if [[ -n "$ROOT_UUID" ]] && grep -q "$ROOT_UUID" /etc/fstab; then
-  sudo sed -i "/$ROOT_UUID/s/defaults/defaults,noatime/" /etc/fstab
-  sudo mount -o remount,noatime /
+    sudo sed -i "/$ROOT_UUID/s/defaults/defaults,noatime/" /etc/fstab
+    sudo mount -o remount,noatime /
 fi
 
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
@@ -424,9 +431,9 @@ step "Deploying dotfiles"
 # These are created by tools installed above (OMZ → .zshrc, git → .gitconfig).
 # On a fresh install there's nothing to preserve — our dotfiles replace them.
 rm -f \
-  "$HOME/.zshrc" \
-  "$HOME/.zshenv" \
-  "$HOME/.gitconfig"
+    "$HOME/.zshrc" \
+    "$HOME/.zshenv" \
+    "$HOME/.gitconfig"
 "$SCRIPT_DIR/deploy.sh"
 
 # ── Post-install ──────────────────────────────────────────────────────────────
@@ -437,19 +444,19 @@ step "Post-install: font cache"
 fc-cache -fv
 
 step "Post-install: luarocks magick (nvim snacks.image)"
-luarocks install --local magick \
-  || echo "Warning: luarocks magick failed — install manually: luarocks install --local magick"
+luarocks install --local magick ||
+    echo "Warning: luarocks magick failed — install manually: luarocks install --local magick"
 
 step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then
-  ya pack -i
-  # plugins/ may not exist yet if the stow package has no tracked files there
-  mkdir -p "$HOME/.config/yazi/plugins"
-  if [[ ! -d "$HOME/.config/yazi/plugins/fg.yazi" ]]; then
-    git clone https://github.com/DreamMaoMao/fg.yazi \
-      "$HOME/.config/yazi/plugins/fg.yazi" 2>/dev/null \
-      || echo "Warning: fg.yazi clone failed — install manually: git clone https://github.com/DreamMaoMao/fg.yazi ~/.config/yazi/plugins/fg.yazi"
-  fi
+    ya pkg install
+    # plugins/ may not exist yet if the stow package has no tracked files there
+    mkdir -p "$HOME/.config/yazi/plugins"
+    if [[ ! -d "$HOME/.config/yazi/plugins/fg.yazi" ]]; then
+        git clone https://github.com/DreamMaoMao/fg.yazi \
+            "$HOME/.config/yazi/plugins/fg.yazi" 2>/dev/null ||
+            echo "Warning: fg.yazi clone failed — install manually: git clone https://github.com/DreamMaoMao/fg.yazi ~/.config/yazi/plugins/fg.yazi"
+    fi
 fi
 
 step "Post-install: MPD service"
@@ -458,9 +465,9 @@ systemctl --user enable --now mpd
 step "Post-install: default Quickshell state"
 mkdir -p "$HOME/.local/state/quickshell"
 # Default wallpaper — Quickshell reads this on first launch
-echo "$HOME/.config/hypr/assets/arch.png" > "$HOME/.local/state/quickshell/wallpaper.txt"
+echo "$HOME/.config/hypr/assets/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
 # Default theme state — dynamic:true so changing the wallpaper triggers matugen
-echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' > "$HOME/.local/state/quickshell/theme.json"
+echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
 # weather-loc.json is NOT written here — get-location uses GeoClue2 (WiFi) automatically.
 # To pin a location manually: echo '{"loc":"lat,lon","city":"Name"}' > ~/.local/state/quickshell/weather-loc.json
 
@@ -473,15 +480,15 @@ chmod +x "$HOME/.config/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh"
 step "Post-install: SDDM theme sync helper + sudoers"
 SDDM_SYNC_SRC="$HOME/.config/matugen/sddm-theme-sync"
 if [[ -f "$SDDM_SYNC_SRC" ]]; then
-  sudo cp "$SDDM_SYNC_SRC" /usr/local/bin/sddm-theme-sync
-  sudo chown root:root /usr/local/bin/sddm-theme-sync
-  sudo chmod 755 /usr/local/bin/sddm-theme-sync
+    sudo cp "$SDDM_SYNC_SRC" /usr/local/bin/sddm-theme-sync
+    sudo chown root:root /usr/local/bin/sddm-theme-sync
+    sudo chmod 755 /usr/local/bin/sddm-theme-sync
 fi
 SUDOERS_FILE="/etc/sudoers.d/sddm-theme-sync"
 if [[ ! -f "$SUDOERS_FILE" ]]; then
-  echo "$USER ALL=(root) NOPASSWD: /usr/local/bin/sddm-theme-sync" | \
-    sudo tee "$SUDOERS_FILE" > /dev/null
-  sudo chmod 440 "$SUDOERS_FILE"
+    echo "$USER ALL=(root) NOPASSWD: /usr/local/bin/sddm-theme-sync" |
+        sudo tee "$SUDOERS_FILE" >/dev/null
+    sudo chmod 440 "$SUDOERS_FILE"
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
