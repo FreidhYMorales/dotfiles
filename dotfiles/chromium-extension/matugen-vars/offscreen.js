@@ -12,5 +12,5 @@ async function poll() {
   } catch (_) {}
 }
 
-setInterval(poll, 3000);
+setInterval(poll, 1000);
 poll();
