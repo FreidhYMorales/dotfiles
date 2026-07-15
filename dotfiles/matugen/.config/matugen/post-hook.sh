@@ -207,6 +207,9 @@ content = open('$ZEN_UC_SRC').read()
 m = re.search(r':root\s*\{[^}]+\}', content, re.DOTALL)
 if m: print(m.group())
 " > "$PLAIN_VARS"
+
+    # Signal Chrome extension that new vars are ready
+    curl -s "http://localhost:9119/notify" > /dev/null 2>&1 || true
 fi
 
 # ── hyprpaper — sync wallpaper (extract first frame if video) ────────────────
