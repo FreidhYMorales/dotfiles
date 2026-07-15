@@ -188,7 +188,7 @@ if [[ -f "$ZEN_UC_SRC" ]]; then
 /* ==UserStyle==
 @name         matugen — global vars
 @namespace    github.com/FreidhYMorales/dotfiles
-@version      1.0.0
+@version      1.0.$(date +%s)
 @description  Injects --mat-* CSS custom properties into all pages. Required by all matugen Stylus userstyles in Chromium.
 @author       deadlock
 @match        *
