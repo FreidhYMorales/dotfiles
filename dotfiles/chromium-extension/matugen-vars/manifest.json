@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "matugen vars",
+  "version": "1.0",
+  "description": "Injects --mat-* CSS custom properties into all pages for live matugen theming.",
+  "host_permissions": ["http://localhost:9119/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
