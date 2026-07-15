@@ -11,15 +11,12 @@ function injectCSS(css) {
   el.textContent = css;
 }
 
-async function fetchAndApply() {
+async function applyUpdate() {
   try {
     const res = await fetch(VARS_URL + '?t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) return;
     const css = await res.text();
-
-    const { lastCss } = await chrome.storage.local.get('lastCss');
-    if (css === lastCss) return;
-    await chrome.storage.local.set({ matVarsCss: css, lastCss: css });
+    await chrome.storage.local.set({ matVarsCss: css });
 
     const tabs = await chrome.tabs.query({});
     for (const tab of tabs) {
@@ -33,10 +30,28 @@ async function fetchAndApply() {
   } catch (_) {}
 }
 
-chrome.alarms.create('poll', { periodInMinutes: 1 });
-chrome.alarms.onAlarm.addListener(({ name }) => {
-  if (name === 'poll') fetchAndApply();
+async function ensureOffscreen() {
+  const contexts = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT'],
+  });
+  if (contexts.length > 0) return;
+  await chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['DOM_SCRAPING'],
+    justification: 'Poll local matugen server for CSS var updates',
+  });
+}
+
+chrome.runtime.onMessage.addListener(({ type }) => {
+  if (type === 'VARS_CHANGED') applyUpdate();
 });
-chrome.runtime.onInstalled.addListener(fetchAndApply);
-chrome.runtime.onStartup.addListener(fetchAndApply);
-fetchAndApply();
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await applyUpdate();
+  await ensureOffscreen();
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  await applyUpdate();
+  await ensureOffscreen();
+});
