@@ -9,7 +9,7 @@ themes {
         yellow  "{{colors.secondary.default.hex}}"
         blue    "{{colors.primary.default.hex}}"
         magenta "{{colors.tertiary_container.default.hex}}"
-        cyan    "{{colors.secondary_container.default.hex}}"
+        cyan    "{{colors.secondary.default.hex}}"
         white   "{{colors.on_surface_variant.default.hex}}"
         orange  "{{colors.primary_container.default.hex}}"
     }
