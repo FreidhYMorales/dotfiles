@@ -129,10 +129,10 @@ yay -S --needed --noconfirm zsh-theme-powerlevel10k
 step "Zsh plugins"
 PLUGINS_DIR="$HOME/.oh-my-zsh/custom/plugins"
 declare -A ZSH_PLUGINS=(
-    [zsh - autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
-    [zsh - syntax - highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
-    [zsh - 256color]="https://github.com/chrissicool/zsh-256color"
-    [zsh - completions]="https://github.com/zsh-users/zsh-completions"
+    [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
+    [zsh-syntax - highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
+    [zsh-256color]="https://github.com/chrissicool/zsh-256color"
+    [zsh-completions]="https://github.com/zsh-users/zsh-completions"
 )
 for plugin in "${!ZSH_PLUGINS[@]}"; do
     [[ -d "$PLUGINS_DIR/$plugin" ]] || git clone "${ZSH_PLUGINS[$plugin]}" "$PLUGINS_DIR/$plugin"
