@@ -2,6 +2,7 @@ local M = {}
 
 local SEQUENCES       = vim.fn.expand("~/.local/state/caelestia/sequences.txt")
 local KITTY_CONF      = vim.fn.expand("~/.config/kitty/kitty.conf")
+local KITTY_THEME     = vim.fn.expand("~/.config/kitty/matugen-theme.conf")
 local OMARCHY_THEME   = vim.fn.expand("~/.config/omarchy/current/theme.name")
 
 local function lighten(hex, n)
@@ -128,6 +129,8 @@ function M.mtime()
 	local stat = vim.uv.fs_stat(OMARCHY_THEME)
 	if stat then return stat.mtime.sec end
 	stat = vim.uv.fs_stat(SEQUENCES)
+	if stat then return stat.mtime.sec end
+	stat = vim.uv.fs_stat(KITTY_THEME)
 	if stat then return stat.mtime.sec end
 	stat = vim.uv.fs_stat(KITTY_CONF)
 	return stat and stat.mtime.sec or 0
