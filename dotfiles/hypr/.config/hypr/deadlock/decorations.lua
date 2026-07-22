@@ -11,7 +11,9 @@ local rangeShadow    = 15
 
 config({
 	decoration = {
+		rounding = 0,
 		blur   = { noise = blurNoise, size = sizeBlur, brightness = brightnessBlur, contrast = contrastBlur },
 		shadow = { color_inactive = "rgba(" .. colors.surface .. "d4)", range = rangeShadow },
 	},
 })
+

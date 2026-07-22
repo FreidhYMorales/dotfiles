@@ -649,7 +649,7 @@ Item {
                             : root.mode === "commands"  ? "No commands found"
                             : "No apps found"
             color:          Colours.m3onSurfaceVariant
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 13
             Behavior on color { CAnim {} }
         }
@@ -676,7 +676,7 @@ Item {
                 anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 18 }
                 text:           "󰍉"
                 color:          Colours.m3onSurfaceVariant
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 16
                 opacity:        stage === "open" ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: 220 } }
@@ -694,7 +694,7 @@ Item {
                 visible: searchField.text.length === 0 && (stage === "bar" || stage === "open")
                 text:           "Search apps, or type > for commands"
                 color:          Colours.m3onSurfaceVariant
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 13
                 Behavior on color { CAnim {} }
             }
@@ -708,7 +708,7 @@ Item {
                     leftMargin:     42
                     rightMargin:    8
                 }
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 13
                 color:          Colours.m3onSurface
                 selectByMouse:  true
@@ -792,7 +792,7 @@ Item {
                     anchors.centerIn: parent
                     text:           root.pendingIsLight ? "󰖨 Light" : "󰽥 Dark"
                     color:          Colours.m3onSurfaceVariant
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 12
                     Behavior on color { CAnim {} }
                 }
@@ -816,7 +816,7 @@ Item {
                     anchors.centerIn: parent
                     text:           "󰅖"
                     color:          Colours.m3onSurfaceVariant
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 14
                     Behavior on color { CAnim {} }
                 }
@@ -834,7 +834,7 @@ Item {
             anchors.centerIn: parent
             text:           "󰣇"
             color:          Colours.m3primary
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 26
             opacity:        stage === "circle" ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: 200 } }

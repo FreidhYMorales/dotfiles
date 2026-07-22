@@ -21,4 +21,6 @@ singleton Wallpapers   1.0 Wallpapers.qml
 singleton IdleManager  1.0 IdleManager.qml
 singleton Recorder     1.0 Recorder.qml
 singleton Keybinds     1.0 Keybinds.qml
+singleton Style        1.0 Style.qml
 NotifData              1.0 NotifData.qml
+

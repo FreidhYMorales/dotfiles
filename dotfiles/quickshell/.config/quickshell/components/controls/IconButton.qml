@@ -27,7 +27,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius:       root.isRound ? Math.min(width, height) / 2 : 8
+        radius:       (root.isRound && !Style.isSquare) ? Math.min(width, height) / 2 : Style.cornerRadius
         color:        root.checked   ? Colours.m3primary
                     : root.type === IconButton.ButtonType.Tonal ? Colours.m3surfaceContainerHigh
                     : Colours.m3primary

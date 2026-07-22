@@ -20,7 +20,7 @@ Item {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:           "󰂜"
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 36
                 color:          Colours.m3onSurfaceVariant
                 Behavior on color { CAnim {} }
@@ -29,7 +29,7 @@ Item {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:           "No notifications"
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
                 color:          Colours.m3onSurfaceVariant
                 Behavior on color { CAnim {} }
@@ -52,7 +52,7 @@ Item {
                 rightMargin: 12
             }
             text:           "Clear all"
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 10
             color:          clearHov.hovered
                                 ? Colours.m3onSurface

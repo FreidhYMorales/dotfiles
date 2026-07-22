@@ -80,7 +80,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text:           "󰅁"
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 16
                     color:          Colours.m3onSurface
                     Behavior on color { CAnim {} }
@@ -105,7 +105,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text:           root.monthName(root._month) + " " + root._year
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 13
                 font.weight:    Font.Medium
                 color:          Colours.m3onSurface
@@ -134,7 +134,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text:           "󰅂"
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 16
                     color:          Colours.m3onSurface
                     Behavior on color { CAnim {} }
@@ -168,7 +168,7 @@ Item {
                     width:          parent.width / 7
                     text:           modelData
                     horizontalAlignment: Text.AlignHCenter
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 10
                     color:          Colours.m3onSurfaceVariant
                     Behavior on color { CAnim {} }
@@ -208,7 +208,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text:             modelData.day
-                        font.family:      "Iosevka Term Nerd Font"
+                        font.family:      Style.fontFamily
                         font.pixelSize:   12
                         horizontalAlignment: Text.AlignHCenter
                         color: isToday

@@ -168,7 +168,7 @@ Variants {
                                 visible:        !appIconImg.visible
                                 text:           (win.toastNotif?.appName ?? "?").charAt(0).toUpperCase()
                                 color:          Colours.m3onPrimaryContainer
-                                font.family:    "Iosevka Term Nerd Font"
+                                font.family:    Style.fontFamily
                                 font.pixelSize: 10
                                 font.weight:    Font.Medium
                                 Behavior on color { CAnim {} }
@@ -183,7 +183,7 @@ Variants {
                             }
                             text:           win.toastNotif?.appName ?? ""
                             color:          Colours.m3onSurfaceVariant
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 11
                             elide:          Text.ElideRight
                             Behavior on color { CAnim {} }
@@ -200,7 +200,7 @@ Variants {
                                 color: dismissHov.hovered
                                        ? Colours.m3onSurface
                                        : Colours.m3onSurfaceVariant
-                                font.family:    "Iosevka Term Nerd Font"
+                                font.family:    Style.fontFamily
                                 font.pixelSize: 13
                                 Behavior on color { CAnim {} }
                             }
@@ -223,7 +223,7 @@ Variants {
                         text:           win.toastNotif?.summary ?? ""
                         visible:        text.length > 0
                         color:          Colours.m3onSurface
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 13
                         font.weight:    Font.Medium
                         wrapMode:       Text.WordWrap
@@ -237,7 +237,7 @@ Variants {
                         text:           win.toastNotif?.body ?? ""
                         visible:        text.length > 0
                         color:          Colours.m3onSurfaceVariant
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 11
                         wrapMode:       Text.WordWrap
                         maximumLineCount: 3

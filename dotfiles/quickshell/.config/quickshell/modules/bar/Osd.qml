@@ -221,7 +221,7 @@ Variants {
                                             Audio.volume > 66 ? "󰕾" :
                                             Audio.volume > 33 ? "󰖀" : "󰕿"
                             color:          Audio.muted ? win.colors.m3surfaceContainer : win.colors.m3primary
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 13
                             Behavior on color { CAnim {} }
                         }
@@ -369,7 +369,7 @@ Variants {
                             text:           Brightness.percent > 66 ? "󰃠" :
                                             Brightness.percent > 33 ? "󰃟" : "󰃞"
                             color:          win.colors.m3primary
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 13
                             Behavior on color { CAnim {} }
                         }

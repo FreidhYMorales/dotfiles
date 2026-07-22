@@ -15,7 +15,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: Style.cornerRadius
         color: Visibilities.calendar || hov.hovered
                    ? root.colors.m3surfaceContainerHighest
                    : root.colors.m3surfaceContainerHigh
@@ -29,7 +29,7 @@ Item {
         anchors.centerIn: parent
         text:           Time.date + "  |  " + Time.time24
         color:          root.colors.m3onSurface
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: 12
         font.weight:    Font.Medium
         Behavior on color { CAnim {} }

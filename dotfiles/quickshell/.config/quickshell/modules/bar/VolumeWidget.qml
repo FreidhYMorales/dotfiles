@@ -38,7 +38,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible:      root.standalone
-        radius:       height / 2
+        radius:       Style.cornerRadius
         color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
@@ -54,7 +54,7 @@ Item {
                             Audio.volume > 66 ? "󰕾" :
                             Audio.volume > 33 ? "󰖀" : "󰕿"
             color:          Audio.muted ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 13
             Behavior on color { CAnim {} }
         }
@@ -73,7 +73,7 @@ Item {
                 anchors { left: parent.left; leftMargin: 5; verticalCenter: parent.verticalCenter }
                 text:           Audio.volume + "%"
                 color:          Audio.muted ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
                 Behavior on color { CAnim {} }
             }

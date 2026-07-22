@@ -24,7 +24,7 @@ Item {
     Text {
         anchors.centerIn: parent
         text:           root.icon
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: root.iconSize
         color: root.active ? Colours.m3primary : Colours.m3onSurfaceVariant
         scale: root.active ? 1.35 : 1.0

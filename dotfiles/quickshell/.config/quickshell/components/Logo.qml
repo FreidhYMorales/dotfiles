@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../services"
 
 // Project logo placeholder. Replace with actual SVG/Image when available.
 Item {
@@ -11,7 +12,7 @@ Item {
     Text {
         anchors.centerIn: parent
         text:           ""
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: Math.round(root.size * 0.7)
         color:          "#cdd6f4"
     }

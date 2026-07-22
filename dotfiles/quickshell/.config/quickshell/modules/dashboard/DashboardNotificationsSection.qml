@@ -53,7 +53,7 @@ Item {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text:           tabDelegate.modelData.icon
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 12
                             color:          tabDelegate.active ? Colours.m3onPrimaryContainer : Colours.m3onSurfaceVariant
                             Behavior on color { CAnim {} }
@@ -62,7 +62,7 @@ Item {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text:           tabDelegate.modelData.label
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 11
                             color:          tabDelegate.active ? Colours.m3onPrimaryContainer : Colours.m3onSurfaceVariant
                             Behavior on color { CAnim {} }

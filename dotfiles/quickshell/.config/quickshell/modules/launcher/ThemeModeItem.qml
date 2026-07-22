@@ -67,7 +67,7 @@ Item {
             visible:        !root.previewColors
             text:           "󰏘"
             color:          root.isSelected ? Colours.m3onPrimary : Colours.m3onPrimaryContainer
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 16
             Behavior on color { CAnim {} }
         }
@@ -146,7 +146,7 @@ Item {
         }
         text:           root.modeName
         color:          root.isSelected ? Colours.m3primary : Colours.m3onSurface
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: 15
         font.weight:    Font.Medium
         elide:          Text.ElideRight
@@ -159,7 +159,7 @@ Item {
         text:    "󰄬"
         visible: root.isActive
         color:   Colours.m3primary
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: 14
         Behavior on color { CAnim {} }
     }

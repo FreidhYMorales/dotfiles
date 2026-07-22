@@ -78,7 +78,7 @@ Item {
         Text {
             anchors.centerIn: canvas
             text:           circ.icon
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 16
             color:          circ.arcColor
             Behavior on color { CAnim {} }
@@ -92,7 +92,7 @@ Item {
                 horizontalCenter: parent.horizontalCenter
             }
             text:           circ.label + " " + circ.value + "%"
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 10
             color:          Colours.m3onSurfaceVariant
             Behavior on color { CAnim {} }

@@ -69,7 +69,7 @@ Row {
                 color:          parent.isActive   ? wsRow.colors.m3primary :
                                 parent.isOccupied ? wsRow.colors.m3onSurfaceVariant :
                                                     Qt.alpha(wsRow.colors.m3onSurface, 0.3)
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: parent.isActive ? 34 : parent.isOccupied ? 26 : 20
                 Behavior on color          { CAnim {} }
                 Behavior on font.pixelSize { NumberAnimation { duration: 120; easing.type: Easing.InOutCubic } }

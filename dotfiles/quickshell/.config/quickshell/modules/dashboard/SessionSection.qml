@@ -45,7 +45,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text:           btnDelegate.modelData.icon
                         color:          hov.hovered ? Colours.m3primary : Colours.m3onSurfaceVariant
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 24
                         scale:          hov.hovered ? 1.3 : 1.0
                         transformOrigin: Item.Center
@@ -57,7 +57,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text:           btnDelegate.modelData.label
                         color:          Colours.m3onSurfaceVariant
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 9
                         Behavior on color { CAnim {} }
                     }

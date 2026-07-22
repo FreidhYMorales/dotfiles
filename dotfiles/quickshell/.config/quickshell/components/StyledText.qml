@@ -10,7 +10,7 @@ Text {
     // fontStyle accepts a font object from Tokens.font.*.builders.*.build()
     property var  fontStyle
 
-    font.family:    "Iosevka Term Nerd Font"
+    font.family:    Style.fontFamily
     font.pixelSize: 14
     color:          Colours.m3onSurface
     renderType:     Text.NativeRendering

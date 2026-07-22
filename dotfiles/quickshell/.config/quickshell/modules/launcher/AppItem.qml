@@ -74,7 +74,7 @@ Item {
             visible:        !iconImg.visible
             text:           root.appName.charAt(0).toUpperCase()
             color:          root.isSelected ? Colours.m3onPrimary : Colours.m3onPrimaryContainer
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 15
             font.weight:    Font.Medium
             Behavior on color { CAnim {} }
@@ -96,7 +96,7 @@ Item {
             width:          parent.width
             text:           root.appName
             color:          root.isSelected ? Colours.m3primary : Colours.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 15
             font.weight:    Font.Medium
             elide:          Text.ElideRight
@@ -108,7 +108,7 @@ Item {
             text:           root.appDescription
             visible:        root.appDescription.length > 0
             color:          Qt.alpha(Colours.m3onSurfaceVariant, 0.75)
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 11
             elide:          Text.ElideRight
             Behavior on color { CAnim {} }

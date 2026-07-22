@@ -88,7 +88,7 @@ Item {
         anchors.centerIn: parent
         visible:          root._loading
         text:             "Loading..."
-        font.family:      "Iosevka Term Nerd Font"
+        font.family:      Style.fontFamily
         font.pixelSize:   13
         color:            Colours.m3onSurfaceVariant
         Behavior on color { CAnim {} }
@@ -99,7 +99,7 @@ Item {
         anchors.centerIn: parent
         visible:          !root._loading && root._error
         text:             "Weather unavailable"
-        font.family:      "Iosevka Term Nerd Font"
+        font.family:      Style.fontFamily
         font.pixelSize:   13
         color:            Colours.m3onSurfaceVariant
         Behavior on color { CAnim {} }
@@ -123,7 +123,7 @@ Item {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:           root._weatherIcon
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 44
                 color:          Colours.m3primary
                 Behavior on color { CAnim {} }
@@ -131,7 +131,7 @@ Item {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:           root._temp
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 28
                 font.weight:    Font.Medium
                 color:          Colours.m3onSurface
@@ -151,7 +151,7 @@ Item {
 
             Text {
                 text:           root._desc
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 13
                 color:          Colours.m3onSurface
                 elide:          Text.ElideRight
@@ -160,7 +160,7 @@ Item {
             }
             Text {
                 text:           root._location
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 11
                 color:          Colours.m3onSurfaceVariant
                 elide:          Text.ElideRight
@@ -172,7 +172,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text:           "󰖋"
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 14
                     color:          Colours.m3onSurfaceVariant
                     Behavior on color { CAnim {} }
@@ -180,7 +180,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text:           root._humidity
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 12
                     color:          Colours.m3onSurfaceVariant
                     Behavior on color { CAnim {} }
@@ -191,7 +191,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text:           "󰖝"
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 14
                     color:          Colours.m3onSurfaceVariant
                     Behavior on color { CAnim {} }
@@ -199,7 +199,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text:           root._wind
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 12
                     color:          Colours.m3onSurfaceVariant
                     Behavior on color { CAnim {} }

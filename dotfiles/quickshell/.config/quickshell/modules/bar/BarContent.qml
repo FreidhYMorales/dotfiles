@@ -48,8 +48,8 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius:            height / 2
-        bottomRightRadius: (Visibilities.notifToast || root._notifCornerFlat || root._dashCornerFlat) ? 0 : height / 2
+        radius:            Style.cornerRadius
+        bottomRightRadius: (Visibilities.notifToast || root._notifCornerFlat || root._dashCornerFlat) ? 0 : Style.cornerRadius
         color:             root.colors.m3surfaceContainer
 
         Behavior on color             { CAnim {} }
@@ -71,7 +71,7 @@ Item {
         }
         height: 26
         width:  leftPillRow.implicitWidth + 8
-        radius: height / 2
+        radius: Style.cornerRadius
         // Same dark tone as the media-source selector pill (m3surfaceContainerLow)
         // — going lighter than the bar's own background made the pill
         // visible but broke the intended dark/moody look. A subtle outline
@@ -122,7 +122,7 @@ Item {
             id:     rightPill
             height: 26
             width:  pillRow.implicitWidth + 8
-            radius: height / 2
+            radius: Style.cornerRadius
             // Same dark tone as the media-source selector pill (m3surfaceContainerLow)
         // — going lighter than the bar's own background made the pill
         // visible but broke the intended dark/moody look. A subtle outline

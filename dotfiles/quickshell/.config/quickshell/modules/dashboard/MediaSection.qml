@@ -72,7 +72,7 @@ Item {
                         visible:          Mpris.artUrl === ""
                         text:             "󰝚"
                         color:            Colours.m3onSurfaceVariant
-                        font.family:      "Iosevka Term Nerd Font"
+                        font.family:      Style.fontFamily
                         font.pixelSize:   24
                         Behavior on color { CAnim {} }
                     }
@@ -88,7 +88,7 @@ Item {
                     width:       parent.width
                     text:        Mpris.title.length > 0 ? Mpris.title : "Unknown"
                     color:       Colours.m3onSurface
-                    font.family: "Iosevka Term Nerd Font"
+                    font.family: Style.fontFamily
                     font.pixelSize: 13
                     font.weight: Font.Medium
                     elide:       Text.ElideRight
@@ -99,7 +99,7 @@ Item {
                     width:       parent.width
                     text:        Mpris.artist.length > 0 ? Mpris.artist : "Unknown Artist"
                     color:       Colours.m3onSurfaceVariant
-                    font.family: "Iosevka Term Nerd Font"
+                    font.family: Style.fontFamily
                     font.pixelSize: 11
                     elide:       Text.ElideRight
                     Behavior on color { CAnim {} }
@@ -144,7 +144,7 @@ Item {
                     id:             posLabel
                     text:           root._fmtTime(root.localPos)
                     color:          Colours.m3onSurfaceVariant
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 10
                     Behavior on color { CAnim {} }
                 }
@@ -155,7 +155,7 @@ Item {
                     id:             durLabel
                     text:           root._fmtTime(Mpris.length)
                     color:          Colours.m3onSurfaceVariant
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 10
                     Behavior on color { CAnim {} }
                 }
@@ -183,7 +183,7 @@ Item {
                     }
                     Text {
                         anchors.centerIn: parent
-                        text: "󰒮"; font.family: "Iosevka Term Nerd Font"; font.pixelSize: 16
+                        text: "󰒮"; font.family: Style.fontFamily; font.pixelSize: 16
                         color: Mpris.canPrev ? Colours.m3onSurface : Colours.m3onSurfaceVariant
                         Behavior on color { CAnim {} }
                     }
@@ -196,7 +196,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: Mpris.playing ? "󰏤" : "󰐊"
-                        font.family: "Iosevka Term Nerd Font"; font.pixelSize: 22
+                        font.family: Style.fontFamily; font.pixelSize: 22
                         color: playHov.hovered ? Colours.m3onSurface : Colours.m3primary
                         Behavior on color { CAnim {} }
                     }
@@ -213,7 +213,7 @@ Item {
                     }
                     Text {
                         anchors.centerIn: parent
-                        text: "󰒭"; font.family: "Iosevka Term Nerd Font"; font.pixelSize: 16
+                        text: "󰒭"; font.family: Style.fontFamily; font.pixelSize: 16
                         color: Mpris.canNext ? Colours.m3onSurface : Colours.m3onSurfaceVariant
                         Behavior on color { CAnim {} }
                     }
@@ -279,7 +279,7 @@ Item {
                             TextMetrics {
                                 id:             tm
                                 text:           Mpris.playerDisplayName(chip.entry.mp ?? null)
-                                font.family:    "Iosevka Term Nerd Font"
+                                font.family:    Style.fontFamily
                                 font.pixelSize: 11
                             }
 
@@ -295,7 +295,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text:        tm.text
-                                font.family: "Iosevka Term Nerd Font"
+                                font.family: Style.fontFamily
                                 font.pixelSize: 11
                                 color: Colours.m3onSurfaceVariant
                                 Behavior on color { CAnim {} }
@@ -350,7 +350,7 @@ Item {
 
                         Text {
                             text:        Mpris.playerName
-                            font.family: "Iosevka Term Nerd Font"
+                            font.family: Style.fontFamily
                             font.pixelSize: 11
                             color: Colours.m3onSurfaceVariant
                             Behavior on color { CAnim {} }
