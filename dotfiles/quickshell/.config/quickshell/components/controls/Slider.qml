@@ -77,7 +77,7 @@ Item {
             visible:        root.icon !== ""
             text:           root.icon
             color:          root.fillColor
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 13
         }
     }

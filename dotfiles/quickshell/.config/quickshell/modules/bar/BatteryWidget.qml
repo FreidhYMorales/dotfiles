@@ -52,7 +52,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible:      root.standalone
-        radius:       height / 2
+        radius:       Style.cornerRadius
         color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
@@ -69,7 +69,7 @@ Item {
                   Battery.percentage > 50 ? "󰂀" :
                   Battery.percentage > 20 ? "󰁾" : "󰁺"
             color:          Battery.percentage < 20 && !Battery.charging ? root.colors.m3error : root.colors.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 13
             Behavior on color { CAnim {} }
         }
@@ -88,7 +88,7 @@ Item {
                 anchors { left: parent.left; leftMargin: 5; verticalCenter: parent.verticalCenter }
                 text:           Battery.percentage + "%"
                 color:          Battery.percentage < 20 && !Battery.charging ? root.colors.m3error : root.colors.m3onSurface
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
                 Behavior on color { CAnim {} }
             }

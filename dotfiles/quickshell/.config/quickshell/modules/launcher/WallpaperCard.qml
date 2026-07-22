@@ -76,7 +76,7 @@ Item {
                 visible:        root.isVideo && root.frameSrc === ""
                 text:           "󰃽"
                 color:          Colours.m3onSurfaceVariant
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 28
             }
 
@@ -93,7 +93,7 @@ Item {
                     width:  parent.width - 12
                     text:   root.wallName
                     color:  "white"
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 12
                     font.weight:    Font.Medium
                     elide:  Text.ElideRight

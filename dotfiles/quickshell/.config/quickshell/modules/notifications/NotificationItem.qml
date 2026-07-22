@@ -65,7 +65,7 @@ Item {
                 anchors.centerIn: parent
                 visible:          root.icon === ""
                 text:             "󰇮"
-                font.family:      "Iosevka Term Nerd Font"
+                font.family:      Style.fontFamily
                 font.pixelSize:   18
                 color:            Colours.m3onSurfaceVariant
                 Behavior on color { CAnim {} }
@@ -81,7 +81,7 @@ Item {
             Text {
                 width:          parent.width
                 text:           root.appName
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 9
                 color:          Colours.m3onSurfaceVariant
                 elide:          Text.ElideRight
@@ -91,7 +91,7 @@ Item {
             Text {
                 width:          parent.width
                 text:           root.summary
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
                 font.weight:    Font.Medium
                 color:          Colours.m3onSurface
@@ -102,7 +102,7 @@ Item {
             Text {
                 width:            parent.width
                 text:             root.body
-                font.family:      "Iosevka Term Nerd Font"
+                font.family:      Style.fontFamily
                 font.pixelSize:   11
                 color:            Colours.m3onSurfaceVariant
                 elide:            Text.ElideRight
@@ -130,7 +130,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text:           "󰅖"
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 14
                 color:          Colours.m3onSurfaceVariant
                 Behavior on color { CAnim {} }

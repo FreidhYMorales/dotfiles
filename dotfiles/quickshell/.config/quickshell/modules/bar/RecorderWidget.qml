@@ -41,7 +41,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text:           "󰻃"
             color:          Recorder.recording ? root.colors.m3error : root.colors.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 13
             Behavior on color { CAnim {} }
         }
@@ -51,7 +51,7 @@ Item {
             visible:        Recorder.recording
             text:           root._fmtElapsed()
             color:          root.colors.m3error
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 12
             Behavior on color { CAnim {} }
         }

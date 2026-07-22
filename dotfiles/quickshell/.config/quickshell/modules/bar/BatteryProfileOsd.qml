@@ -192,7 +192,7 @@ Variants {
                                     Text {
                                         anchors.centerIn: parent
                                         text:           modelData
-                                        font.family:    "Iosevka Term Nerd Font"
+                                        font.family:    Style.fontFamily
                                         font.pixelSize: 14
                                         color: pill.parent.selectedIndex === index
                                                ? win.colors.m3onPrimary
@@ -221,7 +221,7 @@ Variants {
                     Text {
                         anchors.centerIn: parent
                         text:           IdleManager.caffeineMode ? "󰅶" : "󰛊"
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 15
                         color: IdleManager.caffeineMode ? win.colors.m3primary : win.colors.m3onSurface
                         Behavior on color { CAnim {} }

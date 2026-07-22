@@ -16,7 +16,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible:      root.standalone
-        radius:       height / 2
+        radius:       Style.cornerRadius
         color:        hov.hovered ? root.colors.m3primaryContainer : root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
@@ -25,7 +25,7 @@ Item {
         anchors.centerIn: parent
         text:           "󰣇"
         color:          hov.hovered ? root.colors.m3onPrimaryContainer : root.colors.m3onSurface
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: 14
         Behavior on color { CAnim {} }
     }

@@ -53,7 +53,7 @@ Item {
                                         : Battery.percentage < 20
                                             ? Colours.m3error
                                             : Colours.m3secondary
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 28
                     Behavior on color { CAnim {} }
                 }
@@ -84,7 +84,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             text:           "Battery"
                             color:          Colours.m3onSurfaceVariant
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 11
                             Behavior on color { CAnim {} }
                         }
@@ -93,7 +93,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             text:           Battery.percentage + "%"
                             color:          Colours.m3onSurface
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 18
                             font.weight:    Font.Medium
                             Behavior on color { CAnim {} }
@@ -105,7 +105,7 @@ Item {
                         anchors { right: parent.right; verticalCenter: parent.verticalCenter }
                         text:           "Health " + Battery.health + "%"
                         color:          Colours.m3onSurfaceVariant
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 11
                         Behavior on color { CAnim {} }
                     }
@@ -116,7 +116,7 @@ Item {
                     visible:        Battery.charging
                     text:           Battery.timeStr
                     color:          Colours.m3onSurfaceVariant
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 11
                     Behavior on color { CAnim {} }
                 }

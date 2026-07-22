@@ -69,7 +69,7 @@ Item {
             anchors.centerIn: parent
             text:           root._user.length > 0 ? root._user[0].toUpperCase() : "?"
             color:          Colours.m3onPrimaryContainer
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 22
             font.weight:    Font.Medium
             Behavior on color { CAnim {} }
@@ -92,7 +92,7 @@ Item {
         Text {
             text:           root._user
             color:          Colours.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 16
             font.weight:    Font.Medium
             elide:          Text.ElideRight
@@ -103,7 +103,7 @@ Item {
         Text {
             text:           root._uptime.length > 0 ? "up " + root._uptime : "up —"
             color:          Colours.m3onSurfaceVariant
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 11
             Behavior on color { CAnim {} }
         }
@@ -145,7 +145,7 @@ Item {
                             anchors.centerIn: parent
                             text:            powerBtn.modelData.icon
                             color:           btnHov.hovered ? Colours.m3primary : Colours.m3onSurfaceVariant
-                            font.family:     "Iosevka Term Nerd Font"
+                            font.family:     Style.fontFamily
                             font.pixelSize:  13
                             scale:           btnHov.hovered ? 1.35 : 1.0
                             transformOrigin: Item.Center

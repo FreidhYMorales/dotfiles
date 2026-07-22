@@ -17,7 +17,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible:      root.standalone
-        radius:       height / 2
+        radius:       Style.cornerRadius
         color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
@@ -28,7 +28,7 @@ Item {
                         !Bluetooth.connected ? "󰂯" : "󰂱"
         color:          !Bluetooth.powered   ? root.colors.m3onSurfaceVariant :
                         !Bluetooth.connected ? root.colors.m3onSurface : root.colors.m3primary
-        font.family:    "Iosevka Term Nerd Font"
+        font.family:    Style.fontFamily
         font.pixelSize: 13
         Behavior on color { CAnim {} }
     }

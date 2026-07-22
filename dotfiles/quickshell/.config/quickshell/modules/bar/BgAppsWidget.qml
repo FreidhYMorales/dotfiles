@@ -48,7 +48,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text:           "‹"
             color:          root.colors.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 16
             Behavior on color { CAnim {} }
         }
@@ -85,7 +85,7 @@ Item {
                         anchors.centerIn: parent
                         text: (trayDelegate.modelData.title || trayDelegate.modelData.id || "?").charAt(0).toUpperCase()
                         color:          root.colors.m3onPrimaryContainer
-                        font.family:    "Iosevka Term Nerd Font"
+                        font.family:    Style.fontFamily
                         font.pixelSize: 9
                         font.weight:    Font.Bold
                     }

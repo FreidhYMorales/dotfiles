@@ -70,7 +70,7 @@ Variants {
 
             FontMetrics {
                 id:             menuFontMetrics
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
             }
 
@@ -187,7 +187,7 @@ Variants {
                                     }
                                     text:           (entryDelegate.modelData.checkState === Qt.Checked ? "✓ " : "") + entryDelegate.modelData.text
                                     color:          entryDelegate.modelData.enabled ? win.colors.m3onSurface : win.colors.m3onSurfaceVariant
-                                    font.family:    "Iosevka Term Nerd Font"
+                                    font.family:    Style.fontFamily
                                     font.pixelSize: 12
                                     elide:          Text.ElideRight
                                     Behavior on color { CAnim {} }

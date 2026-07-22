@@ -72,7 +72,7 @@ Item {
             width:          parent.width
             text:           "Install Web App"
             color:          Colours.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 14
             font.weight:    Font.Medium
             Behavior on color { CAnim {} }
@@ -86,7 +86,7 @@ Item {
                 anchors { left: parent.left; top: parent.top }
                 text:           "Name"
                 color:          Colours.m3onSurfaceVariant
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 11
                 Behavior on color { CAnim {} }
             }
@@ -112,7 +112,7 @@ Item {
                         leftMargin:     10
                         rightMargin:    10
                     }
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 13
                     color:          Colours.m3onSurface
                     selectByMouse:  true
@@ -134,7 +134,7 @@ Item {
                 anchors { left: parent.left; top: parent.top }
                 text:           "URL"
                 color:          Colours.m3onSurfaceVariant
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 11
                 Behavior on color { CAnim {} }
             }
@@ -160,7 +160,7 @@ Item {
                         leftMargin:     10
                         rightMargin:    10
                     }
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 13
                     color:          Colours.m3onSurface
                     selectByMouse:  true
@@ -198,7 +198,7 @@ Item {
                     anchors.centerIn: parent
                     text:           "󰄳  Install"
                     color:          Colours.m3primary
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 12
                     Behavior on color { CAnim {} }
                 }
@@ -221,7 +221,7 @@ Item {
                 }
                 text:           ""
                 color:          Colours.m3primary
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
                 elide:          Text.ElideRight
                 Behavior on color { CAnim {} }

@@ -63,7 +63,7 @@ Item {
             anchors.centerIn: parent
             text:           root.cmdIcon
             color:          root.isSelected ? Colours.m3onPrimary : Colours.m3onPrimaryContainer
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 16
             Behavior on color { CAnim {} }
         }
@@ -83,7 +83,7 @@ Item {
             width:          parent.width
             text:           root.cmdName
             color:          root.isSelected ? Colours.m3primary : Colours.m3onSurface
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 15
             font.weight:    Font.Medium
             elide:          Text.ElideRight
@@ -95,7 +95,7 @@ Item {
             text:           root.cmdDescription
             visible:        root.cmdDescription.length > 0
             color:          Qt.alpha(Colours.m3onSurfaceVariant, 0.75)
-            font.family:    "Iosevka Term Nerd Font"
+            font.family:    Style.fontFamily
             font.pixelSize: 11
             elide:          Text.ElideRight
             Behavior on color { CAnim {} }

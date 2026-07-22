@@ -230,7 +230,7 @@ Item {
                                     visible:        !notifIconImg.visible
                                     text:           (root._activeNotif?.appName ?? "?").charAt(0).toUpperCase()
                                     color:          Colours.m3onPrimaryContainer
-                                    font.family:    "Iosevka Term Nerd Font"
+                                    font.family:    Style.fontFamily
                                     font.pixelSize: 10
                                     font.weight:    Font.Medium
                                     Behavior on color { CAnim {} }
@@ -245,7 +245,7 @@ Item {
                                 }
                                 text:           root._activeNotif?.appName ?? ""
                                 color:          Colours.m3onSurfaceVariant
-                                font.family:    "Iosevka Term Nerd Font"
+                                font.family:    Style.fontFamily
                                 font.pixelSize: 11
                                 elide:          Text.ElideRight
                                 Behavior on color { CAnim {} }
@@ -260,7 +260,7 @@ Item {
                                     anchors.centerIn: parent
                                     text:           "󰅖"
                                     color:          notifDismissHov.hovered ? Colours.m3onSurface : Colours.m3onSurfaceVariant
-                                    font.family:    "Iosevka Term Nerd Font"
+                                    font.family:    Style.fontFamily
                                     font.pixelSize: 13
                                     Behavior on color { CAnim {} }
                                 }
@@ -282,7 +282,7 @@ Item {
                             text:     root._activeNotif?.summary ?? ""
                             visible:  text.length > 0
                             color:    Colours.m3onSurface
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 13
                             font.weight:    Font.Medium
                             wrapMode: Text.WordWrap
@@ -296,7 +296,7 @@ Item {
                             text:     root._activeNotif?.body ?? ""
                             visible:  text.length > 0
                             color:    Colours.m3onSurfaceVariant
-                            font.family:    "Iosevka Term Nerd Font"
+                            font.family:    Style.fontFamily
                             font.pixelSize: 11
                             wrapMode: Text.WordWrap
                             maximumLineCount: 2

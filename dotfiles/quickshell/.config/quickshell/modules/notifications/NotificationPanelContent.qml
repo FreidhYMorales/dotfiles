@@ -103,7 +103,7 @@ Item {
                     leftMargin:     16
                 }
                 text:           "Notifications"
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 13
                 font.weight:    Font.Medium
                 color:          Colours.m3onSurface
@@ -121,7 +121,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text:           Visibilities.silentMode ? "󰂛" : "󰂚"
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 13
                     color:          Visibilities.silentMode
                                         ? Colours.m3onSurfaceVariant

@@ -57,7 +57,7 @@ Item {
                     color:          value <= min
                                     ? Qt.alpha(Colours.m3onSurface, 0.25)
                                     : Colours.m3onSurface
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 16
                     Behavior on color { CAnim {} }
                 }
@@ -76,7 +76,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 text:                value <= 0 ? "Off" : value + " min"
                 color:               Colours.m3onSurface
-                font.family:         "Iosevka Term Nerd Font"
+                font.family:         Style.fontFamily
                 font.pixelSize:      12
                 Behavior on color { CAnim {} }
             }
@@ -94,7 +94,7 @@ Item {
                     color:          value >= max
                                     ? Qt.alpha(Colours.m3onSurface, 0.25)
                                     : Colours.m3onSurface
-                    font.family:    "Iosevka Term Nerd Font"
+                    font.family:    Style.fontFamily
                     font.pixelSize: 16
                     Behavior on color { CAnim {} }
                 }
@@ -144,7 +144,7 @@ Item {
                         width:               parent.width
                         text:                "Screensaver"
                         color:               Colours.m3onSurfaceVariant
-                        font.family:         "Iosevka Term Nerd Font"
+                        font.family:         Style.fontFamily
                         font.pixelSize:      11
                         horizontalAlignment: Text.AlignHCenter
                         Behavior on color { CAnim {} }
@@ -175,7 +175,7 @@ Item {
                         width:               parent.width
                         text:                "Lock"
                         color:               Colours.m3onSurfaceVariant
-                        font.family:         "Iosevka Term Nerd Font"
+                        font.family:         Style.fontFamily
                         font.pixelSize:      11
                         horizontalAlignment: Text.AlignHCenter
                         Behavior on color { CAnim {} }
@@ -206,7 +206,7 @@ Item {
                         width:               parent.width
                         text:                "Suspend"
                         color:               Colours.m3onSurfaceVariant
-                        font.family:         "Iosevka Term Nerd Font"
+                        font.family:         Style.fontFamily
                         font.pixelSize:      11
                         horizontalAlignment: Text.AlignHCenter
                         Behavior on color { CAnim {} }
@@ -232,7 +232,7 @@ Item {
                 anchors { left: parent.left; verticalCenter: parent.verticalCenter }
                 text:           "Same as desktop wallpaper"
                 color:          Colours.m3onSurface
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 13
                 Behavior on color { CAnim {} }
             }
@@ -339,7 +339,7 @@ Item {
                 anchors.centerIn: parent
                 text:           "󰈈  Preview"
                 color:          Colours.m3onSurfaceVariant
-                font.family:    "Iosevka Term Nerd Font"
+                font.family:    Style.fontFamily
                 font.pixelSize: 12
                 Behavior on color { CAnim {} }
             }

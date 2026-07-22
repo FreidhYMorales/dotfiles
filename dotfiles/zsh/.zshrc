@@ -147,3 +147,6 @@ export LIBVIRT_DEFAULT_URI="qemu:///system"
 
 # Added by Antigravity CLI installer
 export PATH="/home/deadlock/.local/bin:$PATH"
+
+# opencode
+export PATH=/home/deadlock/.opencode/bin:$PATH

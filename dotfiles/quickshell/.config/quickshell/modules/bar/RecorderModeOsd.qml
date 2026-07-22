@@ -164,7 +164,7 @@ Variants {
                                 Text {
                                     anchors.centerIn: parent
                                     text:           segment.modelData
-                                    font.family:    "Iosevka Term Nerd Font"
+                                    font.family:    Style.fontFamily
                                     font.pixelSize: 14
                                     color: segment._flash ? win.colors.m3onPrimary : win.colors.m3onSurface
                                     Behavior on color { CAnim {} }
