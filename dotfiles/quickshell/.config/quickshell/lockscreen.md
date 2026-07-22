@@ -202,7 +202,7 @@ por fondo estático configurable, y el input de cuadraditos por un
     lanzar `qs`** — no hay forma de agregar import paths a un engine QML ya
     corriendo:
     ```
-    export QML_IMPORT_PATH="/home/deadlock/Mio/Configuraciones/backup/quickshell/modules/lock/assets/vkeyboard-styles"
+    export QML_IMPORT_PATH="~/.config/quickshell/modules/lock/assets/vkeyboard-styles"
     ```
   - **4 colores atados a la paleta, el resto se dejó fijo** (mismo criterio
     "solo acentos" de la sección de arriba): `primary-color` (acento de
@@ -272,10 +272,10 @@ por fondo estático configurable, y el input de cuadraditos por un
   (`exit`, etc.) ya no funcionan solos.
 
 ### Pendientes reales (no resueltos, a revisar)
-1. **`services/Colours.qml:151`** — `FileView.text` es función, no
-   propiedad; falta el `()`. El pipeline de colores de matugen
-   probablemente nunca parseó bien. Deferido a propósito, no tocar sin pedido
-   explícito.
+1. ~~`services/Colours.qml:151` — `FileView.text` función sin `()`~~ —
+   **resuelto**. El call site real (`onTextChanged: root.parse(colorsFile.text())`)
+   ya tiene los paréntesis correctos; la línea 151 actual no tiene relación
+   con este bug. Fix documentado en `wallpaper-theming.md` (gotcha #1).
 2. ~~Estilo custom del teclado virtual sin portar~~ — portado, ver sección
    "Estilo custom del teclado virtual portado" más arriba. Falta que el
    usuario exporte `QML_IMPORT_PATH` antes de lanzar `qs` (no queda

@@ -1,21 +1,22 @@
-# Panel Notificaciones / Calendario / Clima (`modules/notifications/`)
+# Panel de Notificaciones (`modules/notifications/`)
 
-Panel con 3 tabs. Lado derecho, 380×560px.
+Panel simple de notificaciones (ya no tiene tabs de calendario/clima — ver nota
+al final de este doc). Lado derecho, ancla top+right.
 
 ---
 
 ## `NotificationPanel.qml`
 
-⚠️ **El módulo está completo pero NO está registrado en `shell.qml`.**  
-Falta agregar `NotificationPanel {}` en `shell.qml` para activarlo.
+Registrado en `shell.qml` (`NotificationPanel {}`) — activo.
 
 ```
 WlrLayershell.layer:         WlrLayer.Overlay
 WlrLayershell.exclusiveZone: -1
+WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 anchors: top + right
-margins: top: 52 / right: 8
-implicitWidth:  380
-implicitHeight: 560
+margins: top: 43 / right: 8
+implicitWidth:  324
+implicitHeight: 300
 ```
 
 Misma lógica de dismiss que Dashboard: MouseArea z:0 cierra al click fuera.  
@@ -25,33 +26,32 @@ Solo visible en el monitor enfocado.
 
 ## `NotificationPanelContent.qml`
 
-Animación: slide-in/slide-out desde la derecha (igual que Dashboard, ver [architecture.md](./architecture.md)).  
-Fondo: `Qt.alpha(Colours.m3surfaceContainer, 0.97)`.
+Animación: **dropdown en `y`**, no slide horizontal. El panel arranca en
+`y: -height` (oculto arriba) y anima a `y: 0` al abrir (`NumberAnimation`
+350ms, `BezierSpline`). Estilo toast: una `Shape` con `PathArc` dibuja una
+"oreja" redondeada a la izquierda del panel (mismo `fillColor` que el panel)
+que se despliega en paralelo — mismo patrón que `NotifToast.qml`. `openTimer`
+(16ms) retrasa `panelOpen = true` un frame para que `PanelWindow` termine su
+layout antes de que `y` sea confiable; `closeTimer` (400ms) mantiene la
+ventana visible mientras corre la animación de cierre.  
+Fondo: `Colours.m3surfaceContainer` (con `topLeftRadius`/`topRightRadius: 0`
+para calzar con la "oreja").
 
-### Tab bar
+### Estructura real
 
 ```
-Item (height: 44)
-└── Row (centrado)
-      └── Repeater (3 tabs)
-            ├── Tab 0: 󰂚 Notifications
-            ├── Tab 1: 󰃭 Calendar
-            └── Tab 2: 󰖙 Weather
+Rectangle #panel
+├── Item #header (height: 44)
+│     ├── Text "Notifications"
+│     ├── Row (derecha)
+│     │     ├── Ícono 󰂚/󰂛 (según Visibilities.silentMode)
+│     │     └── Toggle "silent mode" → Visibilities.silentMode
+│     └── Separador 1px al fondo
+└── NotificationsTab (anchors: debajo del header, resto del panel)
 ```
 
-Tab activo: `Rectangle { color: m3primaryContainer }` + texto `m3onPrimaryContainer`.  
-Tab inactivo: fondo transparente + texto `m3onSurfaceVariant`.  
-Separador de 1px al fondo del tab bar.
-
-### Área de contenido
-
-```qml
-NotificationsTab { visible: activeTab === 0 }
-CalendarTab      { visible: activeTab === 1 }
-WeatherTab       { visible: activeTab === 2 }
-```
-
-Todos están siempre instanciados — `visible: false` no los destruye (eficiencia aceptable para 3 tabs).
+Ya no existen `activeTab`, la tab bar de 3 pestañas, ni `CalendarTab`/`WeatherTab`
+dentro de este módulo — ver nota al final del doc.
 
 ---
 
@@ -98,98 +98,30 @@ Divisor inferior oculto en el último ítem (`isLast: bool`).
 
 ---
 
-## `CalendarTab.qml` ✅
+## `NotifToast.qml`
 
-Calendario mensual navegable. Se sincroniza con `Time.now` para destacar el día actual.
-
-### Estructura
-```
-Column
-├── Header (height: 36)
-│     ├── Botón ← (mes anterior)
-│     ├── Text "Month Year" (centrado)
-│     └── Botón → (mes siguiente)
-├── Row días de la semana (Mon–Sun)
-└── Grid 7 columnas (días del mes)
-```
-
-### Lógica del grid
-
-```qml
-function buildDays(year, month) {
-    // offset lunes-based: (firstDay + 6) % 7
-    // rellena con días del mes anterior y siguiente para completar semanas
-    return [{ day: int, thisMonth: bool }]
-}
-```
-
-Hoy: círculo `m3primary` 24×24 con texto `m3onPrimary`.  
-Días de otros meses: texto al 35% de opacidad.
-
-### Navegación
-
-```qml
-// Prev month
-root._month--
-if (root._month < 0) { root._month = 11; root._year-- }
-
-// Next month
-root._month++
-if (root._month > 11) { root._month = 0; root._year++ }
-```
-
-La fecha actual se sincroniza con `Time.now` via `Connections { target: Time; function onNowChanged() }` — actualiza solo si cambia el día.
+Toast de notificación emergente, uno por pantalla (`Variants` sobre
+`Quickshell.screens`), independiente del panel de arriba — es lo que aparece
+cuando llega una notificación nueva mientras el panel está cerrado. Ancla
+top+right con la misma "oreja" (`Shape`/`PathArc`) que `NotificationPanelContent`,
+animando `y` con la misma curva (350ms `BezierSpline`). Muestra ícono/inicial
+de la app, nombre, resumen (2 líneas) y body (3 líneas), con botón × para
+descartar. Se auto-descarta con `dismissTimer` (usa `expireTimeout` de la
+notificación, o 5000ms si no viene seteado); el hover lo pausa. Se suprime si
+`Visibilities.silentMode` o `Visibilities.dashboard` están activos, y se oculta
+si el dashboard se abre mientras el toast está visible. Solo se muestra en el
+monitor enfocado (`win.isFocused`).
 
 ---
 
-## `WeatherTab.qml` ✅
+## Nota — `CalendarTab.qml` / `WeatherTab.qml`
 
-Datos de `wttr.in` (curl). Refresco cada **30 minutos**.
-
-### Fetch
-
-```qml
-Process {
-    command: ["curl", "-s", "--max-time", "5", "wttr.in/?format=j1"]
-}
-```
-
-JSON response: `current_condition[0]` + `nearest_area[0]`.
-
-### Campos parseados
-
-| Propiedad | Fuente wttr |
-|---|---|
-| `_temp` | `temp_C + "°C"` |
-| `_desc` | `weatherDesc[0].value` |
-| `_location` | `nearest_area[0].areaName[0].value` |
-| `_humidity` | `humidity + "%"` |
-| `_wind` | `windspeedKmph + " km/h"` |
-| `_weatherIcon` | mapeado desde `weatherCode` → Nerd Font |
-
-### Íconos por código wttr
-
-| Código | Condición | Ícono |
-|---|---|---|
-| 113 | Soleado | 󰖙 |
-| 116, 119 | Parcialmente nublado | 󰖕 |
-| 122, 143 | Nublado / neblina | 󰖑 |
-| 176–296 | Lluvia | 󰖗 |
-| 200–202, 386–392 | Tormenta | 󰖓 |
-| 227, 230, 323–371 | Nieve | 󰖘 |
-
-### Layout de datos
-```
-Column (centrado)
-├── Row: ícono grande (40px, m3primary) + temperatura (32px Medium)
-├── Text descripción (13px)
-├── Text ubicación (11px, m3onSurfaceVariant)
-└── Row
-      ├── 󰖋 humedad
-      └── 󰖝 viento
-```
-
-Estados: loading ("Loading..."), error ("Weather unavailable"), datos (layout completo).
-
-⚠️ Requiere conexión a internet. Sin internet: `_error = true` → "Weather unavailable".  
-⚠️ `wttr.in` puede tener latencia variable. `--max-time 5` evita cuelgues largos.
+Estos dos archivos siguen existiendo en `modules/notifications/`, pero **ya no
+se usan desde el panel de notificaciones** — la tab bar de 3 pestañas que los
+mostraba fue eliminada (ver `NotificationPanelContent.qml` arriba). Hoy se
+instancian solo desde el dashboard: `modules/dashboard/DashboardContent.qml`
+(`WeatherTab`) y `modules/dashboard/DashboardNotificationsSection.qml`
+(`CalendarTab` + `WeatherTab`). `docs/dashboard.md` todavía no los documenta —
+si se necesita el detalle de su funcionamiento (calendario mensual navegable,
+fetch a `wttr.in`, etc.), por ahora hay que leer los archivos directamente o
+agregarlos a `dashboard.md`.

@@ -142,6 +142,72 @@ Resultado: JSON `[{ name, exec, icon, description }]`.
 
 ---
 
+## Sistema de comandos (`>`)
+
+Escribir `>` solo en el search field cambia `root.mode` (`LauncherContent.qml`,
+propiedad `mode`, líneas ~31-59) y la lista de apps es reemplazada por la
+lista de comandos disponibles. Cada comando entra a su propio modo con un
+prefijo + espacio (`>wallpaper `, `>theme `, `>screensaver `, `>keybinds `,
+`>webapp `) — seguir escribiendo después del prefijo filtra/interactúa dentro
+de ese modo, no cierra ni lanza nada por sí solo. `pickCommand(id)` (click en
+un `CommandItem`) completa el prefijo automáticamente.
+
+```qml
+readonly property var commands: [
+    { id: "wallpaper",   name: "Wallpaper",   description: "Choose the desktop wallpaper" },
+    { id: "theme",       name: "Theme",       description: "Choose the color theming mode" },
+    { id: "screensaver", name: "Screensaver", description: "Configure screensaver, lock and suspend" },
+    { id: "keybinds",    name: "Keybinds",    description: "Keyboard shortcuts cheatsheet" },
+    { id: "webapp",      name: "Web App",     description: "Install a web app launcher" }
+]
+```
+
+### `CommandItem.qml`
+
+Fila de la lista `>` — ícono en círculo + nombre + descripción, mismo patrón
+visual que `AppItem.qml` (fondo/barra lateral de selección). Modelado sobre
+`AppItem` pero con un glifo Nerd Font fijo en vez de un ícono `.desktop` real,
+ya que los comandos no son archivos.
+
+### `>wallpaper` → `WallpaperCard.qml`
+
+Tarjeta del carrusel horizontal (`PathView`) de wallpapers: thumbnail (imagen
+o, para videos, un frame extraído vía `Wallpapers.videoFrameCache`) con el
+nombre superpuesto sobre un scrim, recortado a rectángulo redondeado con
+`MultiEffect` + máscara. Borde `m3primary` de 2px si es el wallpaper activo.
+
+### `>theme` → `ThemeModeItem.qml`
+
+Fila de la lista de modos de theming matugen (los 9 esquemas + claro/oscuro).
+El ícono muestra un swatch partido primary/secondary recortado a círculo una
+vez que `Colours.generatePreviews()` termina de renderizar la preview de ese
+modo contra el wallpaper actual (mientras tanto, muestra el glifo genérico 󰏘);
+marca `` a la derecha si es el modo activo.
+
+### `>screensaver` → `ScreensaverForm.qml`
+
+Panel de configuración con 3 columnas de steppers `[−] valor [+]`
+(Screensaver / Lock / Suspend, en minutos), un toggle para usar el wallpaper
+actual como fondo del salvapantallas, y — si ese toggle está apagado — un
+picker de imagen específico para el salvapantallas (mismo patrón visual que
+el carrusel de `>wallpaper`).
+
+### `>keybinds` → `KeybindsList.qml`
+
+Cheatsheet de atajos de teclado: `ListView` de solo mouse (no participa del
+`selectedIndex`/navegación por teclado del resto del launcher), respaldada
+por `services/Keybinds.qml`, que lee en vivo `hyprctl binds -j` en vez de una
+copia hardcodeada de los keybinds.
+
+### `>webapp` → `WebAppForm.qml`
+
+Formulario (nombre + URL) para instalar un launcher de web app. Al confirmar
+corre `~/.local/bin/webapp-install <name> <url>` como `Process`; si sale con
+código 0 muestra "Installed!" y cierra el launcher tras 800ms, si falla
+muestra un error inline ("Failed — check URL or name").
+
+---
+
 ## `AppItem.qml`
 
 ```

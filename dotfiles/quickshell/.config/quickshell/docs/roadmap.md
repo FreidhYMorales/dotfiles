@@ -52,6 +52,8 @@
 | Wallpaper + colores por monitor | `services/Wallpapers.qml` (`perScreen`), `services/Colours.qml` (`paletteFor`/`palettes`), tabs de monitor en `>wallpaper` | Cada monitor puede tener su propio wallpaper + paleta (matugen `--dry-run`, no toca colors.json/kitty/Hyprland/etc). `eDP-*` (pantalla del laptop) = el tema general; monitores externos quedan independientes. Tab "All" sincroniza todo a un solo wallpaper. Barra + OSDs (`Osd`, `BatteryProfileOsd`, `TrayMenuOsd`, `RecorderModeOsd`, `CalendarPopout`) ya leen la paleta por pantalla — Dashboard/Notifications/Launcher siguen con la paleta global |
 | OSD | `bar/Osd.qml`, `bar/BatteryProfileOsd.qml`, `bar/TrayMenuOsd.qml`, `bar/RecorderModeOsd.qml` | Overlays de volumen/brillo/perfil de energía/tray/grabador, wireados en `shell.qml` |
 | Screen recorder | `services/Recorder.qml`, `bar/RecorderWidget.qml`, `bar/RecorderModeOsd.qml` | gpu-screen-recorder (screen/region/window) — ver `recorder.md` |
+| Screensaver panel | `launcher/ScreensaverForm.qml`, `screensaver/ScreensaverPreview.qml` | Panel `>screensaver` en el launcher, timeouts encadenados (screensaver/lock/suspend) — ver `idle-screensaver.md` y `wallpaper-theming.md` |
+| Keybind cheatsheet | `launcher/KeybindsList.qml`, `services/Keybinds.qml` | Comando `>keybinds` en el launcher, wireado en `LauncherContent.qml` |
 
 ---
 
@@ -90,8 +92,7 @@ Quick wins de la última auditoría, sin empezar:
 
 1. Do Not Disturb toggle — complementa el modo caffeine ya existente
 2. Clipboard history widget — patrón de referencia ya disponible en `backup/references/end-4/quickshell/Cliphist.qml`
-3. Keybind cheatsheet overlay — bajo esfuerzo, los keybinds ya están enumerados en `quickshell-vision.md`
 
 Más grande, sin empezar:
 
-4. `M3Shapes` (plugin C++/Rust) — mayor impacto visual (lock screen), ver `backup/references/quickshell-pending-plugins.md`
+3. `M3Shapes` (plugin C++/Rust) — mayor impacto visual (lock screen), ver `backup/references/quickshell-pending-plugins.md`

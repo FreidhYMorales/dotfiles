@@ -5,19 +5,20 @@
 ```
 ShellRoot
 ├── NotificationServer          ← daemon DBus; DEBE vivir aquí (no en un panel)
-├── Bar {}                      ← barra superior, multi-monitor
-├── Launcher {}                 ← app launcher, bottom-center
-├── Dashboard {}                ← panel control, lado derecho
-│
-│   ── pendiente ──
-├── NotificationPanel {}        ← módulo completo, falta agregarlo
-│   ── phase 4 ──
-├── VolumePopout {}
-├── BluetoothPanel {}
-├── NetworkPanel {}
-└── Osd {}
-│   ── phase 5 ──
-└── Lock {}
+├── Background {}                ← wallpaper propio (reemplaza hyprpaper como capa activa)
+├── Bar {}                       ← barra superior, multi-monitor
+├── Launcher {}                  ← app launcher, bottom-center
+├── Dashboard {}                 ← panel control, lado derecho
+├── CalendarPopout {}             ← popout de calendario (ClockWidget)
+├── Osd {}                        ← OSD de volumen + brillo
+├── BatteryProfileOsd {}          ← selector de perfil de energía + caffeine
+├── TrayMenuOsd {}                ← menú contextual de íconos de bandeja (BgAppsWidget)
+├── RecorderModeOsd {}            ← selector de modo de grabación (screen/region/window)
+├── PowerMenuOsd {}                ← menú de power (lock/logout/reboot/shutdown)
+├── NotifToast {}                  ← toasts de notificaciones entrantes
+├── NotificationPanel {}           ← panel completo de notificaciones/calendario/clima
+├── ScreensaverPreview {}          ← preview en vivo del salvapantallas (launcher `>screensaver`)
+└── Lock {}                        ← lockscreen, port visual del theme SDDM "silent"
 ```
 
 ---
@@ -97,8 +98,10 @@ MouseArea { onClicked: Visibilities.toggle("dashboard") }
 Visibilities.closeAll()
 ```
 
-Paneles registrados: `launcher`, `dashboard`, `calendar`, `notifications`.  
+Paneles registrados: `launcher`, `dashboard`, `calendar`, `notifications`, `volume`, `batteryProfile`, `notifToast`, `silentMode`, `trayMenu`, `recorderModeOsd`, `powerMenu`, `screensaverPreview`.  
 Al agregar un panel nuevo, agregar su bool a `Visibilities` y al array `panels` en `toggle()`.
+
+⚠️ `screensaverPreview` es la excepción: vive en `Visibilities` pero NO entra al array `panels` de `toggle()` ni a `closeAll()` — no es mutuamente excluyente con el launcher (el botón de preview del panel `>screensaver` lo muestra ENCIMA del launcher todavía abierto), así que los callers lo setean directamente en vez de pasar por `toggle()`.
 
 ---
 
@@ -117,6 +120,21 @@ Behavior on color { CAnim {} }   // siempre animar cambios de color
 Todos los elementos deben tener `Behavior on color { CAnim {} }` para el hot-reload suave.  
 Los tokens siguen la convención Material 3: `m3{role}`, `m3on{role}`, `m3{role}Container`, etc.
 
+### Paletas per-monitor
+
+Además del singleton global (`Colours.m3*` / `Colours.palette`), `Colours.qml` mantiene overrides de paleta por monitor en `Colours.palettes` (keyed por `ShellScreen.name`), usados cuando cada monitor tiene su propio wallpaper/tema:
+
+```qml
+// Colours.paletteFor(screenName) devuelve el override del monitor si existe,
+// si no cae al Colours.palette global — ambos exponen las mismas keys m3*,
+// así que el acceso es idéntico en los dos casos.
+readonly property var colors: Colours.paletteFor(root.screenName)
+
+color: Qt.alpha(colors.m3surfaceContainerHigh, 0.6)
+```
+
+`BarContent.qml` es el consumidor principal: resuelve `root.colors` una vez por monitor y lo pasa a todos los widgets vía la prop `colors`. También expone `Colours.mid(colorA, colorB)` — punto medio RGB plano entre dos colores, usado para bordes que necesitan quedar tonalmente entre un relleno y el fondo sobre el que está (ej. el borde 1px de las píldoras de la bar).
+
 ---
 
 ## IPC con Hyprland
@@ -130,8 +148,10 @@ Hyprland.focusedMonitor?.name                  // nombre del monitor activo
 
 Para ejecutar comandos de Hyprland:
 ```qml
-Quickshell.execDetached(["hyprctl", "dispatch", "workspace", "2"])
+Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.focus({workspace=2})"])
 ```
+
+⚠️ **Bridge Lua**: este Hyprland enruta TODOS los dispatchers por un puente Lua (`hl.dsp.*`) — los nombres de dispatcher planos (`"workspace", "2"`, `"exit"`, etc.) están muertos en esta build, `Hyprland.dispatch()` incluido. El patrón real siempre es `hyprctl dispatch "hl.dsp.<algo>(...)"` vía `Quickshell.execDetached`. Ver `modules/bar/WorkspacesWidget.qml` (`hl.dsp.focus({workspace=N})` en el click de un workspace) y el mismo patrón para logout/exit en `modules/dashboard/ProfileSection.qml`, `modules/dashboard/SessionSection.qml` y `modules/powermenu/PowerMenuOsd.qml` (`hl.dsp.exit()`).
 
 ---
 

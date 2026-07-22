@@ -6,9 +6,9 @@ Referencias base: Caelestia (lógica/QML), end-4/ii (lógica/QML), monasm-dots (
 
 ## Estilo visual
 
-- **Fuente**: monospace/terminal — Monocraft Nerd Font o similar (estilo pixel/terminal)
-- **Estética**: TUI-inspired pero no rígido. Pills flotantes, tipografía limpia, mucho espacio negativo
-- **Bordes**: mínimos, no marcados. Cero o poco rounding en contenedores principales, pills en status icons
+- **Fuente**: DepartureMono Nerd Font (vía singleton `Style.fontFamily`)
+- **Estética**: terminal-alike, tipografía limpia, mucho espacio negativo
+- **Bordes**: cuadrados en todo el shell — `Style.cornerRadius = 0` (toggle `Style.isSquare`), sin pills ni glassmorphism
 - **Paleta**: dinámica vía matugen → colors.json → FileView en Quickshell
 - **Referencia visual directa**: [monasm-dots](https://github.com/Mon4sm/monasm-dots) (EWW, Catppuccin, Monocraft)
 

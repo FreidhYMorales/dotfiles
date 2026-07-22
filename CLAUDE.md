@@ -79,14 +79,15 @@ Configuraciones/
   - M3Shapes (MaterialShape en C++/Rust) — pendiente para el dashboard/bar visual
 - Pipeline de colores: matugen → 6 templates → FileView en Quickshell + apps externas (ver `wallpaper-theming.md` y `matugen-pipeline-reference.md`)
 - **Theming multi-app activo**: Kitty (live via socket), btop (SIGUSR2), Hyprland borders/shadow (hyprctl reload), Zen Browser (CSS al perfil), Zellij (nueva sesión), **hyprpaper** (reescribe conf + reinicia proceso; si el wallpaper es video extrae primer frame con ffmpeg), **SDDM** (genera `configs/custom.conf` con colores matugen + copia wallpaper a `backgrounds/qs-current.<ext>` via helper privilegiado `/usr/local/bin/sddm-theme-sync`), **GTK + Electron + Zen** (`gsettings set org.gnome.desktop.interface color-scheme "prefer-dark/light"` — propagado en el post-hook pasando el argumento `light|dark` desde `Colours.qml`). Post-hook en `~/.config/matugen/post-hook.sh`, llamado desde `Colours.qml` `matugenProc.onExited` (no desde matugen — `run_hook` no funciona en 4.1.0). Usa `python3` para leer `colors.json` (no `jq` — no está instalado en este sistema)
-- Font: Iosevka Term Nerd Font (`ttf-iosevkaterm-nerd`)
+- Font: DepartureMono Nerd Font (migrado desde Iosevka Term Nerd Font) — centralizado en `services/Style.qml` (`Style.fontFamily`)
+- **Estilo terminal-alike**: `services/Style.qml` centraliza fuente y radio de esquinas (`Style.cornerRadius = 0`, toggle `Style.isSquare`). Migración de bordes cuadrados aplicada en bar/launcher/dashboard/notifications/OSDs (~30 archivos, ver `docs/services.md#styleqml`). El lockscreen (`modules/lock/`) queda fuera — tiene su propio sistema de theming (`LockConfig.qml`)
 - Referencias completadas:
   - Caelestia → `backup/references/caelestia/` (3 archivos: arquitectura + patterns QML + config personal)
   - end-4/ii → `backup/references/end-4/` (4 archivos: arquitectura + patterns QML + Hyprland + tools)
   - monasm-dots → `/home/deadlock/dotfiles/monasm-dots` (instalado — referencia visual/layout ✅)
 
 #### Estado actual de la barra (`modules/bar/`)
-- Todos los widgets usan `radius: height / 2` — círculo perfecto (26×26px) o pill para los que tienen texto extra
+- Todos los widgets usan `radius: Style.cornerRadius` (antes `radius: height / 2`, círculo perfecto) — ahora cuadrados (26×26px) por el estilo terminal-alike
 - `LauncherButton`: ícono Arch Linux `󰣇`, abre el launcher con `Visibilities.toggle("launcher")`
 - `BgAppsWidget`: ya tenía `radius: height / 2` ✅
 - No tiene sombra QML (se intentó con `MultiEffect` pero no quedó bien visualmente)
@@ -166,7 +167,7 @@ Configuraciones/
 | Deploy tool | GNU Stow | Máquina única, sin templating necesario |
 | Colores | matugen → colors.json | No convertir a scheme.json — leer nativo en QML |
 | Shell | zsh (por ahora) | Migración a fish pendiente de evaluar |
-| Bar style | Horizontal top flotante | Monospace/TUI-inspired, pills, Iosevka Term Nerd Font |
+| Bar style | Horizontal top flotante | Terminal-alike, bordes cuadrados, DepartureMono Nerd Font |
 | Lock screen | WlSessionLock en Quickshell | Sin hyprlock/swaylock — integrado al escritorio |
 | Entry point | install.sh curl-able | Detecta repo / clona; sin clonar primero ni pasos manuales |
 | System configs | `system/` (fuera de dotfiles/) | SDDM y GRUB van a /usr/share y /etc — no son Stow |

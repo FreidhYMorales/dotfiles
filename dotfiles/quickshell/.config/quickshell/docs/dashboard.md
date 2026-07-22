@@ -200,7 +200,7 @@ Behavior on width { NumberAnimation { duration: 200; easing: OutCubic } }
 TextMetrics {
     id: tm
     text: Mpris.playerDisplayName(chip.entry.mp ?? null)
-    font.family: "Iosevka Term Nerd Font"
+    font.family: Style.fontFamily
     font.pixelSize: 11
 }
 width: tm.advanceWidth + 24

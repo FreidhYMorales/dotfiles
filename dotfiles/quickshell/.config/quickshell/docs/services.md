@@ -30,6 +30,29 @@ Behavior on color { CAnim {} }   // animación suave en hot-reload
 
 ---
 
+## `Style.qml`
+
+Centraliza tipografía y radio de esquinas para el estilo "terminal alike" (bordes cuadrados, sin glassmorphism).
+
+**Propiedades:**
+```qml
+Style.fontFamily       // "DepartureMono Nerd Font"
+Style.fontFamilyMono   // "DepartureMono Nerd Font Mono" — declarada, sin uso todavía
+Style.cornerRadius     // int, 0 — usar en todo Rectangle que antes tenía radius fijo o height/2
+Style.isSquare         // bool, true — toggle maestro cuadrado vs. redondeado
+Style.radius(roundedValue)  // función helper, sin uso todavía (equivalente a leer cornerRadius directo)
+```
+
+**Uso:**
+```qml
+radius: Style.cornerRadius
+font.family: Style.fontFamily
+```
+
+⚠️ Migración en curso: `modules/lock/` no usa `Style` — tiene su propio sistema de theming (`LockConfig.qml`, fuente `RedHatDisplay`) y queda fuera de esta migración por ahora.
+
+---
+
 ## `Time.qml`
 
 Timer de 1 segundo. Proporciona todas las variantes de fecha/hora formateadas.

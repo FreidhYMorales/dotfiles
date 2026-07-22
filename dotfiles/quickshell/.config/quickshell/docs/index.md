@@ -1,7 +1,7 @@
 # Quickshell — Índice de documentación
 
 Shell propio para Arch Linux + Hyprland, construido en Quickshell (Qt6/QML).  
-Estética TUI-inspired, pills flotantes, Material 3. Paleta dinámica vía matugen.
+Estética terminal-alike: bordes cuadrados, tipografía monoespaciada, Material 3 de base. Paleta dinámica vía matugen.
 
 ---
 
@@ -29,16 +29,17 @@ Estética TUI-inspired, pills flotantes, Material 3. Paleta dinámica vía matug
 
 ```bash
 # Desarrollo
-qs -p /home/deadlock/Mio/Configuraciones/backup/quickshell
+qs -p ~/.config/quickshell
 
 # Producción (autostart Hyprland)
-exec-once = uwsm-app -- qs -p ~/Files/Configuraciones/quickshell
+exec-once = uwsm-app -- qs -p ~/.config/quickshell
 ```
 
 ## Stack
 
 - **Runtime**: Quickshell (Qt6/QML) — `yay -S quickshell-git`
 - **Compositor**: Hyprland (Wayland)
-- **Fuente**: Iosevka Term Nerd Font
+- **Fuente**: DepartureMono Nerd Font (vía `Style.fontFamily`)
+- **Estilo**: bordes cuadrados (`Style.cornerRadius = 0`), ver [services.md](./services.md#styleqml)
 - **Colores**: matugen → `~/.config/matugen/colors.json` → `Colours` singleton
 - **IPC con Hyprland**: `Quickshell.Hyprland` + `CustomShortcut`

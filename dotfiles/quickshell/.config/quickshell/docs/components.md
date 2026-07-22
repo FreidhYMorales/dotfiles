@@ -27,11 +27,76 @@ Behavior on implicitWidth { Anim { type: Anim.Enter } }
 
 ### `StyledRect.qml`
 
-Rectangle con color y radius del sistema de diseño. Helper para casos comunes.
+Rectangle mínimo: solo agrega `Behavior on color { CAnim {} }` — no define `color` ni `radius` propios, esos siguen siendo los defaults/props normales de `Rectangle`. El valor está en no tener que escribir el `Behavior` a mano en cada uso.
+
+### `StyledText.qml`
+
+`Text` con la fuente y color del sistema de diseño ya seteados (`font.family: Style.fontFamily`, `color: Colours.m3onSurface`, `renderType: Text.NativeRendering`), más `Behavior on color { CAnim {} }` para el hot-reload de paleta.
+
+```qml
+property bool animate: false   // true → crossfade (fade out/in) al cambiar `text`, en vez de salto instantáneo
+property var  fontStyle        // objeto de fuente (family/pixelSize/weight) aplicado sobre los defaults
+```
+
+### `MaterialIcon.qml`
+
+`Text` que renderiza un glyph de Material Symbols Rounded (`font.family: "Material Symbols Rounded"`, `pixelSize: 20` default).
+
+```qml
+property bool animate: false   // habilita ColorAnimation (150ms) en cambios de color; sin animate, el color salta
+property var  fontStyle        // solo pixelSize/weight — no family, ya está fijo al icon font
+```
+
+### `AnimLoader.qml`
+
+`Loader` con crossfade automático al cambiar de `Component` — evita el "pop" de un `Loader` normal al swapear contenido.
+
+```qml
+property Component sourceComp: null  // alias de sourceComponent — nombre Caelestia-compatible
+property int fadeDuration: 150       // fade out → swap → fade in, mismo total en ms
+```
+
+### `StateLayer.qml`
+
+`Rectangle` de overlay Material Design para hover/press (tinte semitransparente sobre el elemento que lo contiene) — encapsula el `MouseArea` interno para no repetirlo en cada botón.
+
+```qml
+property color tintColor:      "#ffffff"  // color del tinte (normalmente el color de texto/ícono del elemento)
+property real  hoverOpacity:   0.08
+property real  pressedOpacity: 0.12
+property bool  hoverEnabled:   true
+property int   cursorShape:    Qt.ArrowCursor
+signal clicked()
+```
+
+`radius` sigue automáticamente el de `parent` (`radius: parent ? parent.radius : 0`) — no hace falta setearlo si ya está sobre un `Rectangle` con radius.
+
+### `Logo.qml`
+
+Placeholder de logo del proyecto (glyph de texto, no SVG/Image real todavía) — reemplazar cuando exista un asset definitivo.
+
+```qml
+property int size: 32   // implicitWidth/implicitHeight
+```
 
 ### `qmldir`
 
-Registra los componentes del módulo. Necesario para que QML los encuentre con `import "../../components"`.
+Registra los 8 tipos del módulo: `Anim`, `CAnim`, `StyledRect`, `StyledText`, `MaterialIcon`, `AnimLoader`, `StateLayer`, `Logo`. Necesario para que QML los encuentre con `import "../../components"`.
+
+---
+
+## Subdirectorios de `components/`
+
+Cada subdirectorio tiene su propio `qmldir` — se importan igual, por ruta relativa (`import "../../components/controls"`, etc.).
+
+| Subdirectorio | Componentes |
+|---|---|
+| `containers/` | `ClippingRectangle`, `StyledListView` |
+| `controls/` | `ButtonRow`, `IconButton`, `LoadingIndicator`, `Slider`, `Toggle` |
+| `effects/` | `ColouredIcon`, `Colouriser`, `Mask` |
+| `images/` | `CachingImage`, `FadeImage` |
+| `misc/` | `CustomShortcut` |
+| `widgets/` | `WavyTopRect` |
 
 ---
 
@@ -50,7 +115,41 @@ Process { command: ["python3", Paths.scripts + "/list-apps.py"] }
 
 **Propiedades:**
 ```qml
-Paths.scripts   // ruta a quickshell/scripts/
+// XDG base dirs (con fallback si la env var no está seteada)
+Paths.home     // $HOME
+Paths.config   // $XDG_CONFIG_HOME || ~/.config
+Paths.state    // $XDG_STATE_HOME  || ~/.local/state
+Paths.cache    // $XDG_CACHE_HOME  || ~/.cache
+Paths.data     // $XDG_DATA_HOME   || ~/.local/share
+
+Paths.shell         // ~/.config/quickshell/deadlock
+Paths.matugenColors // ~/.config/matugen/colors.json
+Paths.scripts       // ruta a quickshell/scripts/ (resuelta con Qt.resolvedUrl, sin "file://")
+
+// Caelestia-compatible
+Paths.notifimagecache  // ~/.cache/caelestia/imagecache/notifs
+
+// Lock module — assets porteados del theme SDDM "silent"
+Paths.lockAssets           // quickshell/modules/lock/assets
+Paths.lockConfigDir        // .../assets/configs
+Paths.lockIconsDir         // .../assets/icons
+Paths.lockBackgroundsDir   // .../assets/backgrounds
+Paths.activeLockConfig     // $QS_LOCK_THEME || "custom"
+Paths.lockVkeyboardStylesDir // .../assets/vkeyboard-styles — agregar a QML_IMPORT_PATH antes de lanzar `qs`, QML no puede setear esta env var en caliente
+
+// Wallpaper picker + theming-mode picker
+Paths.wallpapersDir              // $QS_WALLPAPER_DIR || ~/Pictures/Wallpaper
+Paths.appState                   // ~/.local/state/quickshell
+Paths.wallpaperStatePath         // .../wallpaper.txt
+Paths.wallpaperPerScreenStatePath // .../wallpaper-screens.json
+Paths.themeStatePath             // .../theme.json
+Paths.idleStatePath              // .../idle.json
+Paths.weatherLocPath             // .../weather-loc.json
+
+// Screen recording (services/Recorder.qml) — solo carpeta de salida, sin archivo de persistencia
+Paths.recordingsDir  // $QS_RECORDINGS_DIR || ~/Videos/Recordings
+
+Paths.absolutePath(path)  // resuelve ~ y $HOME/${HOME} al inicio de un path
 ```
 
 ### `Icons.qml`

@@ -21,7 +21,9 @@ Una instancia por monitor. El `PanelWindow` es transparente — el fondo lo pint
 
 ## `BarContent.qml`
 
-Fondo: `Rectangle { radius: 10; color: Qt.alpha(Colours.m3surfaceContainer, 0.92) }`.
+Fondo: `Rectangle { radius: Style.cornerRadius; color: root.colors.m3surfaceContainer }` — sin alpha, y `colors` es la paleta per-monitor (`Colours.paletteFor(root.screenName)`, ver [architecture.md](./architecture.md)), no el singleton global directo.
+
+`bottomRightRadius` es condicional, no fijo: queda en `0` (esquina recta) mientras `Visibilities.notifToast`, o mientras el panel de notificaciones o el dashboard está abierto (con un `Timer` de gracia de 350ms/500ms respectivamente antes de volver a `Style.cornerRadius`) — visualmente "conecta" la bar con el panel que se abrió debajo.
 
 **Layout:**
 
@@ -44,6 +46,8 @@ comparten una segunda píldora (`rightPill`) dentro de esa misma fila. Ver
 
 ⚠️ **Discrepancia con visión**: `CpuWidget` y `RamWidget` están incluidos pero no estaban en el plan original. Ver [roadmap.md](./roadmap.md).
 
+Todos los widgets reciben la paleta per-monitor vía la prop `colors` (`root.colors` en `BarContent.qml`, resuelta una sola vez con `Colours.paletteFor(root.screenName)` y pasada hacia abajo) — ningún widget lee `Colours.m3*` directo.
+
 ---
 
 ## Widgets — referencia completa
@@ -64,8 +68,8 @@ Fuente:    Hyprland.focusedMonitor + Hyprland.workspaces
 Muestra workspaces del 1 hasta el máximo activo u ocupado.  
 Por cada workspace:
 - `●` si activo (m3primary, 34px, ancho 28px)
-- `●` si ocupado pero no activo (m3onSurfaceVariant, 26px, ancho 22px)
-- `○` si vacío (m3onSurface 30% alpha, 26px, ancho 22px)
+- `○` si ocupado pero no activo (m3onSurfaceVariant, 26px, ancho 22px)
+- `—` si vacío (m3onSurface 30% alpha, 20px, ancho 22px)
 
 Animaciones:
 ```qml
@@ -73,12 +77,12 @@ Behavior on implicitWidth { NumberAnimation { duration: 120; easing: InOutCubic 
 Behavior on font.pixelSize { NumberAnimation { duration: 120; easing: InOutCubic } }
 ```
 
-Click: `hyprctl dispatch workspace <n>`.
+Click: `hyprctl dispatch "hl.dsp.focus({workspace=N})"` — este Hyprland enruta los dispatchers por un puente Lua, `hyprctl dispatch workspace <n>` (y `Hyprland.dispatch()`) están muertos en esta build. Ver [architecture.md](./architecture.md#ipc-con-hyprland).
 
 ### `ClockWidget`
 ```
 Tamaño:    dinámico (texto + 20px padding)
-Visual:    pill radius:7, m3surfaceContainerHigh
+Visual:    pill radius: Style.cornerRadius, m3surfaceContainerHigh
 Texto:     Time.date + "  |  " + Time.timeFull
            ej: "Wed 25 Jun  |  14:35:07"
 Interacción: ninguna todavía
@@ -104,7 +108,7 @@ Behavior on implicitWidth { Anim { type: Anim.Enter } }
 ### `CpuWidget`
 ```
 Tamaño:    dinámico (ícono + % + 16px padding)
-Visual:    pill radius:7, m3surfaceContainerHigh
+Visual:    pill radius: Style.cornerRadius, m3surfaceContainerHigh
 Texto:     SysInfo.cpu + "%" — rojo (m3error) si > 80%
 ```
 
@@ -122,7 +126,7 @@ Texto:     SysInfo.ram + "%" — rojo si > 85%
 ### `VolumeWidget`
 ```
 Tamaño:    dinámico
-Visual:    pill radius:7
+Visual:    pill radius: Style.cornerRadius
 Ícono:     󰖁 muted / 󰕾 >66% / 󰖀 >33% / 󰕿 ≤33%
 Color:     gris (m3onSurfaceVariant) si muted, normal si no
 Interacción: ninguna todavía (VolumePopout pendiente)

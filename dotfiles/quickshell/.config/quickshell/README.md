@@ -24,7 +24,7 @@ Ver carpeta [`docs/`](./docs/):
 ## Correr
 
 ```bash
-qs -p /home/deadlock/Mio/Configuraciones/backup/quickshell
+qs -p ~/.config/quickshell
 ```
 
 ## Instalación
