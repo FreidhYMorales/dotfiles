@@ -27,7 +27,7 @@ Item {
         // Individual container
         Rectangle {
             anchors.fill: parent
-            radius:       10
+            radius: Style.cornerRadius
             color:        Colours.m3surfaceContainerHighest
             Behavior on color { CAnim {} }
         }

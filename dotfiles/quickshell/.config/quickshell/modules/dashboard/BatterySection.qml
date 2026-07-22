@@ -131,14 +131,14 @@ Item {
 
             Rectangle {
                 anchors.fill: parent
-                radius:       3
+                radius: Style.cornerRadius
                 color:        Qt.alpha(Colours.m3surfaceContainerHighest, 0.6)
                 Behavior on color { CAnim {} }
             }
 
             Rectangle {
                 height: parent.height
-                radius: 3
+                radius: Style.cornerRadius
                 color:  Battery.charging
                             ? Colours.m3primary
                             : Battery.percentage < 20

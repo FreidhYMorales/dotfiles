@@ -114,7 +114,7 @@ Variants {
 
                 topLeftRadius:  0
                 topRightRadius: 0
-                radius: 12
+                radius: Style.cornerRadius
 
                 color: Colours.m3surfaceContainer
                 Behavior on color { CAnim {} }
@@ -149,7 +149,7 @@ Variants {
 
                             Rectangle {
                                 anchors.fill: parent
-                                radius: height / 2
+                                radius: Style.cornerRadius
                                 color:  Colours.m3primaryContainer
                                 Behavior on color { CAnim {} }
                             }

@@ -114,7 +114,7 @@ Variants {
                 }
                 width:          pill.width + 14
                 height:         39
-                radius:         12
+                radius: Style.cornerRadius
                 topLeftRadius:  0
                 topRightRadius: 0
                 color:          win.colors.m3surfaceContainer
@@ -128,7 +128,7 @@ Variants {
                     anchors.centerIn: parent
                     width:   segW * 3
                     height:  segH
-                    radius:  height / 2
+                    radius: Style.cornerRadius
                     color:   win.colors.m3surfaceContainerHigh
                     Behavior on color { CAnim {} }
 
@@ -156,7 +156,7 @@ Variants {
                                 Rectangle {
                                     anchors.fill: parent
                                     anchors.margins: 2
-                                    radius: height / 2
+                                    radius: Style.cornerRadius
                                     color:  segment._flash ? win.colors.m3primary : "transparent"
                                     Behavior on color { CAnim {} }
                                 }

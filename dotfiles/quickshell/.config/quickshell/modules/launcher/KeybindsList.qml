@@ -43,7 +43,7 @@ Item {
                 anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
                 width:  keyText.implicitWidth + 16
                 height: 24
-                radius: height / 2
+                radius: Style.cornerRadius
                 color:  Colours.m3surfaceContainerHigh
                 border.width: 1
                 border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)

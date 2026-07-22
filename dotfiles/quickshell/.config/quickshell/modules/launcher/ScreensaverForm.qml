@@ -45,7 +45,7 @@ Item {
             spacing: 6
 
             Rectangle {
-                width: 28; height: 28; radius: height / 2
+                width: 28; height: 28; radius: Style.cornerRadius
                 color: decHov.hovered
                        ? Qt.alpha(Colours.m3primary, 0.15)
                        : Qt.alpha(Colours.m3onSurface, 0.08)
@@ -82,7 +82,7 @@ Item {
             }
 
             Rectangle {
-                width: 28; height: 28; radius: height / 2
+                width: 28; height: 28; radius: Style.cornerRadius
                 color: incHov.hovered
                        ? Qt.alpha(Colours.m3primary, 0.15)
                        : Qt.alpha(Colours.m3onSurface, 0.08)
@@ -132,7 +132,7 @@ Item {
             Rectangle {
                 width:  Math.floor((cardsRow.width - 16) / 3)
                 height: parent.height
-                radius: 12
+                radius: Style.cornerRadius
                 color:  Colours.m3surfaceContainerHigh
                 Behavior on color { CAnim {} }
 
@@ -163,7 +163,7 @@ Item {
             Rectangle {
                 width:  Math.floor((cardsRow.width - 16) / 3)
                 height: parent.height
-                radius: 12
+                radius: Style.cornerRadius
                 color:  Colours.m3surfaceContainerHigh
                 Behavior on color { CAnim {} }
 
@@ -194,7 +194,7 @@ Item {
             Rectangle {
                 width:  Math.floor((cardsRow.width - 16) / 3)
                 height: parent.height
-                radius: 12
+                radius: Style.cornerRadius
                 color:  Colours.m3surfaceContainerHigh
                 Behavior on color { CAnim {} }
 
@@ -330,7 +330,7 @@ Item {
 
             Rectangle {
                 anchors.fill: parent
-                radius: height / 2
+                radius: Style.cornerRadius
                 color:  Qt.alpha(Colours.m3onSurface, 0.08)
             }
 

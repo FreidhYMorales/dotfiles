@@ -55,7 +55,7 @@ Item {
         id:     avatar
         width:  56
         height: 56
-        radius: 28
+        radius: Style.cornerRadius
         color:  Colours.m3primaryContainer
         Behavior on color { CAnim {} }
 
@@ -113,7 +113,7 @@ Item {
         Rectangle {
             height: 28
             width:  parent.width
-            radius: 14
+            radius: Style.cornerRadius
             color:        Colours.m3surfaceContainerHigh
             border.width: 1
             border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)

@@ -128,7 +128,7 @@ Item {
                 easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
             }
         }
-        radius:         14
+        radius: Style.cornerRadius
         topLeftRadius:  0
         topRightRadius: 0
         color:          Colours.m3surfaceContainer
@@ -187,7 +187,7 @@ Item {
                     id:     capNotif
                     width:  parent.width
                     height: 82
-                    radius: 12
+                    radius: Style.cornerRadius
                     color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     Behavior on color { CAnim {} }
 
@@ -211,7 +211,7 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: height / 2
+                                    radius: Style.cornerRadius
                                     color: Colours.m3primaryContainer
                                     Behavior on color { CAnim {} }
                                 }
@@ -317,7 +317,7 @@ Item {
                     id:     cap1
                     width:  parent.width
                     height: 116
-                    radius: 12
+                    radius: Style.cornerRadius
                     color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     y:      root._stage >= 1 ? 0 : -root.height
                     Behavior on y {
@@ -342,7 +342,7 @@ Item {
                     id:     cap2
                     width:  parent.width
                     height: cap2Col.implicitHeight
-                    radius: 12
+                    radius: Style.cornerRadius
                     color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     y:      root._stage >= 2 ? 0 : -root.height
                     Behavior on y {
@@ -382,7 +382,7 @@ Item {
                     id:     cap3
                     width:  parent.width
                     height: mediaSec.implicitHeight
-                    radius: 12
+                    radius: Style.cornerRadius
                     color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     y:      root._stage >= 3 ? 0 : -root.height
                     Behavior on y {

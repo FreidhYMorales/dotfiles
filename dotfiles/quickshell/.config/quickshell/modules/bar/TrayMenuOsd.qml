@@ -139,7 +139,7 @@ Variants {
                 }
                 width:          Math.max(120, Math.min(320, win._maxEntryTextWidth + 48))
                 height:         menuColumn.implicitHeight + 8
-                radius:         12
+                radius: Style.cornerRadius
                 topLeftRadius:  0
                 topRightRadius: 0
                 color:          win.colors.m3surfaceContainer
@@ -173,7 +173,7 @@ Variants {
                                 visible: !entryDelegate.modelData.isSeparator
                                 anchors.fill: parent
                                 anchors { leftMargin: 4; rightMargin: 4 }
-                                radius:  8
+                                radius: Style.cornerRadius
                                 color:   itemHov.hovered ? win.colors.m3surfaceContainerHigh : "transparent"
                                 Behavior on color { CAnim {} }
 

@@ -381,7 +381,7 @@ Item {
 
                     height: root.monitorTabsH
                     width:  tabLabel.implicitWidth + 20
-                    radius: height / 2
+                    radius: Style.cornerRadius
                     color:  tab.isSelected ? Colours.m3primaryContainer : Colours.m3surfaceContainerHigh
                     border.width: 1
                     border.color: Colours.mid(Colours.m3surfaceContainer, tab.color)
@@ -782,7 +782,7 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: height / 2
+                    radius: Style.cornerRadius
                     color: Qt.alpha(Colours.m3onSurface, 0.08)
                     visible: root.mode === "themes"
                 }

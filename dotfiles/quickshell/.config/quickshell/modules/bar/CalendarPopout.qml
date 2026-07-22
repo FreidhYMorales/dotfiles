@@ -136,7 +136,7 @@ Variants {
                         easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
                     }
                 }
-                radius:         12
+                radius: Style.cornerRadius
                 topLeftRadius:  0
                 topRightRadius: 0
                 color:         win.colors.m3surfaceContainer

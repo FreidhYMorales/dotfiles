@@ -117,7 +117,7 @@ Variants {
                 }
                 width:          228
                 height:         39
-                radius:         12
+                radius: Style.cornerRadius
                 topLeftRadius:  0
                 topRightRadius: 0
                 color:          win.colors.m3surfaceContainer
@@ -157,7 +157,7 @@ Variants {
                         id:     pill
                         width:  parent.segW * 3
                         height: parent.segH
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  win.colors.m3surfaceContainerHigh
                         Behavior on color { CAnim {} }
 
@@ -166,7 +166,7 @@ Variants {
                             id:      indicator
                             width:   parent.parent.segW - 4
                             height:  parent.height - 4
-                            radius:  height / 2
+                            radius: Style.cornerRadius
                             color:   win.colors.m3primary
                             anchors.verticalCenter: parent.verticalCenter
                             x: parent.parent.selectedIndex * parent.parent.segW + 2
@@ -215,7 +215,7 @@ Variants {
                     id: caffeineButton
                     width:  32
                     height: pill.height
-                    radius: height / 2
+                    radius: Style.cornerRadius
                     color:  "transparent"
 
                     Text {

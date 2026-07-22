@@ -25,7 +25,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: Style.cornerRadius
         color:        root.colors.m3surfaceContainerHigh
         border.width: 1
         border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)

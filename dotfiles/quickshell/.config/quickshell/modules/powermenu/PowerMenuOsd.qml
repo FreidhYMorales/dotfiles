@@ -97,7 +97,7 @@ Variants {
                         implicitWidth:  hPad * 2 + btnSize * 5 + spacing * 4
                         implicitHeight: vPad * 2 + btnSize
 
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  Colours.m3surfaceContainerHigh
                         border.width: 1
                         border.color: Qt.alpha(Colours.m3onSurface, 0.10)

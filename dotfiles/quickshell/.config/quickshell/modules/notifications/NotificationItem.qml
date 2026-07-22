@@ -120,7 +120,7 @@ Item {
 
             Rectangle {
                 anchors.fill: parent
-                radius:       7
+                radius: Style.cornerRadius
                 color:        dismissHov.hovered
                                   ? Qt.alpha(Colours.m3onSurface, 0.1)
                                   : "transparent"

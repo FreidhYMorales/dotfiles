@@ -94,7 +94,7 @@ Item {
             Rectangle {
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                 height:  34
-                radius:  8
+                radius: Style.cornerRadius
                 color:   Colours.m3surfaceContainerHigh
                 border.width: nameInput.activeFocus ? 1.5 : 1
                 border.color: nameInput.activeFocus
@@ -142,7 +142,7 @@ Item {
             Rectangle {
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                 height:  34
-                radius:  8
+                radius: Style.cornerRadius
                 color:   Colours.m3surfaceContainerHigh
                 border.width: urlInput.activeFocus ? 1.5 : 1
                 border.color: urlInput.activeFocus
@@ -186,7 +186,7 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: height / 2
+                    radius: Style.cornerRadius
                     color:  installBtnHov.hovered
                             ? Qt.alpha(Colours.m3primary, 0.15)
                             : Qt.alpha(Colours.m3onSurface, 0.08)

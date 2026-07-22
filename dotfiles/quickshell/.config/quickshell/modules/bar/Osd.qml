@@ -159,7 +159,7 @@ Variants {
                         easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
                     }
                 }
-                radius:         12
+                radius: Style.cornerRadius
                 topLeftRadius:  0
                 topRightRadius: 0
                 color:         win.colors.m3surfaceContainer
@@ -189,7 +189,7 @@ Variants {
                     // Track background
                     Rectangle {
                         anchors.fill: parent
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  win.colors.m3surfaceContainerHighest
                         Behavior on color { CAnim {} }
                     }
@@ -198,7 +198,7 @@ Variants {
                     Rectangle {
                         width:  volSlider.thumbX + volSlider.thumbDia
                         height: parent.height
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  Audio.muted ? Qt.alpha(win.colors.m3primary, 0.35) : win.colors.m3primary
                         Behavior on width { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
@@ -210,7 +210,7 @@ Variants {
                         anchors.verticalCenter: parent.verticalCenter
                         width:  volSlider.thumbDia
                         height: volSlider.thumbDia
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  Audio.muted ? win.colors.m3onSurfaceVariant : win.colors.m3onPrimary
                         Behavior on x     { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
@@ -311,7 +311,7 @@ Variants {
                         easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
                     }
                 }
-                radius:         12
+                radius: Style.cornerRadius
                 topLeftRadius:  0
                 topRightRadius: 0
                 color:         win.colors.m3surfaceContainer
@@ -339,7 +339,7 @@ Variants {
                     // Track background
                     Rectangle {
                         anchors.fill: parent
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  win.colors.m3surfaceContainerHighest
                     }
 
@@ -347,7 +347,7 @@ Variants {
                     Rectangle {
                         width:  brightSlider.thumbX + brightSlider.thumbDia
                         height: parent.height
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  win.colors.m3primary
                         Behavior on width { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }
@@ -359,7 +359,7 @@ Variants {
                         anchors.verticalCenter: parent.verticalCenter
                         width:  brightSlider.thumbDia
                         height: brightSlider.thumbDia
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  win.colors.m3onPrimary
                         Behavior on x     { NumberAnimation { duration: 80 } }
                         Behavior on color { CAnim {} }

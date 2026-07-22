@@ -67,7 +67,7 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 7
+                    radius: Style.cornerRadius
                     color:  prevHov.hovered
                                 ? Qt.alpha(root.colors.m3onSurface, 0.08)
                                 : "transparent"
@@ -109,7 +109,7 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 7
+                    radius: Style.cornerRadius
                     color:  nextHov.hovered
                                 ? Qt.alpha(root.colors.m3onSurface, 0.08)
                                 : "transparent"
@@ -174,7 +174,7 @@ Item {
 
                     Rectangle {
                         anchors.centerIn: parent
-                        width: 24; height: 24; radius: 12
+                        width: 24; height: 24; radius: Style.cornerRadius
                         visible: isToday
                         color:   root.colors.m3primary
                         Behavior on color { CAnim {} }

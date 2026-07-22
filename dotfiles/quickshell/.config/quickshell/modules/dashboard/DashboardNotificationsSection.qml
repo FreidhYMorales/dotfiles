@@ -40,7 +40,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: 7
+                        radius: Style.cornerRadius
                         color:  tabDelegate.active ? Colours.m3primaryContainer : "transparent"
                         Behavior on color { CAnim {} }
                     }

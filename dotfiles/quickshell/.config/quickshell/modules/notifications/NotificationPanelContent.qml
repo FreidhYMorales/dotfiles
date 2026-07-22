@@ -79,7 +79,7 @@ Item {
             }
         }
 
-        radius:         14
+        radius: Style.cornerRadius
         topLeftRadius:  0
         topRightRadius: 0
         color:          Colours.m3surfaceContainer
@@ -136,7 +136,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius:       height / 2
+                        radius: Style.cornerRadius
                         color:        Visibilities.silentMode
                                           ? Colours.m3primary
                                           : Qt.alpha(Colours.m3onSurface, 0.18)
@@ -147,7 +147,7 @@ Item {
                         id:     thumb
                         width:  18
                         height: 18
-                        radius: height / 2
+                        radius: Style.cornerRadius
                         color:  Visibilities.silentMode
                                     ? Colours.m3onPrimary
                                     : Colours.m3surface

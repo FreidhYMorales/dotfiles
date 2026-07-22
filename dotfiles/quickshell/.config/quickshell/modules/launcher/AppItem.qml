@@ -20,7 +20,7 @@ Item {
     // Background
     Rectangle {
         anchors.fill: parent
-        radius: 8
+        radius: Style.cornerRadius
         color: root.isSelected
                ? Qt.alpha(Colours.m3primaryContainer, 0.45)
                : hov.hovered
@@ -38,7 +38,7 @@ Item {
         }
         width:   3
         height:  28
-        radius:  2
+        radius: Style.cornerRadius
         visible: root.isSelected
         color:   Colours.m3primary
         Behavior on color { CAnim {} }
@@ -52,7 +52,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius:       12
+            radius: Style.cornerRadius
             color:        root.isSelected
                           ? Colours.m3primary
                           : Colours.m3primaryContainer

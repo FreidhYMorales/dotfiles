@@ -28,7 +28,7 @@ Item {
     Rectangle {
         id: track
         anchors.fill: parent
-        radius: height / 2
+        radius: Style.cornerRadius
         color:  root.checked ? root.onColor : root.offColor
         Behavior on color { ColorAnimation { duration: 200; easing.type: Easing.InOutCubic } }
     }
@@ -37,7 +37,7 @@ Item {
     // exact bug was already fixed project-wide across 15 files).
     Rectangle {
         anchors.fill: parent
-        radius:  height / 2
+        radius: Style.cornerRadius
         color:   "white"
         opacity: hov.hovered && root.enabled ? 0.06 : 0
         Behavior on opacity { NumberAnimation { duration: 120 } }
@@ -47,7 +47,7 @@ Item {
         id: knob
         width:  parent.height - 4
         height: parent.height - 4
-        radius: height / 2
+        radius: Style.cornerRadius
         anchors.verticalCenter: parent.verticalCenter
         x: root.checked ? parent.width - width - 2 : 2
         color: root.knobColor

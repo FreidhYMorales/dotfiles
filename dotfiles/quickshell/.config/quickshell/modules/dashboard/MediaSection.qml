@@ -54,7 +54,7 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 8
+                    radius: Style.cornerRadius
                     color:  Colours.m3surfaceContainerHigh
                     clip:   true
                     Behavior on color { CAnim {} }
@@ -119,7 +119,7 @@ Item {
                 // Track — visible destination color
                 Rectangle {
                     anchors.fill: parent
-                    radius: 2
+                    radius: Style.cornerRadius
                     color:  Qt.alpha(Colours.m3primary, 0.2)
                     Behavior on color { CAnim {} }
                 }
@@ -127,7 +127,7 @@ Item {
                 // Fill — progress
                 Rectangle {
                     height: parent.height
-                    radius: 2
+                    radius: Style.cornerRadius
                     color:  Colours.m3primary
                     Behavior on color { CAnim {} }
                     Behavior on width { NumberAnimation { duration: 800; easing.type: Easing.Linear } }
@@ -177,7 +177,7 @@ Item {
                     width: 32; height: 32
                     HoverHandler { id: prevHov }
                     Rectangle {
-                        anchors.fill: parent; radius: 16
+                        anchors.fill: parent; radius: Style.cornerRadius
                         color: prevHov.hovered ? Qt.alpha(Colours.m3onSurface, 0.1) : "transparent"
                         Behavior on color { CAnim {} }
                     }
@@ -207,7 +207,7 @@ Item {
                     width: 32; height: 32
                     HoverHandler { id: nextHov }
                     Rectangle {
-                        anchors.fill: parent; radius: 16
+                        anchors.fill: parent; radius: Style.cornerRadius
                         color: nextHov.hovered ? Qt.alpha(Colours.m3onSurface, 0.1) : "transparent"
                         Behavior on color { CAnim {} }
                     }
@@ -238,7 +238,7 @@ Item {
                 // Pill background
                 Rectangle {
                     anchors.fill: parent
-                    radius: 14
+                    radius: Style.cornerRadius
                     color:  Colours.m3surfaceContainerLow
                     Behavior on color { CAnim {} }
                 }
@@ -314,7 +314,7 @@ Item {
                         visible: playerList.contentX > 0
                         anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
                         width:  22
-                        radius: 14
+                        radius: Style.cornerRadius
                         color:  Colours.m3surfaceContainerLow
                         z:      1
 

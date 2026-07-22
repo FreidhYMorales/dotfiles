@@ -46,7 +46,7 @@ Item {
     // Track
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: Style.cornerRadius
         color:  root.trackColor
         Behavior on color { ColorAnimation { duration: 200; easing.type: Easing.InOutCubic } }
     }
@@ -55,7 +55,7 @@ Item {
     Rectangle {
         width:  root.thumbX + root.thumbDia
         height: parent.height
-        radius: height / 2
+        radius: Style.cornerRadius
         color:  root.fillColor
         Behavior on width { NumberAnimation { duration: 80 } }
         Behavior on color { ColorAnimation { duration: 200; easing.type: Easing.InOutCubic } }
@@ -67,7 +67,7 @@ Item {
         x:      root.thumbX
         width:  root.thumbDia
         height: root.thumbDia
-        radius: height / 2
+        radius: Style.cornerRadius
         color:  root.thumbColor
         Behavior on x     { NumberAnimation { duration: 80 } }
         Behavior on color { ColorAnimation { duration: 200; easing.type: Easing.InOutCubic } }

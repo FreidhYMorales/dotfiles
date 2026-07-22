@@ -34,7 +34,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius:  12
+        radius: Style.cornerRadius
         color:   Colours.m3surfaceContainerHigh
         border.width: root.isActive ? 2 : 0
         border.color: Colours.m3primary
@@ -108,7 +108,7 @@ Item {
             visible: false
             layer.enabled: true
             layer.smooth:  true
-            Rectangle { anchors.fill: parent; radius: 12 }
+            Rectangle { anchors.fill: parent; radius: Style.cornerRadius }
         }
 
         MultiEffect {
