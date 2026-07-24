@@ -1,8 +1,7 @@
-Anim         1.0 Anim.qml
-CAnim        1.0 CAnim.qml
-StyledRect   1.0 StyledRect.qml
-StyledText   1.0 StyledText.qml
-MaterialIcon 1.0 MaterialIcon.qml
-AnimLoader   1.0 AnimLoader.qml
-StateLayer   1.0 StateLayer.qml
-Logo         1.0 Logo.qml
+Anim             1.0 Anim.qml
+CAnim            1.0 CAnim.qml
+Capsule          1.0 Capsule.qml
+StyledRect       1.0 StyledRect.qml
+StyledText       1.0 StyledText.qml
+StateLayer       1.0 StateLayer.qml
+MonitorOsdWindow 1.0 MonitorOsdWindow.qml

@@ -2,60 +2,45 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
 // Right-click picker for RecorderWidget — screen/region/window. Unlike
 // BatteryProfileOsd this isn't a persistent "current mode" selector: each
 // segment is a one-shot action (start a recording in that mode) and the OSD
-// closes immediately after, so there's no sliding indicator to keep in sync
-// with an "active" state — just a brief click flash for feedback.
-Variants {
-    model: Quickshell.screens
+// closes immediately after — but the sliding indicator (same pattern as
+// BatteryProfileOsd) still tracks Recorder.mode, remembering the last mode
+// that actually started, so it's visible next time the picker opens and
+// drives the widget's left-click default (see RecorderWidget.qml).
+MonitorOsdWindow {
+    id: osd
 
-    delegate: Scope {
-        id: screenScope
-        required property ShellScreen modelData
+    namespace:  "deadlock-recorder-mode"
+    osdHeight:  60
+    osdVisible: _visible
 
-        PanelWindow {
-            id: win
-            screen: screenScope.modelData
-            color:  "transparent"
+    property bool _visible: false
+    Timer { id: hideTimer; interval: 400; onTriggered: osd._visible = false }
 
-            readonly property bool isFocused:
-                screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
-            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
-            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
-
-            property bool _visible: false
-
-            Timer { id: hideTimer; interval: 400; onTriggered: win._visible = false }
-
-            Connections {
-                target: Visibilities
-                function onRecorderModeOsdChanged() {
-                    if (Visibilities.recorderModeOsd) {
-                        hideTimer.stop()
-                        win._visible = true
-                    } else {
-                        hideTimer.restart()
-                    }
-                }
+    Connections {
+        target: Visibilities
+        function onRecorderModeOsdChanged() {
+            if (Visibilities.recorderModeOsd) {
+                hideTimer.stop()
+                osd._visible = true
+            } else {
+                hideTimer.restart()
             }
+        }
+    }
 
-            visible: isFocused && win._visible
-
-            WlrLayershell.layer:         WlrLayer.Overlay
-            WlrLayershell.namespace:     "deadlock-recorder-mode"
-            WlrLayershell.exclusiveZone: -1
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-            anchors { top: true; left: true; right: true }
-            margins.top:    43
-            implicitHeight: 60
+    content: Component {
+        Item {
+            id: contentRoot
+            anchors.fill: parent
+            property PanelWindow win: null
+            property var osd: null
 
             MouseArea {
                 anchors.fill: parent
@@ -64,62 +49,27 @@ Variants {
                 onClicked:    Visibilities.toggle("recorderModeOsd")
             }
 
-            // Left ear
-            Shape {
-                z: 1
-                x: card.x - 12
-                y: win.isFocused && Visibilities.recorderModeOsd ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
-                                      easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
-                }
-                ShapePath {
-                    fillColor: card.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc  { x: 12; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Clockwise }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-
-            // Right ear
-            Shape {
-                z: 1
-                x: card.x + card.width
-                y: win.isFocused && Visibilities.recorderModeOsd ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
-                                      easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
-                }
-                ShapePath {
-                    fillColor: card.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 12; startY: 0
-                    PathArc  { x: 0; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Counterclockwise }
-                    PathLine { x: 0; y: 0 }
-                }
-            }
-
             Rectangle {
                 id:    card
                 z:     1
-                x:     Math.max(8, Math.min(
+                x:     Math.max(10, Math.min(
                            Visibilities.recorderOsdCenterX - width / 2,
-                           win.width - width - 8
+                           win.width - width - 10
                        ))
-                y:     win.isFocused && Visibilities.recorderModeOsd ? 0 : -39
+                y:     win.isFocused && Visibilities.recorderModeOsd ? 0 : -48
                 Behavior on y {
                     NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
                                       easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
                 }
                 width:          pill.width + 14
-                height:         39
+                height:         48
                 radius: Style.cornerRadius
-                topLeftRadius:  0
-                topRightRadius: 0
                 color:          win.colors.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(win.colors.m3primary, 0.9)
                 layer.enabled:  true
                 Behavior on color { CAnim {} }
+
 
                 MouseArea { anchors.fill: parent; z: 0 }
 
@@ -135,7 +85,25 @@ Variants {
                     readonly property int segW: 52
                     readonly property int segH: 32
                     readonly property var modes:  ["screen", "region", "window"]
+                    readonly property int selectedIndex: {
+                        const i = modes.indexOf(Recorder.mode)
+                        return i >= 0 ? i : 0
+                    }
                     readonly property var labels: ["", "󱣵", "󱣴"]
+
+                    // Sliding indicator — remembers the last mode a recording
+                    // actually started in, so the widget's left click has a
+                    // sensible default instead of always full-screen.
+                    Rectangle {
+                        width:  pill.segW - 4
+                        height: pill.height - 4
+                        radius: Style.cornerRadius
+                        color:  win.colors.m3primary
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: pill.selectedIndex * pill.segW + 2
+                        Behavior on x     { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                        Behavior on color { CAnim {} }
+                    }
 
                     Row {
                         anchors.fill: parent
@@ -166,7 +134,9 @@ Variants {
                                     text:           segment.modelData
                                     font.family:    Style.fontFamily
                                     font.pixelSize: 14
-                                    color: segment._flash ? win.colors.m3onPrimary : win.colors.m3onSurface
+                                    color: segment._flash || pill.selectedIndex === segment.index
+                                               ? win.colors.m3onPrimary
+                                               : win.colors.m3onSurface
                                     Behavior on color { CAnim {} }
                                 }
 

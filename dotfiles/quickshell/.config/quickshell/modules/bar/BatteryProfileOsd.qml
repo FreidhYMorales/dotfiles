@@ -2,63 +2,44 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
-Variants {
-    model: Quickshell.screens
+MonitorOsdWindow {
+    id: osd
 
-    delegate: Scope {
-        id: screenScope
-        required property ShellScreen modelData
+    namespace:  "deadlock-battery-profile"
+    osdHeight:  60
+    osdVisible: _batVisible
 
-        PanelWindow {
-            id: win
-            screen: screenScope.modelData
-            color:  "transparent"
+    property bool _batVisible: false
+    Timer { id: batHideTimer;  interval: 400;  onTriggered: osd._batVisible = false }
+    Timer { id: batCloseTimer; interval: 1000; onTriggered: Visibilities.batteryProfile = false }
 
-            readonly property bool isFocused:
-                screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
-            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
-            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
+    function pauseAutoClose()  { batCloseTimer.stop() }
+    function resumeAutoClose() { batCloseTimer.restart() }
 
-            property bool _batVisible: false
-
-            Timer { id: batHideTimer; interval: 400; onTriggered: win._batVisible = false }
-
-            Timer {
-                id: batCloseTimer
-                interval: 1000
-                onTriggered: Visibilities.batteryProfile = false
+    Connections {
+        target: Visibilities
+        function onBatteryProfileChanged() {
+            if (Visibilities.batteryProfile) {
+                batCloseTimer.stop()
+                batHideTimer.stop()
+                osd._batVisible = true
+            } else {
+                batCloseTimer.stop()
+                batHideTimer.restart()
             }
+        }
+    }
 
-            Connections {
-                target: Visibilities
-                function onBatteryProfileChanged() {
-                    if (Visibilities.batteryProfile) {
-                        batCloseTimer.stop()
-                        batHideTimer.stop()
-                        win._batVisible = true
-                    } else {
-                        batCloseTimer.stop()
-                        batHideTimer.restart()
-                    }
-                }
-            }
-
-            visible: isFocused && win._batVisible
-
-            WlrLayershell.layer:         WlrLayer.Overlay
-            WlrLayershell.namespace:     "deadlock-battery-profile"
-            WlrLayershell.exclusiveZone: -1
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-            anchors { top: true; left: true; right: true }
-            margins.top:    43
-            implicitHeight: 60
+    content: Component {
+        Item {
+            id: contentRoot
+            anchors.fill: parent
+            property PanelWindow win: null
+            property var osd: null
 
             MouseArea {
                 anchors.fill: parent
@@ -67,76 +48,37 @@ Variants {
                 onClicked:    Visibilities.toggle("batteryProfile")
             }
 
-            // Left ear
-            Shape {
-                z: 1
-                x: card.x - 12
-                y: win.isFocused && Visibilities.batteryProfile ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
-                                      easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
-                }
-                ShapePath {
-                    fillColor: card.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc  { x: 12; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Clockwise }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-
-            // Right ear
-            Shape {
-                z: 1
-                x: card.x + card.width
-                y: win.isFocused && Visibilities.batteryProfile ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
-                                      easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
-                }
-                ShapePath {
-                    fillColor: card.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 12; startY: 0
-                    PathArc  { x: 0; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Counterclockwise }
-                    PathLine { x: 0; y: 0 }
-                }
-            }
-
             Rectangle {
                 id:    card
                 z:     1
-                x:     Math.max(8, Math.min(
+                x:     Math.max(10, Math.min(
                            Visibilities.batteryBarCenterX - width / 2 - 6,
-                           win.width - width - 8
+                           win.width - width - 10
                        ))
-                y:     win.isFocused && Visibilities.batteryProfile ? 0 : -39
+                y:     win.isFocused && Visibilities.batteryProfile ? 0 : -48
                 Behavior on y {
                     NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
                                       easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
                 }
                 width:          228
-                height:         39
+                height:         48
                 radius: Style.cornerRadius
-                topLeftRadius:  0
-                topRightRadius: 0
                 color:          win.colors.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(win.colors.m3primary, 0.9)
                 layer.enabled:  true
                 Behavior on color { CAnim {} }
 
+
                 HoverHandler {
-                    onHoveredChanged: hovered ? batCloseTimer.stop() : batCloseTimer.restart()
+                    onHoveredChanged: hovered ? osd.pauseAutoClose() : osd.resumeAutoClose()
                 }
 
                 MouseArea { anchors.fill: parent; z: 0 }
 
                 // Segmented pill selector + caffeine toggle
                 Row {
-                    anchors {
-                        top:             parent.top
-                        topMargin:       2
-                        horizontalCenter: parent.horizontalCenter
-                    }
+                    anchors.centerIn: parent
                     spacing: 10
 
                 Item {

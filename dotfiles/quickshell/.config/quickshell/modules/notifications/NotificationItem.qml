@@ -118,13 +118,11 @@ Item {
             height: 28
             anchors.verticalCenter: parent.verticalCenter
 
-            Rectangle {
-                anchors.fill: parent
-                radius: Style.cornerRadius
-                color:        dismissHov.hovered
-                                  ? Qt.alpha(Colours.m3onSurface, 0.1)
-                                  : "transparent"
-                Behavior on color { CAnim {} }
+            StateLayer {
+                tintColor:    Colours.m3onSurface
+                hoverOpacity: 0.1
+                cursorShape:  Qt.PointingHandCursor
+                onClicked:    NotifStore.dismiss(root.itemIndex)
             }
 
             Text {
@@ -134,14 +132,6 @@ Item {
                 font.pixelSize: 14
                 color:          Colours.m3onSurfaceVariant
                 Behavior on color { CAnim {} }
-            }
-
-            HoverHandler { id: dismissHov }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape:  Qt.PointingHandCursor
-                onClicked:    NotifStore.dismiss(root.itemIndex)
             }
         }
     }

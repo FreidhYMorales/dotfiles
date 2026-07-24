@@ -114,10 +114,14 @@ Item {
             color: iconButton.isActive ? iconButton.activeContentColor : iconButton.contentColor
             opacity: iconButton.enabled ? 1.0 : 0.5
 
-            Component.onCompleted: {
-                if (iconButton.preferredWidth !== -1)
-                    buttonLabel.Layout.preferredWidth = iconButton.width - iconContainer.width
-            }
+            // Live binding instead of Component.onCompleted: LockConfig loads
+            // its .conf asynchronously (FileView), and onCompleted only fires
+            // once — on a cold start it could run before generalScale/
+            // powerPopupWidth finished loading, baking in the wrong width for
+            // this button's whole lifetime (same race already fixed in
+            // LockAuth.qml's loginContainer).
+            Layout.preferredWidth: iconButton.preferredWidth !== -1
+                ? iconButton.width - iconContainer.width : -1
         }
     }
 

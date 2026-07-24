@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
@@ -60,9 +59,9 @@ Variants {
                 function onVolumeChanged() {
                     if (Visibilities.volume) {
                         if (!win.isFocused) return
-                        win.volCardX = Math.max(8, Math.min(
+                        win.volCardX = Math.max(10, Math.min(
                             Visibilities.volumeBarCenterX - 90,
-                            screenScope.modelData.width - 180 - 8
+                            screenScope.modelData.width - 180 - 10
                         ))
                         volumeTimer.stop()
                         volHideTimer.stop()
@@ -89,70 +88,30 @@ Variants {
 
             visible: isFocused && (win._volVisible || win._brightVisible)
 
-            WlrLayershell.layer:         WlrLayer.Overlay
+            WlrLayershell.layer:         WlrLayer.Top
             WlrLayershell.namespace:     "deadlock-osd"
             WlrLayershell.exclusiveZone: -1
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            // None, not OnDemand — this was the only bar-attached OSD
+            // requesting keyboard focus (every sibling popup — Battery,
+            // Calendar, TrayMenu, Recorder — uses None and has no Escape
+            // handler either). Hyprland reassigning keyboard focus when
+            // this surface mapped was desyncing the bar's own pointer/hover
+            // tracking until a real mouse move refreshed it, which is why
+            // the volume widget's second click (to close the OSD) silently
+            // did nothing right after the first click opened it.
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
             anchors { top: true; left: true; right: true }
-            margins.top:    43
+            margins.top:    44
             implicitHeight: 64
-
-            Item {
-                anchors.fill: parent
-                focus: true
-                Keys.onEscapePressed: {
-                    win.showVolume     = false
-                    win.showBrightness = false
-                    Visibilities.volume = false
-                    volumeTimer.stop()
-                    brightnessTimer.stop()
-                }
-            }
-
-            // — Volume OSD ears —
-            Shape {
-                z: 1; x: volCard.x - 12
-                y: win.isFocused && win.showVolume ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor: volCard.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc { x: 12; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Clockwise }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-            Shape {
-                z: 1; x: volCard.x + volCard.width
-                y: win.isFocused && win.showVolume ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor: volCard.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 12; startY: 0
-                    PathArc { x: 0; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Counterclockwise }
-                    PathLine { x: 0; y: 0 }
-                }
-            }
 
             Rectangle {
                 id:     volCard
                 z:      1
                 x:      win.volCardX
-                y:      win.isFocused && win.showVolume ? 0 : -35
+                y:      win.isFocused && win.showVolume ? 0 : -44
                 width:  180
-                height: 35
+                height: 44
                 Behavior on y {
                     NumberAnimation {
                         duration: 350; easing.type: Easing.BezierSpline
@@ -160,11 +119,12 @@ Variants {
                     }
                 }
                 radius: Style.cornerRadius
-                topLeftRadius:  0
-                topRightRadius: 0
                 color:         win.colors.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(win.colors.m3primary, 0.9)
                 clip:          true
                 layer.enabled: true
+
 
                 HoverHandler {
                     id: volHover
@@ -176,8 +136,8 @@ Variants {
                     id: volSlider
                     anchors {
                         left: parent.left; right: parent.right
-                        top: parent.top
-                        leftMargin: 12; rightMargin: 12; topMargin: 2
+                        verticalCenter: parent.verticalCenter
+                        leftMargin: 12; rightMargin: 12
                     }
                     height: 28
 
@@ -262,49 +222,13 @@ Variants {
                 }
             }
 
-            // — Brightness OSD ears —
-            Shape {
-                z: 1; x: brightCard.x - 12
-                width: 12; height: 12
-                y: win.isFocused && win.showBrightness ? 0 : -12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor: brightCard.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc { x: 12; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Clockwise }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-            Shape {
-                z: 1; x: brightCard.x + brightCard.width
-                y: win.isFocused && win.showBrightness ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor: brightCard.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 12; startY: 0
-                    PathArc { x: 0; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Counterclockwise }
-                    PathLine { x: 0; y: 0 }
-                }
-            }
-
             Rectangle {
                 id:     brightCard
                 z:      1
                 anchors.horizontalCenter: parent.horizontalCenter
-                y:      win.isFocused && win.showBrightness ? 0 : -35
+                y:      win.isFocused && win.showBrightness ? 0 : -44
                 width:  160
-                height: 35
+                height: 44
                 Behavior on y {
                     NumberAnimation {
                         duration: 350; easing.type: Easing.BezierSpline
@@ -312,11 +236,12 @@ Variants {
                     }
                 }
                 radius: Style.cornerRadius
-                topLeftRadius:  0
-                topRightRadius: 0
                 color:         win.colors.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(win.colors.m3primary, 0.9)
                 clip:          true
                 layer.enabled: true
+
 
                 HoverHandler {
                     onHoveredChanged: hovered ? brightnessTimer.stop() : brightnessTimer.restart()
@@ -327,8 +252,8 @@ Variants {
                     id: brightSlider
                     anchors {
                         left: parent.left; right: parent.right
-                        top: parent.top
-                        leftMargin: 12; rightMargin: 12; topMargin: 2
+                        verticalCenter: parent.verticalCenter
+                        leftMargin: 12; rightMargin: 12
                     }
                     height: 28
 

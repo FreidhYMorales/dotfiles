@@ -12,7 +12,11 @@ WlSessionLockSurface {
 
     required property WlSessionLock lock
 
-    property bool revealed: false
+    // LockConfig.lockScreenDisplay === false means "skip the idle screen,
+    // go straight to the password field" (theme's loginState from the
+    // start) — same distinction the original SDDM theme's Main.qml made
+    // with its lockState/loginState initial state.
+    property bool revealed: !LockConfig.lockScreenDisplay
     property bool bgFailed: false
 
     // Set by Lock.qml when services/IdleManager.qml's idle chain (not a
@@ -56,11 +60,26 @@ WlSessionLockSurface {
     // .gifs are deliberately not supported here either — the theme itself
     // avoids them (Main.qml notes they crash SDDM with multiple monitors).
     readonly property bool isVideo: /\.(avi|mp4|mov|mkv|m4v|webm)$/i.test(root.bgSource)
-    readonly property bool showVideo: !root.useBgColor && root.isVideo && !root.bgFailed
-    readonly property bool showImage: !root.useBgColor && (!root.isVideo || root.bgFailed)
+    // Wallpapers.current (and IdleManager.effectiveScreensaverSource) start
+    // "" until their async load finishes (persisted state FileView, or on a
+    // fresh install the first wallpapers-folder scan) — without this guard,
+    // the very first lock right after a cold Quickshell start could race
+    // ahead of that, try to decode an empty path, and trip bgFailed
+    // permanently for the whole lock session (stuck on default.jpg until
+    // the NEXT lock, by which point the real path had long since loaded).
+    readonly property bool bgPending: root.useAbsoluteBgSource && root.bgSource === ""
+    readonly property bool showVideo: !root.useBgColor && !root.bgPending && root.isVideo && !root.bgFailed
+    readonly property bool showImage: !root.useBgColor && !root.bgPending && (!root.isVideo || root.bgFailed)
+    // bgSource.startsWith("/") (not useAbsoluteBgSource) on purpose: that
+    // flag is a separately-cached property that can still be one tick stale
+    // relative to bgSource itself when several LockConfig properties settle
+    // together (e.g. right after its .conf finishes loading), which produced
+    // a bogus doubled-up path (lockBackgroundsDir + an already-absolute
+    // wallpaper path). Deriving "is this absolute" from bgSource's own
+    // value in the same expression can't go stale relative to itself.
     readonly property url resolvedSource: root.bgFailed
         ? `file://${Paths.lockBackgroundsDir}/default.jpg`
-        : (root.useAbsoluteBgSource ? `file://${root.bgSource}` : `file://${Paths.lockBackgroundsDir}/${root.bgSource}`)
+        : (root.bgSource.startsWith("/") ? `file://${root.bgSource}` : `file://${Paths.lockBackgroundsDir}/${root.bgSource}`)
 
     onBgSourceChanged: root.bgFailed = false
 
@@ -91,7 +110,15 @@ WlSessionLockSurface {
             // perfectly valid image source as failed too.
             if (status === Image.Error && !root.bgFailed) {
                 const failedWasVideo = /\.(avi|mp4|mov|mkv|m4v|webm)$/i.test(background.source.toString())
-                if (!failedWasVideo) root.bgFailed = true
+                // Deferred: setting bgFailed synchronously here feeds back
+                // into resolvedSource (which this Image's own `source` binds
+                // to), and if LockConfig/Wallpapers happen to settle several
+                // upstream properties in the same update batch (cfg reload,
+                // revealed's config-driven initial value, etc.), that
+                // same-tick feedback can trip QML's binding-loop detector.
+                // Qt.callLater pushes the write to the next tick, same
+                // observable result, no reentrancy.
+                if (!failedWasVideo) Qt.callLater(() => { root.bgFailed = true })
             }
         }
     }

@@ -18,7 +18,8 @@ ShellRoot
 ├── NotifToast {}                  ← toasts de notificaciones entrantes
 ├── NotificationPanel {}           ← panel completo de notificaciones/calendario/clima
 ├── ScreensaverPreview {}          ← preview en vivo del salvapantallas (launcher `>screensaver`)
-└── Lock {}                        ← lockscreen, port visual del theme SDDM "silent"
+├── Lock {}                        ← lockscreen, port visual del theme SDDM "silent"
+└── Item { Component.onCompleted } ← notify-send "Shell loaded" ~800ms después de terminar de construir todo lo de arriba (delay para no correr por delante del registro DBus de NotificationServer)
 ```
 
 ---
@@ -61,6 +62,8 @@ Patrones fijos:
 - **Monitor enfocado**: `Hyprland.focusedMonitor?.name ?? ""` — los paneles nunca aparecen en el monitor incorrecto
 - **`WlrLayer.Overlay`**: paneles flotan sobre el escritorio sin reservar espacio
 - **`exclusiveZone: -1`**: el panel puede superponerse a la barra
+
+`BatteryProfileOsd`/`TrayMenuOsd`/`RecorderModeOsd` factorizan exactamente este esqueleto en `components/MonitorOsdWindow.qml` — cada uno solo declara su propio timer de show/hide + `Connections` y pasa el contenido vía `content: Component {...}` (ver `components.md`/`bar.md`). `CalendarPopout`/`Osd` siguen con el patrón inline de arriba.
 
 ### Animación estándar de slide
 
@@ -135,6 +138,10 @@ color: Qt.alpha(colors.m3surfaceContainerHigh, 0.6)
 
 `BarContent.qml` es el consumidor principal: resuelve `root.colors` una vez por monitor y lo pasa a todos los widgets vía la prop `colors`. También expone `Colours.mid(colorA, colorB)` — punto medio RGB plano entre dos colores, usado para bordes que necesitan quedar tonalmente entre un relleno y el fondo sobre el que está (ej. el borde 1px de las píldoras de la bar).
 
+### `ColoursEngine.qml`
+
+El spawneo de procesos de matugen/ffmpegthumbnailer (regenerar el tema, paletas por monitor, previews del picker `>theme`) vive en `services/ColoursEngine.qml`, no en `Colours.qml` — un `Item` (no singleton) que `Colours.qml` instancia como hijo propio y usa vía funciones/`readonly property alias` que delegan. `Colours.qml` mantiene la misma API pública de siempre; el resto del proyecto no ve la diferencia. Detalle completo en `services.md`.
+
 ---
 
 ## IPC con Hyprland
@@ -151,7 +158,7 @@ Para ejecutar comandos de Hyprland:
 Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.focus({workspace=2})"])
 ```
 
-⚠️ **Bridge Lua**: este Hyprland enruta TODOS los dispatchers por un puente Lua (`hl.dsp.*`) — los nombres de dispatcher planos (`"workspace", "2"`, `"exit"`, etc.) están muertos en esta build, `Hyprland.dispatch()` incluido. El patrón real siempre es `hyprctl dispatch "hl.dsp.<algo>(...)"` vía `Quickshell.execDetached`. Ver `modules/bar/WorkspacesWidget.qml` (`hl.dsp.focus({workspace=N})` en el click de un workspace) y el mismo patrón para logout/exit en `modules/dashboard/ProfileSection.qml`, `modules/dashboard/SessionSection.qml` y `modules/powermenu/PowerMenuOsd.qml` (`hl.dsp.exit()`).
+⚠️ **Bridge Lua**: este Hyprland enruta TODOS los dispatchers por un puente Lua (`hl.dsp.*`) — los nombres de dispatcher planos (`"workspace", "2"`, `"exit"`, etc.) están muertos en esta build, `Hyprland.dispatch()` incluido. El patrón real siempre es `hyprctl dispatch "hl.dsp.<algo>(...)"` vía `Quickshell.execDetached`. Ver `modules/bar/WorkspacesWidget.qml` (`hl.dsp.focus({workspace=N})` en el click de un workspace) y el mismo patrón para logout/exit en `modules/dashboard/ProfileSection.qml` y `modules/powermenu/PowerMenuOsd.qml` (`hl.dsp.exit()`) — `modules/dashboard/SessionSection.qml` tiene el mismo patrón pero **no está instanciado en ningún lado** (código muerto, no confundir con un ejemplo en uso).
 
 ---
 

@@ -281,9 +281,33 @@ por fondo estático configurable, y el input de cuadraditos por un
    usuario exporte `QML_IMPORT_PATH` antes de lanzar `qs` (no queda
    persistido en ningún launcher todavía — no hay exec-once/systemd para
    quickshell, ver CLAUDE.md del proyecto).
-3. **`LockConfig.lockScreenDisplay`** (saltar la pantalla ociosa) — se
-   parsea pero no se consume en ningún lado.
-4. **`LockIconButton.qml`** tiene un `Component.onCompleted` (cálculo de
-   ancho de label) con el mismo patrón de riesgo de carrera que se
-   encontró y arregló en `LockAuth.qml`/`LockIdle.qml`/`LockMenuArea.qml`
-   — nunca se reportó síntoma ahí, no se tocó.
+3. ~~`LockConfig.lockScreenDisplay` se parseaba pero no se consumía~~ —
+   **resuelto**. `LockSurface.qml`: `property bool revealed:
+   !LockConfig.lockScreenDisplay` — `display = false` en el `.conf` activo
+   ahora salta la pantalla idle y arranca directo en el campo de contraseña,
+   igual que el `state: lockState/loginState` inicial del theme SDDM
+   original (`Main.qml`).
+4. ~~`LockIconButton.qml` — `Component.onCompleted` con riesgo de carrera~~ —
+   **resuelto**. Alcanzable de verdad (`LockPowerMenu.qml` pasa
+   `preferredWidth`), convertido a binding reactivo (`Layout.preferredWidth:
+   iconButton.preferredWidth !== -1 ? iconButton.width - iconContainer.width
+   : -1`), mismo patrón que `LockAuth.qml`/`LockIdle.qml`.
+5. **Wallpaper del lockscreen mostraba `default.jpg` en el primer bloqueo
+   tras un reinicio/reinstalación** (segundo bloqueo en adelante, correcto)
+   — resuelto en `LockSurface.qml`. `Wallpapers.current` empieza en `""`
+   hasta que termina de cargar (estado persistido, o en instalación fresca
+   el primer escaneo de la carpeta), ambos async. Si el primer lock
+   ocurría antes de eso, el `Image` intentaba decodificar una ruta vacía,
+   fallaba, y `bgFailed` quedaba pegado en `true` para toda esa sesión de
+   bloqueo. Tres cambios: `bgPending` (no intentar cargar nada mientras
+   `Wallpapers.current`/`IdleManager.effectiveScreensaverSource` sigan
+   vacíos), `resolvedSource` deriva "¿es ruta absoluta?" de `bgSource.
+   startsWith("/")` en vez de un flag separado (`useAbsoluteBgSource`) que
+   podía quedar un tick desincronizado y armaba una ruta duplicada
+   (`lockBackgroundsDir` + ruta absoluta concatenadas), y el
+   `Image.onStatusChanged` que marca `bgFailed = true` lo hace con
+   `Qt.callLater` para no reentrar en el mismo tick que `resolvedSource`.
+   Cubre tanto instalación existente (carpeta de wallpapers ya poblada)
+   como fresca desde cero (sin nada persistido todavía) — mismo guard,
+   dos caminos distintos de terminar en un `Wallpapers.current` no vacío.
+   Detalle de los 3 gotchas nuevos en `docs/gotchas.md`.

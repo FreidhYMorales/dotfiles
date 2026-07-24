@@ -30,13 +30,13 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Style.cornerRadius
-        color:        root.colors.m3surfaceContainerHigh
-        border.width: 1
-        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+        color: "transparent"
         Behavior on color { CAnim {} }
     }
 
     HoverHandler { id: hov }
+
+    readonly property bool active: hov.hovered
 
     Row {
         id: innerRow
@@ -47,10 +47,13 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text:           "‹"
-            color:          root.colors.m3onSurface
+            color:          root.active ? root.colors.m3primary : root.colors.m3onSurface
             font.family:    Style.fontFamily
             font.pixelSize: 16
+            scale: root.active ? 1.35 : 1.0
+            transformOrigin: Item.Center
             Behavior on color { CAnim {} }
+            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
 
         Repeater {

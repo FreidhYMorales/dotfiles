@@ -43,21 +43,25 @@ Singleton {
         }
     }
 
+    // CPU/RAM used to be a `grep /proc/stat`/`grep /proc/meminfo` Process
+    // spawned every 2s, forever — a fork+exec just to read two small files
+    // Qt can already read in-process. FileView.reload() below does the same
+    // job with zero process spawns.
     Timer {
         interval: 2000
         running: true
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            cpuProc.running      = true
-            ramProc.running      = true
-            diskProc.running     = true
-            cpuTempProc.running  = false
-            cpuTempProc.running  = true
+            statFile.reload()
+            memFile.reload()
             if (root.hasGpu) gpuProc.running = true
         }
     }
 
+    // Disk % and CPU temp don't need sub-2s freshness for a dashboard
+    // display — sharing the slow timer with uptime cuts their Process
+    // forks from every 2s down to every 30s.
     Timer {
         interval: 30000
         running: true
@@ -66,42 +70,49 @@ Singleton {
         onTriggered: {
             uptimeProc.running  = false
             uptimeProc.running  = true
+            diskProc.running    = true
+            cpuTempProc.running = false
+            cpuTempProc.running = true
         }
     }
 
-    Process {
-        id: cpuProc
-        command: ["grep", "^cpu ", "/proc/stat"]
-        stdout: SplitParser {
-            onRead: line => {
-                const p = line.trim().split(/\s+/)
-                if (p[0] !== "cpu") return
-                const idle  = +p[4] + +p[5]
-                const total = p.slice(1).reduce((s, v) => s + +v, 0)
-                if (root._lastTotal > 0) {
-                    const dt = total - root._lastTotal
-                    const di = idle  - root._lastIdle
-                    if (dt > 0)
-                        root.cpu = Math.max(0, Math.min(100, Math.round((1 - di / dt) * 100)))
-                }
-                root._lastIdle  = idle
-                root._lastTotal = total
-            }
-        }
+    FileView {
+        id: statFile
+        path: "/proc/stat"
+        watchChanges: false
+        onTextChanged: root._parseCpu(text())
     }
 
-    Process {
-        id: ramProc
-        command: ["grep", "-E", "^MemTotal:|^MemAvailable:", "/proc/meminfo"]
-        stdout: SplitParser {
-            onRead: line => {
-                const p = line.trim().split(/\s+/)
-                if (p[0] === "MemTotal:")     root._memTotal = +p[1]
-                if (p[0] === "MemAvailable:") root._memFree  = +p[1]
-                if (root._memTotal > 0)
-                    root.ram = Math.round((1 - root._memFree / root._memTotal) * 100)
-            }
+    FileView {
+        id: memFile
+        path: "/proc/meminfo"
+        watchChanges: false
+        onTextChanged: root._parseRam(text())
+    }
+
+    function _parseCpu(text) {
+        const line = text.split("\n").find(l => l.startsWith("cpu "))
+        if (!line) return
+        const p = line.trim().split(/\s+/)
+        const idle  = +p[4] + +p[5]
+        const total = p.slice(1).reduce((s, v) => s + +v, 0)
+        if (root._lastTotal > 0) {
+            const dt = total - root._lastTotal
+            const di = idle  - root._lastIdle
+            if (dt > 0)
+                root.cpu = Math.max(0, Math.min(100, Math.round((1 - di / dt) * 100)))
         }
+        root._lastIdle  = idle
+        root._lastTotal = total
+    }
+
+    function _parseRam(text) {
+        const totalMatch = text.match(/^MemTotal:\s+(\d+)/m)
+        const availMatch = text.match(/^MemAvailable:\s+(\d+)/m)
+        if (totalMatch) root._memTotal = +totalMatch[1]
+        if (availMatch) root._memFree  = +availMatch[1]
+        if (root._memTotal > 0)
+            root.ram = Math.round((1 - root._memFree / root._memTotal) * 100)
     }
 
     Process {

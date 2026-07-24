@@ -64,6 +64,7 @@ Row {
 
             Text {
                 anchors.centerIn: parent
+                anchors.verticalCenterOffset: -1
                 text:           parent.isActive   ? "●" :
                                 parent.isOccupied ? "○" : "—"
                 color:          parent.isActive   ? wsRow.colors.m3primary :

@@ -14,6 +14,10 @@ Item {
     // wherever else it might be instantiated without a screen context.
     property var  colors:     Colours.palette
 
+    HoverHandler { id: hov }
+
+    readonly property bool active: hov.hovered
+
     Rectangle {
         anchors.fill: parent
         visible:      root.standalone
@@ -28,10 +32,13 @@ Item {
                         Network.signal > 75  ? "󰤨" :
                         Network.signal > 50  ? "󰤥" :
                         Network.signal > 25  ? "󰤢" : "󰤟"
-        color:          !Network.connected ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface
+        color:          root.active ? root.colors.m3primary : (!Network.connected ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface)
         font.family:    Style.fontFamily
         font.pixelSize: 13
+        scale: root.active ? 1.35 : 1.0
+        transformOrigin: Item.Center
         Behavior on color { CAnim {} }
+        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
     }
 
     Process {

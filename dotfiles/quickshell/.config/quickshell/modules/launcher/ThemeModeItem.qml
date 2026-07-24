@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import "../../services"
 import "../../components"
 
@@ -55,7 +54,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius:       height / 2
+            radius:       Style.cornerRadius
             color:        root.isSelected
                           ? Colours.m3primary
                           : Colours.m3primaryContainer
@@ -73,20 +72,18 @@ Item {
         }
 
         // Real swatch once its preview finishes generating (see
-        // Colours.generatePreviews()) — primary/secondary split left/right,
-        // clipped to a perfect circle via a mask (same technique as
-        // LockAvatar.qml) instead of per-corner radius math, which let the
-        // color fills poke past the circular border at the seams. Outer
-        // border + center divider use a fixed black (light theme) / white
-        // (dark theme) — never one of matugen's own generated colors, so the
-        // split stays legible no matter how close primary/secondary land for
-        // a given palette.
+        // Colours.generatePreviews()) — primary/secondary split left/right.
+        // Square, no mask/MultiEffect: that machinery only existed to keep
+        // the color fills from poking past a *circular* border at the
+        // seams — a square has no seams to hide. Outer border + center
+        // divider use a fixed black (light theme) / white (dark theme) —
+        // never one of matugen's own generated colors, so the split stays
+        // legible no matter how close primary/secondary land for a given
+        // palette.
         Item {
             id: swatchContent
             anchors.fill: parent
-            visible: false
-            layer.enabled: true
-            layer.smooth: true
+            visible: !!root.previewColors
 
             Rectangle {
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
@@ -106,30 +103,10 @@ Item {
             }
         }
 
-        Item {
-            id: swatchMask
-            anchors.fill: parent
-            visible: false
-            layer.enabled: true
-            layer.smooth: true
-            Rectangle { anchors.fill: parent; radius: height / 2 }
-        }
-
-        MultiEffect {
-            anchors.fill: parent
-            visible:      !!root.previewColors
-            source:       swatchContent
-            maskEnabled:  true
-            maskSource:   swatchMask
-            maskSpreadAtMin:  1.0
-            maskThresholdMax: 1.0
-            maskThresholdMin: 0.5
-        }
-
         Rectangle {
             anchors.fill: parent
             visible: !!root.previewColors
-            radius:  height / 2
+            radius:  Style.cornerRadius
             color:   "transparent"
             border.width: 1.5
             border.color: root.isLight ? "black" : "white"

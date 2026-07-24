@@ -51,6 +51,8 @@ Item {
         radius:            Style.cornerRadius
         bottomRightRadius: (Visibilities.notifToast || root._notifCornerFlat || root._dashCornerFlat) ? 0 : Style.cornerRadius
         color:             root.colors.m3surfaceContainer
+        border.width: 2
+        border.color: Qt.alpha(root.colors.m3primary, 0.9)
 
         Behavior on color             { CAnim {} }
         Behavior on bottomRightRadius {
@@ -64,21 +66,18 @@ Item {
 
     // Left: Launcher + Workspaces pill
     Rectangle {
+        id: leftPill
         anchors {
             left:           parent.left
             verticalCenter: parent.verticalCenter
-            leftMargin:     8
+            leftMargin:     2
         }
-        height: 26
+        height: root.height - 4
         width:  leftPillRow.implicitWidth + 8
         radius: Style.cornerRadius
-        // Same dark tone as the media-source selector pill (m3surfaceContainerLow)
-        // — going lighter than the bar's own background made the pill
-        // visible but broke the intended dark/moody look. A subtle outline
-        // gives definition instead of relying on fill contrast, since the
-        // bar's background is already too close in tone to any darker step.
-        color:        root.colors.m3surfaceContainerHigh
-        border.width: 1
+        color:        "transparent"
+        border.width: 2
+        antialiasing:  false
         border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
         clip:   true
         Behavior on color  { CAnim {} }
@@ -94,6 +93,13 @@ Item {
             spacing: 4
 
             LauncherButton   { standalone: false; colors: root.colors }
+            Rectangle {
+                width:  2
+                height: leftPill.height - 4
+                anchors.verticalCenter: parent.verticalCenter
+                antialiasing: false
+                color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+            }
             WorkspacesWidget { colors: root.colors }
         }
     }
@@ -101,51 +107,122 @@ Item {
     // Center: Clock
     ClockWidget {
         anchors.centerIn: parent
+        height: root.height - 4
         colors: root.colors
     }
 
-    // Right: BgApps + system pill
+    // Middle-right: BgApps/CPU/RAM/Recorder pill. Right: system pill
     Row {
         anchors {
             right:          parent.right
             verticalCenter: parent.verticalCenter
-            rightMargin:    8
+            rightMargin:    2
         }
-        spacing: 4
+        spacing: 0
 
-        BgAppsWidget   { colors: root.colors }
-        CpuWidget      { colors: root.colors }
-        RamWidget      { colors: root.colors }
-        RecorderWidget { colors: root.colors }
+        Rectangle {
+            id:     midPill
+            height: root.height - 4
+            width:  midPillRow.implicitWidth + 8
+            radius: Style.cornerRadius
+            color:        "transparent"
+            border.width: 2
+            antialiasing:  false
+            border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+
+            Row {
+                id: midPillRow
+                anchors {
+                    left:           parent.left
+                    leftMargin:     4
+                    verticalCenter: parent.verticalCenter
+                }
+                spacing: 4
+
+                BgAppsWidget { colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: midPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
+                CpuWidget { colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: midPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
+                RamWidget { colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: midPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
+                RecorderWidget { colors: root.colors }
+            }
+        }
 
         Rectangle {
             id:     rightPill
-            height: 26
+            height: root.height - 4
             width:  pillRow.implicitWidth + 8
             radius: Style.cornerRadius
-            // Same dark tone as the media-source selector pill (m3surfaceContainerLow)
-        // — going lighter than the bar's own background made the pill
-        // visible but broke the intended dark/moody look. A subtle outline
-        // gives definition instead of relying on fill contrast, since the
-        // bar's background is already too close in tone to any darker step.
-        color:        root.colors.m3surfaceContainerHigh
-        border.width: 1
-        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-            Behavior on color { CAnim {} }
-            Behavior on width {
-                NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
-            }
+            color:        "transparent"
+            border.width: 2
+            antialiasing:  false
+            border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
 
             Row {
                 id: pillRow
                 anchors.centerIn: parent
-                // spacing: 2
+                spacing: 4
 
                 VolumeWidget       { id: volWidget; standalone: false; colors: root.colors }
+                Rectangle {
+                    id:     volBatDivider
+                    width:  2
+                    height: rightPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
                 BatteryWidget      { id: batWidget; standalone: false; colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: rightPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
                 BluetoothWidget    { standalone: false; colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: rightPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
                 WifiWidget         { standalone: false; colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: rightPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
                 NotificationButton { standalone: false; colors: root.colors }
+                Rectangle {
+                    width:  2
+                    height: rightPill.height - 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    antialiasing: false
+                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+                }
                 DashboardButton    { standalone: false; colors: root.colors }
             }
         }
@@ -154,5 +231,5 @@ Item {
     Binding { target: Visibilities; property: "volumeBarCenterX"
               value: root.width - rightPill.width / 2 - pillRow.implicitWidth / 2 + volWidget.implicitWidth / 2 }
     Binding { target: Visibilities; property: "batteryBarCenterX"
-              value: root.width - rightPill.width / 2 - pillRow.implicitWidth / 2 + volWidget.implicitWidth + batWidget.implicitWidth / 2 }
+              value: root.width - rightPill.width / 2 - pillRow.implicitWidth / 2 + volWidget.implicitWidth + pillRow.spacing * 2 + volBatDivider.width + batWidget.implicitWidth / 2 }
 }

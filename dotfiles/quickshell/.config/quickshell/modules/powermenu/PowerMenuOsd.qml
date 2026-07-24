@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Effects
 import "../../services"
 import "../../components"
 
@@ -65,7 +64,7 @@ Variants {
                     }
                 }
 
-                // Pill + animated border wrapper
+                // Pill wrapper
                 Item {
                     id: pillContainer
                     anchors.centerIn: parent
@@ -77,11 +76,13 @@ Variants {
                     Behavior on scale   { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
                     Behavior on opacity { NumberAnimation { duration: 180 } }
 
-                    // Reset selection when menu closes
+                    // Select the first button on open, clear on close — Enter
+                    // needs a valid index to activate, and required arrowing
+                    // first before it worked at all.
                     Connections {
                         target: Visibilities
                         function onPowerMenuChanged() {
-                            if (!Visibilities.powerMenu) pill.selectedIndex = -1
+                            pill.selectedIndex = Visibilities.powerMenu ? 0 : -1
                         }
                     }
 
@@ -99,8 +100,8 @@ Variants {
 
                         radius: Style.cornerRadius
                         color:  Colours.m3surfaceContainerHigh
-                        border.width: 1
-                        border.color: Qt.alpha(Colours.m3onSurface, 0.10)
+                        border.width: 2
+                        border.color: Qt.alpha(Colours.m3primary, 0.9)
                         Behavior on color { CAnim {} }
 
                         property int selectedIndex: -1
@@ -115,8 +116,11 @@ Variants {
 
                         function activateSelected() {
                             if (selectedIndex < 0 || selectedIndex >= buttons.length) return
+                            // Capture before toggling — closing the menu resets
+                            // selectedIndex synchronously via the Connections below.
+                            const cmd = buttons[selectedIndex].cmd
                             Visibilities.toggle("powerMenu")
-                            Quickshell.execDetached(buttons[selectedIndex].cmd)
+                            Quickshell.execDetached(cmd)
                         }
 
                         Row {
@@ -135,73 +139,22 @@ Variants {
                                         Visibilities.toggle("powerMenu")
                                         Quickshell.execDetached(modelData.cmd)
                                     }
+
+                                    // Segment divider — hidden after the last button
+                                    Rectangle {
+                                        visible: index < pill.buttons.length - 1
+                                        anchors {
+                                            left:           parent.right
+                                            leftMargin:     pill.spacing / 2 - 0.5
+                                            verticalCenter: parent.verticalCenter
+                                        }
+                                        width:  1
+                                        height: pill.btnSize * 0.5
+                                        color:  Qt.alpha(Colours.m3outlineVariant, 0.3)
+                                        Behavior on color { CAnim {} }
+                                    }
                                 }
                             }
-                        }
-                    }
-
-                    // Animated glow — segment travels around the pill as a soft streak.
-                    // Canvas is intentionally larger than the pill (gm px on each side)
-                    // so the MultiEffect blur at the curved ends is never clipped by
-                    // the Canvas bounding box.
-                    Canvas {
-                        id: borderCanvas
-                        readonly property int gm: 20
-
-                        anchors.fill:    parent
-                        anchors.margins: -gm
-
-                        layer.enabled: true
-                        layer.effect: MultiEffect {
-                            blurEnabled: true
-                            blur:        0.8
-                            blurMax:     20
-                        }
-
-                        property color strokeColor: Colours.m3primary
-                        onStrokeColorChanged: requestPaint()
-
-                        readonly property real pillW: width  - gm * 2
-                        readonly property real pillH: height - gm * 2
-                        readonly property real perimeter: 2 * (pillW - pillH) + Math.PI * pillH
-
-                        property real dashOffset: 0
-                        onDashOffsetChanged: requestPaint()
-
-                        NumberAnimation on dashOffset {
-                            from:        0
-                            to:          -borderCanvas.perimeter
-                            duration:    2400
-                            loops:       Animation.Infinite
-                            running:     Visibilities.powerMenu
-                            easing.type: Easing.Linear
-                        }
-
-                        onPaint: {
-                            var ctx = getContext("2d")
-                            ctx.reset()
-
-                            var m  = gm
-                            var w  = pillW
-                            var h  = pillH
-                            var r  = h / 2
-                            var segLen = 110
-
-                            ctx.strokeStyle = Qt.rgba(
-                                strokeColor.r, strokeColor.g, strokeColor.b, 1.0)
-                            ctx.lineWidth = 3.5
-                            ctx.lineCap   = "round"
-                            ctx.setLineDash([segLen, perimeter - segLen])
-                            ctx.lineDashOffset = dashOffset
-
-                            ctx.beginPath()
-                            ctx.moveTo(m + r,     m)
-                            ctx.lineTo(m + w - r, m)
-                            ctx.arc(m + w - r, m + r, r, -Math.PI / 2,     Math.PI / 2,      false)
-                            ctx.lineTo(m + r,  m + h)
-                            ctx.arc(m + r,     m + r, r,  Math.PI / 2, 3 * Math.PI / 2,      false)
-                            ctx.closePath()
-                            ctx.stroke()
                         }
                     }
                 }

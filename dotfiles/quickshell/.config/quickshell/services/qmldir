@@ -1,4 +1,5 @@
 singleton Colours      1.0 Colours.qml
+ColoursEngine          1.0 ColoursEngine.qml
 singleton Time         1.0 Time.qml
 singleton Battery      1.0 Battery.qml
 singleton SysInfo      1.0 SysInfo.qml

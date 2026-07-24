@@ -27,78 +27,83 @@ Dismiss: `MouseArea z:0` + `onClicked: Visibilities.toggle("launcher")`.
 
 ### State machine
 
+Punto → línea (crece hacia arriba) → brackets (se separan + tics de esquina
++ ícono de Arch adentro) → bar → open — terminal-alike, reemplazó la
+animación anterior de círculo+arco.
+
 ```
-OPEN:   precircle ──(320ms)──→ circle ──(180ms)──→ bar ──(360ms)──→ open
-CLOSE:  open ──(300ms)──→ bar ──(380ms)──→ circle ──(200ms)──→ closing ──(200ms)──→ closed
+OPEN:   line ──(220+40ms)──→ brackets ──(260+160ms)──→ bar ──(360ms)──→ open
+CLOSE:  open ──(300ms)──→ bar ──(180ms)──→ brackets ──(220ms)──→ line ──(180ms)──→ closing ──(160ms)──→ closed
 ```
 
 **Estados:**
 
-| Stage | Panel | Descripción |
+| Stage | Panel (`panelRect`) | Glyph (`introGroup`, `LauncherIntroGlyph.qml`) |
 |---|---|---|
-| `closed` | invisible | estado inicial, no renderiza |
-| `precircle` | 60×60 círculo | Canvas dibuja arco girando (0→360°) |
-| `circle` | 60×60 círculo | Ícono de Arch Linux visible |
-| `bar` | 600×56 rect | Panel rectangular sin lista |
-| `open` | 600×panelHeight | Lista de apps + search bar |
-| `closing` | 60×60 círculo | Fadeout |
+| `closed` | invisible, 60×60 | invisible |
+| `line` | invisible, 60×60 | dos espinas coincidentes (separation=0) — se lee como una sola línea |
+| `brackets` | invisible, 60×60 | espinas separadas + tics de esquina formando `[`/`]` + ícono Arch (`` `` ) |
+| `bar` | 600×56, borde 2px | invisible (`opacity` solo en line/brackets) |
+| `open` | 600×panelHeight, borde 2px | invisible |
+| `closing` | invisible, 60×60 | (glyph ya volvió a `line`/nada antes de llegar acá) |
 
-**Dimensiones del panel por stage:**
+**Dimensiones del panel por stage** (`panelRect`):
 ```qml
-width: switch(stage) {
-    case "closed"/"precircle"/"circle"/"closing": return 60
-    default: return 600
-}
-height: switch(stage) {
-    case "closed"/"precircle"/"circle"/"closing": return 60
-    case "bar": return searchH  // 56px
-    default: return panelHeight  // listH + searchH + gap
-}
-radius: stage in ["closed","precircle","circle","closing"] ? 30 : 14
+width:  stage in ["closed","line","brackets","closing"] ? 60 : 600
+height: stage in ["closed","line","brackets","closing"] ? 60
+      : stage === "bar" ? searchH                          // 56px
+      : panelHeight                                        // listH + searchH + gap
+radius: Style.cornerRadius   // cuadrado siempre, coincide con los brackets del glyph
+opacity: stage in ["closed","closing","line","brackets"] ? 0 : 1
+border.width: stage in ["bar","open"] ? 2 : 0   // el glyph dibuja su propio "borde" (los brackets) en line/brackets
 ```
 
-Todas las propiedades del `Rectangle#panelRect` tienen `Behavior on` para la transición suave.
+Todas las propiedades de `panelRect` tienen `Behavior on` para la transición suave.
 
-### Animaciones
+### Animaciones (`LauncherContent.qml`)
 
 ```qml
 // OPEN
 SequentialAnimation {
-    ScriptAction { script: stage = "precircle" }
-    NumberAnimation { target: arcCanvas; property: "arcEnd"; from: 0; to: 360; duration: 320; easing: InOutQuart }
-    PauseAnimation { duration: 60 }
-    ScriptAction { script: stage = "circle" }
-    PauseAnimation { duration: 180 }
-    ScriptAction { script: stage = "bar" }
-    PauseAnimation { duration: 360 }
-    ScriptAction { script: { stage = "open"; focusTimer.restart() } }
-}
-
-// CLOSE
-SequentialAnimation {
-    ScriptAction { script: { searchField.text = ""; if (stage === "open") stage = "bar" } }
-    PauseAnimation { duration: 300 }
-    ScriptAction { script: stage = "circle" }
-    PauseAnimation { duration: 380 }
-    ScriptAction { script: stage = "closing" }
-    PauseAnimation { duration: 200 }
-    ScriptAction { script: stage = "closed" }
-}
-```
-
-`focusTimer` (50ms) llama `searchField.forceActiveFocus()` después de que el panel está en `open`.
-
-### Arc canvas (stage: precircle)
-
-```qml
-Canvas {
-    property real arcEnd: 0   // 0 → 360 animado
-    onArcEndChanged: requestPaint()
-    onPaint: {
-        // arco clockwise desde arriba, lineCap "round", strokeStyle m3primary
+    ScriptAction { script: root.stage = "line" }
+    NumberAnimation { target: introGroup; property: "spineH"; from: 0; to: introGroup.spineHTarget; duration: 220; easing: OutCubic }
+    PauseAnimation { duration: 40 }
+    ScriptAction { script: root.stage = "brackets" }
+    ParallelAnimation {
+        NumberAnimation { target: introGroup; property: "separation"; from: 0; to: introGroup.separationTarget; duration: 260; easing: OutCubic }
+        NumberAnimation { target: introGroup; property: "capReveal";  from: 0; to: 1; duration: 260; easing: OutCubic }
     }
+    PauseAnimation { duration: 160 }
+    ScriptAction { script: root.stage = "bar" }
+    PauseAnimation { duration: 360 }
+    ScriptAction { script: { root.stage = "open"; focusTimer.restart() } }
+}
+
+// CLOSE — mismo camino a la inversa
+SequentialAnimation {
+    ScriptAction { script: { searchField.text = ""; if (root.stage === "open") root.stage = "bar" } }
+    PauseAnimation { duration: 300 }
+    ScriptAction { script: root.stage = "brackets" }
+    PauseAnimation { duration: 180 }
+    ParallelAnimation {
+        NumberAnimation { target: introGroup; property: "separation"; to: 0; duration: 220; easing: InCubic }
+        NumberAnimation { target: introGroup; property: "capReveal";  to: 0; duration: 220; easing: InCubic }
+    }
+    ScriptAction { script: root.stage = "line" }
+    NumberAnimation { target: introGroup; property: "spineH"; to: 0; duration: 180; easing: InCubic }
+    ScriptAction { script: root.stage = "closing" }
+    PauseAnimation { duration: 160 }
+    ScriptAction { script: root.stage = "closed" }
 }
 ```
+
+`focusTimer` (50ms) llama `searchField.forceActiveFocus()` después de que el panel está en `open`. `Launcher.qml` ancla el panel con `margins.bottom: 10`, igual al `gaps_out` de Hyprland — el borde inferior del launcher coincide con el de las ventanas.
+
+### `LauncherIntroGlyph.qml`
+
+Componente separado (antes vivía inline en `LauncherContent.qml`) — dibuja el glyph de línea/brackets/ícono de arriba. Recibe `stage`/`searchH` como propiedades del padre; `spineH`/`separation`/`capReveal` quedan como propiedades escribibles normales porque las animaciones de `LauncherContent.qml` las setean por `id` desde afuera (`target: introGroup; property: "spineH"`).
+
+⚠️ El ícono de Arch usa `opacity: introGroup.capReveal` — **no** `stage === "brackets"` — porque ese stage se mantiene igual durante la formación Y el colapso de los brackets; atado al stage, el ícono quedaba visible durante todo el cierre en vez de desvanecerse con los tics.
 
 ### Lista de apps
 
@@ -129,16 +134,9 @@ Keybindings:
 - `Keys.onEscapePressed` → `Visibilities.toggle("launcher")`
 - `Keys.onReturnPressed` → lanza `filtered[0].exec` y cierra
 
-### Carga de apps
+### `AppLoader.qml`
 
-```qml
-Process {
-    command: ["python3", Paths.scripts + "/list-apps.py"]
-    // corre cada vez que se abre el launcher (no en caché permanente)
-}
-```
-
-Resultado: JSON `[{ name, exec, icon, description }]`.
+Wrapper del `Process` que corre `list-apps.py` (antes vivía inline en `LauncherContent.qml`) — `appLoader.apps` (JSON `[{ name, exec, icon, description }]`) y `appLoader.reload()`, llamado cada vez que se abre el launcher (no hay caché permanente).
 
 ---
 

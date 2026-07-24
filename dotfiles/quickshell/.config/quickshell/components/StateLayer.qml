@@ -14,7 +14,7 @@ Rectangle {
     signal clicked()
 
     anchors.fill:  parent
-    radius:        parent ? parent.radius : 0
+    radius:        parent && parent.radius !== undefined ? parent.radius : 0
     color:         Qt.alpha(root.tintColor, ma.pressed
                         ? pressedOpacity
                         : (hoverEnabled && ma.containsMouse ? hoverOpacity : 0))

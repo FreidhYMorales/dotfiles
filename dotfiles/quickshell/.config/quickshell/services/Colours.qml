@@ -191,318 +191,42 @@ Singleton {
                 Wallpapers.isVideoPath(Wallpapers.perScreen[screenName]))
     }
 
-    // --- Per-monitor palettes (bar/panels only — see regeneratePaletteFor) ---
-    // Keyed by ShellScreen.name. A screen with no entry here just follows the
-    // global flat m3* properties/`palette` above (shared default, kept in
-    // sync with kitty/Hyprland/btop/SDDM/etc via the real matugen pipeline).
-    property var palettes: ({})
+    // --- Per-monitor palettes + matugen process orchestration ---
+    // Actual process spawning/queueing/frame-extraction lives in
+    // ColoursEngine (services/ColoursEngine.qml) — none of it needs to BE a
+    // singleton, it just reads currentMode/isLight/m3* fallbacks live off
+    // `owner` (this singleton). These are thin forwarders so the rest of the
+    // project keeps using the flat Colours.xxx API unchanged.
+    ColoursEngine { id: engine; owner: root }
+
+    readonly property alias matugenAvailable: engine.matugenAvailable
+    readonly property alias ffmpegthumbnailerAvailable: engine.ffmpegthumbnailerAvailable
+    readonly property alias previewCache: engine.previewCache
 
     // Resolves the palette a bar/panel widget on `screenName` should read
     // from — either its own override or the shared global `palette`. Every
     // property present on `palette` is also present here, so both branches
     // are safe to dot-access identically (Colours.paletteFor(s).m3primary).
     function paletteFor(screenName) {
-        return root.palettes[screenName] ?? root.palette
+        return engine.palettes[screenName] ?? root.palette
     }
 
     function clearScreenPalettes() {
-        root.palettes = {}
+        engine.clearScreenPalettes()
     }
-
-    // Same field mapping as parse() below, but returned as a plain object
-    // instead of mutated onto root.m3* — used for per-monitor palettes,
-    // which must NEVER touch the globally-applied colors or external apps.
-    //
-    // Note: this reads matugen's own `--json hex` dump shape (used for
-    // --dry-run calls), which nests each color as
-    // { default: { color }, dark: { color }, light: { color } } — NOT the
-    // { hex } shape that the real colors.json (written by our OWN
-    // colors.json.template) uses in parse() below. "default" already
-    // reflects whichever --mode light/dark was requested on the CLI, same
-    // as the existing _runNextPreview swatch reader.
-    function _extractPalette(data) {
-        if (!data?.colors) return null
-        const c = data.colors
-        return {
-            m3primary:                 c.primary?.default?.color                   ?? root.m3primary,
-            m3onPrimary:               c.on_primary?.default?.color                ?? root.m3onPrimary,
-            m3primaryContainer:        c.primary_container?.default?.color         ?? root.m3primaryContainer,
-            m3onPrimaryContainer:      c.on_primary_container?.default?.color      ?? root.m3onPrimaryContainer,
-            m3secondary:               c.secondary?.default?.color                 ?? root.m3secondary,
-            m3onSecondary:             c.on_secondary?.default?.color              ?? root.m3onSecondary,
-            m3secondaryContainer:      c.secondary_container?.default?.color       ?? root.m3secondaryContainer,
-            m3onSecondaryContainer:    c.on_secondary_container?.default?.color    ?? root.m3onSecondaryContainer,
-            m3tertiary:                c.tertiary?.default?.color                  ?? root.m3tertiary,
-            m3onTertiary:              c.on_tertiary?.default?.color               ?? root.m3onTertiary,
-            m3tertiaryContainer:       c.tertiary_container?.default?.color        ?? root.m3tertiaryContainer,
-            m3onTertiaryContainer:     c.on_tertiary_container?.default?.color     ?? root.m3onTertiaryContainer,
-            m3background:              c.background?.default?.color                ?? root.m3background,
-            m3onBackground:            c.on_background?.default?.color             ?? root.m3onBackground,
-            m3surface:                 c.surface?.default?.color                   ?? root.m3surface,
-            m3onSurface:               c.on_surface?.default?.color                ?? root.m3onSurface,
-            m3surfaceDim:              c.surface_dim?.default?.color               ?? root.m3surfaceDim,
-            m3surfaceBright:           c.surface_bright?.default?.color            ?? root.m3surfaceBright,
-            m3surfaceContainerLowest:  c.surface_container_lowest?.default?.color  ?? root.m3surfaceContainerLowest,
-            m3surfaceContainerLow:     c.surface_container_low?.default?.color     ?? root.m3surfaceContainerLow,
-            m3surfaceContainer:        c.surface_container?.default?.color         ?? root.m3surfaceContainer,
-            m3surfaceContainerHigh:    c.surface_container_high?.default?.color    ?? root.m3surfaceContainerHigh,
-            m3surfaceContainerHighest: c.surface_container_highest?.default?.color ?? root.m3surfaceContainerHighest,
-            m3onSurfaceVariant:        c.on_surface_variant?.default?.color        ?? root.m3onSurfaceVariant,
-            m3outline:                 c.outline?.default?.color                   ?? root.m3outline,
-            m3outlineVariant:          c.outline_variant?.default?.color           ?? root.m3outlineVariant,
-            m3error:                   c.error?.default?.color                     ?? root.m3error,
-            m3onError:                 c.on_error?.default?.color                  ?? root.m3onError,
-            m3errorContainer:          c.error_container?.default?.color           ?? root.m3errorContainer,
-            m3onErrorContainer:        c.on_error_container?.default?.color        ?? root.m3onErrorContainer,
-            m3inverseSurface:          c.inverse_surface?.default?.color           ?? root.m3inverseSurface,
-            m3inverseOnSurface:        c.inverse_on_surface?.default?.color        ?? root.m3inverseOnSurface,
-            m3inversePrimary:          c.inverse_primary?.default?.color           ?? root.m3inversePrimary,
-            m3scrim:                   c.scrim?.default?.color                     ?? root.m3scrim,
-            m3shadow:                  c.shadow?.default?.color                    ?? root.m3shadow
-        }
-    }
-
-    // Queued (not parallel) like generatePreviews below — same reasoning:
-    // several monitors can request a regen close together (startup restore,
-    // a global scheme change looping every override) and shouldn't spawn N
-    // matugen processes at once.
-    property var _screenPaletteQueue: []
-    property bool _screenPaletteBusy: false
-    readonly property string _screenPaletteFramePath: `${Paths.cache}/quickshell-screen-palette-frame.png`
-    Process { id: screenPaletteExtractFrameProc; property var onDone: null }
 
     function regeneratePaletteFor(screenName, path, isVideo) {
-        if (!screenName || !path || !root.matugenAvailable) return
-        root._screenPaletteQueue.push({ screenName: screenName, path: path, isVideo: isVideo })
-        root._runNextScreenPalette()
-    }
-
-    function _runNextScreenPalette() {
-        if (root._screenPaletteBusy || root._screenPaletteQueue.length === 0) return
-        root._screenPaletteBusy = true
-        const job = root._screenPaletteQueue.shift()
-        if (job.isVideo) {
-            root._extractFrameForScreenPalette(job.path, framePath => root._execScreenPalette(job.screenName, framePath))
-        } else {
-            root._execScreenPalette(job.screenName, job.path)
-        }
-    }
-
-    function _extractFrameForScreenPalette(videoPath, onDone) {
-        if (!root.ffmpegthumbnailerAvailable) {
-            root._screenPaletteBusy = false
-            root._runNextScreenPalette()
-            return
-        }
-        screenPaletteExtractFrameProc.onDone = onDone
-        screenPaletteExtractFrameProc.command = ["ffmpegthumbnailer", "-i", videoPath, "-o", root._screenPaletteFramePath, "-s", "512"]
-        screenPaletteExtractFrameProc.exited.connect(root._onScreenPaletteFrameExtracted)
-        screenPaletteExtractFrameProc.running = true
-    }
-
-    function _onScreenPaletteFrameExtracted(exitCode) {
-        screenPaletteExtractFrameProc.exited.disconnect(root._onScreenPaletteFrameExtracted)
-        if (exitCode === 0 && screenPaletteExtractFrameProc.onDone) {
-            screenPaletteExtractFrameProc.onDone(root._screenPaletteFramePath)
-        } else {
-            root._screenPaletteBusy = false
-            root._runNextScreenPalette()
-        }
-        screenPaletteExtractFrameProc.onDone = null
-    }
-
-    function _execScreenPalette(screenName, imagePath) {
-        screenPaletteProc.pendingScreen = screenName
-        screenPaletteProc.command = ["matugen", "image", imagePath,
-            "--type", root.currentMode,
-            "--mode", root.isLight ? "light" : "dark",
-            "--source-color-index", "0",
-            "--dry-run", "--quiet",
-            "--json", "hex"]
-        screenPaletteProc.running = true
-    }
-
-    Process {
-        id: screenPaletteProc
-        property string pendingScreen: ""
-        stdout: StdioCollector {
-            id: screenPaletteStdout
-            onStreamFinished: {
-                try {
-                    const data   = JSON.parse(screenPaletteStdout.text)
-                    const parsed = root._extractPalette(data)
-                    if (parsed) {
-                        const next = Object.assign({}, root.palettes)
-                        next[screenPaletteProc.pendingScreen] = parsed
-                        root.palettes = next
-                    }
-                } catch (e) {
-                    console.warn("Colours: failed to parse per-screen palette json for", screenPaletteProc.pendingScreen, e)
-                }
-                root._screenPaletteBusy = false
-                root._runNextScreenPalette()
-            }
-        }
-    }
-
-    // --- matugen invocation (shared by Colours.commit + Wallpapers.commit) ---
-    // matugen/ffmpegthumbnailer are optional at runtime — checked once at
-    // startup so a missing binary just skips recoloring silently instead of
-    // spamming Process errors on every commit.
-    property bool matugenAvailable: false
-    property bool ffmpegthumbnailerAvailable: false
-
-    Process {
-        id: checkMatugenProc
-        command: ["which", "matugen"]
-        onExited: exitCode => root.matugenAvailable = (exitCode === 0)
-    }
-    Process {
-        id: checkFfmpegthumbnailerProc
-        command: ["which", "ffmpegthumbnailer"]
-        onExited: exitCode => root.ffmpegthumbnailerAvailable = (exitCode === 0)
-    }
-
-    readonly property string _videoFramePath: `${Paths.cache}/quickshell-wallpaper-frame.png`
-
-    Process { id: extractFrameProc; property var onDone: null }
-    Process {
-        id: matugenProc
-        onExited: exitCode => { if (exitCode === 0) postHookProc.running = true }
-    }
-    Process {
-        id: postHookProc
-        command: [Paths.home + "/.config/matugen/post-hook.sh", root.isLight ? "light" : "dark"]
+        engine.regeneratePaletteFor(screenName, path, isVideo)
     }
 
     // path/isVideo describe the SOURCE (wallpaper) to derive colors from;
     // root.currentMode/isLight (already committed) pick the scheme type.
     function regenerateFrom(path, isVideo) {
-        if (!path || !root.matugenAvailable) return
-        if (isVideo) {
-            root._extractFrame(path, root._runMatugen)
-        } else {
-            root._runMatugen(path)
-        }
-    }
-
-    // Shared by regenerateFrom (single commit) and generatePreviews (batch
-    // swatches) — both need the same "extract a frame first if it's a video"
-    // step before matugen can read a source image.
-    function _extractFrame(videoPath, onDone) {
-        if (!root.ffmpegthumbnailerAvailable) return
-        extractFrameProc.onDone = onDone
-        extractFrameProc.command = ["ffmpegthumbnailer", "-i", videoPath, "-o", root._videoFramePath, "-s", "512"]
-        extractFrameProc.exited.connect(root._onFrameExtracted)
-        extractFrameProc.running = true
-    }
-
-    function _onFrameExtracted(exitCode) {
-        extractFrameProc.exited.disconnect(root._onFrameExtracted)
-        if (exitCode === 0 && extractFrameProc.onDone) extractFrameProc.onDone(root._videoFramePath)
-        extractFrameProc.onDone = null
-    }
-
-    function _runMatugen(imagePath) {
-        matugenProc.command = ["matugen", "image", imagePath,
-            "--type", root.currentMode,
-            "--mode", root.isLight ? "light" : "dark",
-            "--source-color-index", "0",
-            "--quiet"]
-        matugenProc.running = true
-    }
-
-    // --- Theme mode swatch previews (launcher's ">theme" picker) ---
-    // Generates a real primary/secondary/tertiary swatch per mode against the
-    // CURRENT wallpaper, one matugen call at a time (queued, not parallel, so
-    // opening the picker doesn't spawn 9 processes at once). Uses --dry-run
-    // --json so nothing gets written to the real colors.json — this must
-    // never affect the actually-applied colors, only the cache below.
-    property var previewCache: ({})
-    property var _previewQueue: []
-
-    Process {
-        id: previewProc
-        property string pendingMode: ""
-        // StdioCollector instead of manually accumulating SplitParser lines:
-        // the dry-run JSON dump is large (~18KB, hundreds of lines), and
-        // reading the buffer from onRunningChanged raced the last chunks of
-        // stdout still arriving — every mode failed to JSON.parse when the
-        // source was a video-extracted frame (bigger/slower matugen run made
-        // the race obvious, but it's not exclusive to video). streamFinished
-        // only fires once the full stream is captured.
-        stdout: StdioCollector {
-            id: previewStdout
-            onStreamFinished: {
-                try {
-                    const data = JSON.parse(previewStdout.text)
-                    // Reassign (not mutate) so the property's own change
-                    // notification fires and ThemeModeItem's binding re-evaluates.
-                    const next = Object.assign({}, root.previewCache)
-                    next[previewProc.pendingMode] = {
-                        primary:   data.colors.primary.default.color,
-                        secondary: data.colors.secondary.default.color,
-                        tertiary:  data.colors.tertiary.default.color
-                    }
-                    root.previewCache = next
-                } catch (e) {
-                    console.warn("Colours: failed to parse preview json for", previewProc.pendingMode, e)
-                }
-                root._runNextPreview()
-            }
-        }
+        engine.regenerateFrom(path, isVideo)
     }
 
     function generatePreviews(wallpaperPath, isVideo) {
-        if (!wallpaperPath || !root.matugenAvailable) return
-        root.previewCache = {}
-        root._previewQueue = root.modes.map(m => m.id)
-        if (isVideo) {
-            // Own extraction Process (not the one regenerateFrom uses) — a
-            // wallpaper commit calls both regenerateFrom (if dynamic) AND
-            // generatePreviews back-to-back; sharing one Process's `running`/
-            // `onDone` between them raced (the second call's running=true
-            // was a no-op while the first was still mid-flight, silently
-            // dropping whichever callback got overwritten).
-            root._extractFramePreview(wallpaperPath, framePath => {
-                root._previewWallpaperPath = framePath
-                root._runNextPreview()
-            })
-        } else {
-            root._previewWallpaperPath = wallpaperPath
-            root._runNextPreview()
-        }
-    }
-
-    property string _previewWallpaperPath: ""
-    readonly property string _previewVideoFramePath: `${Paths.cache}/quickshell-theme-preview-frame.png`
-    Process { id: previewExtractFrameProc; property var onDone: null }
-
-    function _extractFramePreview(videoPath, onDone) {
-        if (!root.ffmpegthumbnailerAvailable) return
-        previewExtractFrameProc.onDone = onDone
-        previewExtractFrameProc.command = ["ffmpegthumbnailer", "-i", videoPath, "-o", root._previewVideoFramePath, "-s", "512"]
-        previewExtractFrameProc.exited.connect(root._onPreviewFrameExtracted)
-        previewExtractFrameProc.running = true
-    }
-
-    function _onPreviewFrameExtracted(exitCode) {
-        previewExtractFrameProc.exited.disconnect(root._onPreviewFrameExtracted)
-        if (exitCode === 0 && previewExtractFrameProc.onDone) previewExtractFrameProc.onDone(root._previewVideoFramePath)
-        previewExtractFrameProc.onDone = null
-    }
-
-    function _runNextPreview() {
-        if (root._previewQueue.length === 0) return
-        const modeId = root._previewQueue.shift()
-        previewProc.pendingMode = modeId
-        previewProc.command = ["matugen", "image", root._previewWallpaperPath,
-            "--type", modeId,
-            "--mode", root.isLight ? "light" : "dark",
-            "--source-color-index", "0",
-            "--dry-run", "--quiet",
-            "--json", "hex"]
-        previewProc.running = true
+        engine.generatePreviews(wallpaperPath, isVideo)
     }
 
     Process {
@@ -533,8 +257,6 @@ Singleton {
 
     Component.onCompleted: {
         mkThemeStateDirProc.running = true
-        checkMatugenProc.running = true
-        checkFfmpegthumbnailerProc.running = true
     }
 
     FileView {
@@ -585,7 +307,9 @@ Singleton {
             if (c.surface_bright)            root.m3surfaceBright            = c.surface_bright.hex
             if (c.surface_container_lowest)  root.m3surfaceContainerLowest   = c.surface_container_lowest.hex
             if (c.surface_container_low)     root.m3surfaceContainerLow      = c.surface_container_low.hex
-            if (c.surface_container)         root.m3surfaceContainer         = c.surface_container.hex
+            // Same token kitty's background uses (c.surface, not surface_container)
+            // so the bar/panels read as the same "terminal surface" color.
+            if (c.surface)                   root.m3surfaceContainer         = c.surface.hex
             if (c.surface_container_high)    root.m3surfaceContainerHigh     = c.surface_container_high.hex
             if (c.surface_container_highest) root.m3surfaceContainerHighest  = c.surface_container_highest.hex
             if (c.on_surface_variant)        root.m3onSurfaceVariant         = c.on_surface_variant.hex

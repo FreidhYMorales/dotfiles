@@ -28,6 +28,14 @@ Behavior on color { CAnim {} }   // animación suave en hot-reload
 
 ⚠️ Si `colors.json` no existe al arrancar, todos los colores fallan silenciosamente. Correr matugen primero.
 
+**Otras funciones/propiedades públicas:** `Colours.commit(modeId, isLight)` (aplica un modo de esquema + regenera), `Colours.paletteFor(screenName)` (paleta por monitor o la global), `Colours.regeneratePaletteFor(screenName, path, isVideo)`, `Colours.clearScreenPalettes()`, `Colours.regenerateFrom(path, isVideo)`, `Colours.generatePreviews(wallpaperPath, isVideo)`, `Colours.previewCache`, `Colours.matugenAvailable`/`Colours.ffmpegthumbnailerAvailable`, `Colours.layer(color, depth)`, `Colours.mid(colorA, colorB)`.
+
+### `ColoursEngine.qml`
+
+No es singleton — `Colours.qml` instancia uno (`ColoursEngine { id: engine; owner: root }`) como hijo propio. Concentra todo el spawneo de procesos de matugen/ffmpegthumbnailer (regenerar el tema global, paletas por monitor, swatches de preview del picker `>theme`) que antes vivía inline en `Colours.qml` (614 → 334 líneas). Lee `currentMode`/`isLight`/los `m3*` de fallback en vivo vía `owner` (la propia paleta global). `Colours.qml` expone exactamente la misma API pública de antes — son funciones/`readonly property alias` que delegan al motor, así que ningún otro archivo del proyecto necesitó cambios.
+
+⚠️ Raíz `Item` (no `QtObject`) — tiene 9 `Process`/`StdioCollector` como hijos declarados directo, y `QtObject` no tiene default property para parentarlos (mismo motivo que `MonitorOsdWindow.qml`).
+
 ---
 
 ## `Style.qml`

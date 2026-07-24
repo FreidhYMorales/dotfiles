@@ -13,12 +13,14 @@ Item {
     implicitWidth:  row.implicitWidth + 16
     implicitHeight: 26
 
+    HoverHandler { id: hov }
+
+    readonly property bool active: hov.hovered
+
     Rectangle {
         anchors.fill: parent
         radius: Style.cornerRadius
-        color:        root.colors.m3surfaceContainerHigh
-        border.width: 1
-        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+        color: "transparent"
         Behavior on color { CAnim {} }
     }
 
@@ -30,19 +32,25 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text:           "󰻠"
-            color:          SysInfo.cpu > 80 ? root.colors.m3error : root.colors.m3onSurface
+            color:          SysInfo.cpu > 80 ? root.colors.m3error : (root.active ? root.colors.m3primary : root.colors.m3onSurface)
             font.family:    Style.fontFamily
             font.pixelSize: 13
+            scale: root.active ? 1.35 : 1.0
+            transformOrigin: Item.Center
             Behavior on color { CAnim {} }
+            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text:           SysInfo.cpu + "%"
-            color:          SysInfo.cpu > 80 ? root.colors.m3error : root.colors.m3onSurface
+            color:          SysInfo.cpu > 80 ? root.colors.m3error : (root.active ? root.colors.m3primary : root.colors.m3onSurface)
             font.family:    Style.fontFamily
             font.pixelSize: 12
+            scale: root.active ? 1.35 : 1.0
+            transformOrigin: Item.Center
             Behavior on color { CAnim {} }
+            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
     }
 }

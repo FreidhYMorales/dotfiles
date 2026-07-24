@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
-import QtQuick.Shapes
 import QtQuick.Controls
 import "../../services"
 import "../../components"
@@ -92,34 +91,11 @@ Item {
         }
     }
 
-    // Left concave ear — only for the profile panel
-    Shape {
-        z:      2
-        x:      0
-        y:      root.panelOpen ? 0 : -14
-        width:  14
-        height: 14
-        Behavior on y {
-            NumberAnimation {
-                duration: 150; easing.type: Easing.BezierSpline
-                easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-            }
-        }
-        ShapePath {
-            fillColor:   panel.color
-            strokeColor: "transparent"
-            strokeWidth: 0
-            startX: 0; startY: 0
-            PathArc  { x: 14; y: 14; radiusX: 14; radiusY: 14; direction: PathArc.Clockwise }
-            PathLine { x: 14; y: 0 }
-        }
-    }
-
     // ── Profile panel — connected to bar, drops from top ──
-    Rectangle {
+    Capsule {
         id:            panel
         anchors.right: parent.right
-        width:         root.width - 14
+        width:         root.width
         height:        root._profileH
         y:             root.panelOpen ? 0 : -root._profileH
         Behavior on y {
@@ -128,13 +104,9 @@ Item {
                 easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
             }
         }
-        radius: Style.cornerRadius
-        topLeftRadius:  0
-        topRightRadius: 0
         color:          Colours.m3surfaceContainer
         clip:           true
         layer.enabled:  true
-        Behavior on color { CAnim {} }
 
         MouseArea { anchors.fill: parent }
 
@@ -159,7 +131,6 @@ Item {
             bottom:     parent.bottom
             left:       parent.left
             right:      parent.right
-            leftMargin: 14
         }
         clip:         true
         contentWidth: availableWidth
@@ -183,13 +154,10 @@ Item {
                     }
                 }
 
-                Rectangle {
+                Capsule {
                     id:     capNotif
                     width:  parent.width
                     height: 82
-                    radius: Style.cornerRadius
-                    color:  Colours.layer(Colours.m3surfaceContainer, 2)
-                    Behavior on color { CAnim {} }
 
                     Column {
                         id: notifContent
@@ -313,12 +281,10 @@ Item {
                 height: cap1.height
                 clip:   true
 
-                Rectangle {
+                Capsule {
                     id:     cap1
                     width:  parent.width
                     height: 116
-                    radius: Style.cornerRadius
-                    color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     y:      root._stage >= 1 ? 0 : -root.height
                     Behavior on y {
                         NumberAnimation {
@@ -326,7 +292,6 @@ Item {
                             easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
                         }
                     }
-                    Behavior on color { CAnim {} }
 
                     WeatherTab { anchors.fill: parent }
                 }
@@ -338,12 +303,10 @@ Item {
                 height: cap2.height
                 clip:   true
 
-                Rectangle {
+                Capsule {
                     id:     cap2
                     width:  parent.width
                     height: cap2Col.implicitHeight
-                    radius: Style.cornerRadius
-                    color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     y:      root._stage >= 2 ? 0 : -root.height
                     Behavior on y {
                         NumberAnimation {
@@ -351,7 +314,6 @@ Item {
                             easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
                         }
                     }
-                    Behavior on color { CAnim {} }
 
                     Column {
                         id:    cap2Col
@@ -378,12 +340,10 @@ Item {
                 height:  cap3.height
                 clip:    true
 
-                Rectangle {
+                Capsule {
                     id:     cap3
                     width:  parent.width
                     height: mediaSec.implicitHeight
-                    radius: Style.cornerRadius
-                    color:  Colours.layer(Colours.m3surfaceContainer, 2)
                     y:      root._stage >= 3 ? 0 : -root.height
                     Behavior on y {
                         NumberAnimation {
@@ -391,7 +351,6 @@ Item {
                             easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
                         }
                     }
-                    Behavior on color { CAnim {} }
 
                     MediaSection {
                         id:    mediaSec

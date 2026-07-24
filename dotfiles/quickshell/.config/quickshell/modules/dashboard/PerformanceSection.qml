@@ -1,149 +1,133 @@
 import QtQuick
 import "../../services"
 import "../../components"
+import "../../components/controls"
 
 Item {
     id: root
 
-    implicitHeight: metricsRow.implicitHeight + 16
+    implicitHeight: metricsCol.implicitHeight + 16
     implicitWidth:  parent?.width ?? 300
 
-    component CircleMetric: Item {
-        id: circ
+    component BlockMetric: Item {
+        id: metric
 
         property int    value:    0
         property string icon:     ""
         property string label:    ""
         property color  arcColor: Colours.m3primary
+        property bool   isLast:   false
 
-        implicitHeight: 78
+        implicitHeight: 40
 
-        readonly property int circleSize: 50
-        readonly property int strokeW:    5
+        Item {
+            id: leftGroup
+            width:  60
+            height: parent.height
 
-        onValueChanged:    canvas.requestPaint()
-        onArcColorChanged: canvas.requestPaint()
-
-        // Individual container
-        Rectangle {
-            anchors.fill: parent
-            radius: Style.cornerRadius
-            color:        Colours.m3surfaceContainerHighest
-            Behavior on color { CAnim {} }
-        }
-
-        // Progress ring
-        Canvas {
-            id: canvas
-            width:  circ.circleSize
-            height: circ.circleSize
-            anchors {
-                top:              parent.top
-                topMargin:        5
-                horizontalCenter: parent.horizontalCenter
+            Text {
+                id: iconText
+                anchors { left: parent.left; verticalCenter: parent.verticalCenter }
+                text:           metric.icon
+                font.family:    Style.fontFamily
+                font.pixelSize: 14
+                color:          metric.arcColor
+                Behavior on color { CAnim {} }
             }
 
-            Component.onCompleted: requestPaint()
-
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.clearRect(0, 0, width, height)
-
-                const cx = width  / 2
-                const cy = height / 2
-                const r  = cx - circ.strokeW / 2 - 1
-                const c  = circ.arcColor
-
-                // Background track
-                ctx.beginPath()
-                ctx.arc(cx, cy, r, 0, Math.PI * 2)
-                ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 0.2)
-                ctx.lineWidth   = circ.strokeW
-                ctx.stroke()
-
-                // Progress arc (clockwise from top)
-                if (circ.value > 0) {
-                    const start = -Math.PI / 2
-                    ctx.beginPath()
-                    ctx.arc(cx, cy, r, start, start + (circ.value / 100) * Math.PI * 2)
-                    ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 1.0)
-                    ctx.lineWidth   = circ.strokeW
-                    ctx.lineCap     = "round"
-                    ctx.stroke()
+            Text {
+                anchors {
+                    left:           iconText.right
+                    leftMargin:     6
+                    verticalCenter: parent.verticalCenter
                 }
+                text:           metric.label
+                font.family:    Style.fontFamily
+                font.pixelSize: 11
+                color:          Colours.m3onSurfaceVariant
+                Behavior on color { CAnim {} }
             }
         }
 
-        // Icon centered in the ring
         Text {
-            anchors.centerIn: canvas
-            text:           circ.icon
+            id: percentText
+            anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+            width:               32
+            horizontalAlignment: Text.AlignRight
+            text:           metric.value + "%"
             font.family:    Style.fontFamily
-            font.pixelSize: 16
-            color:          circ.arcColor
+            font.pixelSize: 11
+            color:          Colours.m3onSurfaceVariant
             Behavior on color { CAnim {} }
         }
 
-        // Label + value below the ring
-        Text {
+        SegmentedMeter {
             anchors {
-                top:              canvas.bottom
-                topMargin:        5
-                horizontalCenter: parent.horizontalCenter
+                left:           leftGroup.right
+                leftMargin:     10
+                right:          percentText.left
+                rightMargin:    10
+                verticalCenter: parent.verticalCenter
             }
-            text:           circ.label + " " + circ.value + "%"
-            font.family:    Style.fontFamily
-            font.pixelSize: 10
-            color:          Colours.m3onSurfaceVariant
+            height:    14
+            value:     metric.value
+            fillColor: metric.arcColor
+        }
+
+        // Row divider (hidden on last row)
+        Rectangle {
+            visible: !metric.isLast
+            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+            height: 1
+            color:  Qt.alpha(Colours.m3outlineVariant, 0.25)
             Behavior on color { CAnim {} }
         }
     }
 
-    Row {
-        id: metricsRow
+    Column {
+        id: metricsCol
         anchors {
-            left:           parent.left
-            right:          parent.right
-            leftMargin:     8
-            rightMargin:    8
-            verticalCenter: parent.verticalCenter
+            left:        parent.left
+            right:       parent.right
+            top:         parent.top
+            leftMargin:  14
+            rightMargin: 14
+            topMargin:   8
         }
-        spacing: 8
+        spacing: 0
 
-        readonly property int count: SysInfo.hasGpu ? 4 : 3
-        readonly property int itemW: Math.floor((width - (count - 1) * spacing) / count)
-
-        CircleMetric {
-            width:    metricsRow.itemW
+        BlockMetric {
+            width:    parent.width
             value:    SysInfo.cpu
             icon:     "󰻠"
             label:    "CPU"
             arcColor: Colours.m3primary
         }
 
-        CircleMetric {
-            width:    metricsRow.itemW
+        BlockMetric {
+            width:    parent.width
             value:    SysInfo.ram
             icon:     "󰑭"
             label:    "RAM"
             arcColor: Colours.m3secondary
         }
 
-        CircleMetric {
+        BlockMetric {
             visible:  SysInfo.hasGpu
-            width:    metricsRow.itemW
+            width:    parent.width
             value:    SysInfo.gpu
             icon:     "󰾲"
             label:    "GPU"
             arcColor: Colours.m3tertiary
         }
 
-        CircleMetric {
-            width:    metricsRow.itemW
+        BlockMetric {
+            width:    parent.width
             value:    SysInfo.disk
             icon:     "󰋊"
             label:    "Disk"
             arcColor: Colours.m3tertiary
+            isLast:   true
         }
     }
 }

@@ -65,13 +65,13 @@ Item {
                 width:  28; height: 28
                 anchors.verticalCenter: parent.verticalCenter
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: Style.cornerRadius
-                    color:  prevHov.hovered
-                                ? Qt.alpha(root.colors.m3onSurface, 0.08)
-                                : "transparent"
-                    Behavior on color { CAnim {} }
+                StateLayer {
+                    tintColor:   root.colors.m3onSurface
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root._month--
+                        if (root._month < 0) { root._month = 11; root._year-- }
+                    }
                 }
                 Text {
                     anchors.centerIn: parent
@@ -80,15 +80,6 @@ Item {
                     font.pixelSize: 16
                     color:          root.colors.m3onSurface
                     Behavior on color { CAnim {} }
-                }
-                HoverHandler { id: prevHov }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape:  Qt.PointingHandCursor
-                    onClicked: {
-                        root._month--
-                        if (root._month < 0) { root._month = 11; root._year-- }
-                    }
                 }
             }
 
@@ -107,13 +98,13 @@ Item {
                 width:  28; height: 28
                 anchors { right: parent.right; verticalCenter: parent.verticalCenter }
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: Style.cornerRadius
-                    color:  nextHov.hovered
-                                ? Qt.alpha(root.colors.m3onSurface, 0.08)
-                                : "transparent"
-                    Behavior on color { CAnim {} }
+                StateLayer {
+                    tintColor:   root.colors.m3onSurface
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root._month++
+                        if (root._month > 11) { root._month = 0; root._year++ }
+                    }
                 }
                 Text {
                     anchors.centerIn: parent
@@ -122,15 +113,6 @@ Item {
                     font.pixelSize: 16
                     color:          root.colors.m3onSurface
                     Behavior on color { CAnim {} }
-                }
-                HoverHandler { id: nextHov }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape:  Qt.PointingHandCursor
-                    onClicked: {
-                        root._month++
-                        if (root._month > 11) { root._month = 0; root._year++ }
-                    }
                 }
             }
         }

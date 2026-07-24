@@ -25,10 +25,13 @@ Variants {
                 right: true
             }
 
+            // 10px, not 8 — must be a multiple of 5 so margin * scale (1.2
+            // on this monitor) lands on a whole physical pixel. At 8px the
+            // left/right border edges rounded to different pixel widths.
             margins {
-                top:   8
-                left:  8
-                right: 8
+                top:   10
+                left:  10
+                right: 10
             }
 
             implicitHeight: 36

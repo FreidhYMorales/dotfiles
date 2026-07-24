@@ -196,12 +196,12 @@ Mismo componente reutilizado en dos lugares — la card en sí no sabe nada de `
 ```
 Tipo:      Variants { model: Quickshell.screens } → PanelWindow por monitor (WlrLayer.Overlay)
 Trigger:   Visibilities.calendar (vía ClockWidget)
-Visual:    "orejas" cóncavas (Shape + PathArc) + card con CalendarCard adentro
+Visual:    card con radius: Style.cornerRadius, border.width: 2, border.color: Qt.alpha(m3primary, 0.9) — sin las "orejas" cóncavas que tenía antes (Shape/PathArc), terminal-alike
 Posición:  anchors top/left/right, margins.top: 43 (debajo de la bar), centrado horizontal
 Animación: y desliza con BezierSpline (350ms) al mostrar/ocultar; hide con Timer de 400ms de gracia
 ```
 
-Mismo patrón visual ("ears + card" con `Shape`/`PathArc` cóncavo) que `TrayMenuOsd`, `BatteryProfileOsd` y `RecorderModeOsd` — solo cambia el contenido interior y el ancho/alto del card.
+Mismo patrón visual (card con borde de 2px) que `TrayMenuOsd`, `BatteryProfileOsd` y `RecorderModeOsd` — solo cambia el contenido interior y el ancho/alto del card. No está migrado a `MonitorOsdWindow` (ver abajo) — queda como `Variants`/`PanelWindow` inline, igual que `Osd`.
 
 ### `Osd`
 ```
@@ -212,29 +212,36 @@ Auto-hide: Timer de 2000ms tras el último cambio; se reinicia con cada nuevo ev
 Teclado:   Keys.onEscapePressed cierra ambos OSDs de inmediato
 ```
 
-Único popout que reacciona a DOS triggers distintos (volumen y brillo) en la misma `PanelWindow`, cada uno con su propio par de "orejas" y su propio card.
+Único popout que reacciona a DOS triggers distintos (volumen y brillo) en la misma `PanelWindow`, cada uno con su propio card. No está migrado a `MonitorOsdWindow` (dos flujos de show/hide independientes + matemática de posición propia por card, no encaja en el modelo de una sola bandera `osdVisible`).
 
-### `BatteryProfileOsd`
+### `BatteryProfileOsd`, `TrayMenuOsd`, `RecorderModeOsd` — sobre `MonitorOsdWindow`
+
+Los 3 comparten `components/MonitorOsdWindow.qml` (ver `components.md`) para el esqueleto de ventana por monitor — cada archivo solo declara su propio timer de show/hide + `Connections` a `Visibilities.*`, y pasa su card/contenido como `content: Component { Item { property PanelWindow win: null; property var osd: null; ... } }`.
+
 ```
-Tipo:      Variants { model: Quickshell.screens } → PanelWindow por monitor (WlrLayer.Overlay)
+Tipo:      MonitorOsdWindow (Variants { model: Quickshell.screens } → PanelWindow por monitor, WlrLayer.Top, keyboardFocus: None)
+Visual:    card con radius: Style.cornerRadius, border.width: 2, border.color: Qt.alpha(m3primary, 0.9) — sin "orejas"
+```
+
+**`BatteryProfileOsd`**
+```
 Trigger:   Visibilities.batteryProfile
 Visual:    píldora segmentada (power-saver / balanced / performance) con indicador deslizante + botón de caffeine (taza llena/vacía) al lado
 Acción:    BatteryProfile.set(profile) por segmento; IdleManager.caffeineMode toggle en el botón de taza
 Posición:  centrado sobre batteryBarCenterX (expuesto por BarContent.qml)
 ```
+`pauseAutoClose()`/`resumeAutoClose()` viven en el `MonitorOsdWindow` externo (no en el `content:`) — el `HoverHandler` del card las llama vía `osd.pauseAutoClose()`/`osd.resumeAutoClose()`, porque el `content:` es un `Component` separado sin visibilidad léxica de los `id` del archivo externo.
 
-### `TrayMenuOsd`
+**`TrayMenuOsd`**
 ```
-Tipo:      Variants { model: Quickshell.screens } → PanelWindow por monitor (WlrLayer.Overlay)
 Trigger:   Visibilities.trayMenu (click derecho en un ícono de BgAppsWidget)
 Contenido: QsMenuOpener sobre Visibilities.trayMenuTarget?.menu — el contenido viene del propio DBusMenu del tray item, no de este proyecto
 Ancho:     dinámico, calculado con FontMetrics.advanceWidth() sobre la entrada más larga (mín 120px, máx 320px)
-Entradas:  checkbox (✓ prefijo) y separadores soportados; hover con HoverHandler + fondo m3surfaceContainerHigh
+Entradas:  checkbox (✓ prefijo) y separadores soportados; cada fila usa StateLayer (ver components.md) en vez de MouseArea+Rectangle manual
 ```
 
-### `RecorderModeOsd`
+**`RecorderModeOsd`**
 ```
-Tipo:      Variants { model: Quickshell.screens } → PanelWindow por monitor (WlrLayer.Overlay)
 Trigger:   Visibilities.recorderModeOsd (click derecho en RecorderWidget, solo si no está grabando)
 Visual:    píldora segmentada de 3 acciones (screen 󰍹 / region 󱣵 / window 󱣴), cada click es una acción one-shot, no un selector persistente
 Feedback:  flash breve (150ms, fondo m3primary) en el segmento clickeado antes de cerrar el OSD

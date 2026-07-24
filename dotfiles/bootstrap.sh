@@ -3,8 +3,11 @@
 # Installs all packages, configures shell, deploys dotfiles via Stow. (33 steps)
 #
 # Usage:
-#   ./bootstrap.sh                        — full install (NVIDIA GPU, 1080p GRUB)
-#   ./bootstrap.sh --no-gpu               — skip GPU drivers entirely (VM, manual install)
+#   ./bootstrap.sh                        — full install (auto-detects NVIDIA/AMD/Intel via
+#                                            lspci, installs drivers for whichever are present —
+#                                            handles hybrid setups like Intel+AMD laptops too)
+#   ./bootstrap.sh --no-gpu               — skip GPU driver install for ALL vendors, not just
+#                                            NVIDIA (VM with no real GPU, or manual driver install)
 #   ./bootstrap.sh --no-grub              — skip GRUB theme + config (e.g. systemd-boot)
 #   ./bootstrap.sh --grub-res=2560x1440   — GRUB theme at 2K resolution
 #   ./bootstrap.sh --grub-res=3840x2160   — GRUB theme at 4K resolution

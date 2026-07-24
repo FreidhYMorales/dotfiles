@@ -2,10 +2,12 @@ import QtQuick
 import "../../services"
 import "../../components"
 
-// Left click always starts/stops a full-screen recording (quick access).
-// Right click opens RecorderModeOsd to pick screen/region/window — but only
-// while idle; while recording, stopping goes through the left click only,
-// a single path instead of two ways to stop.
+// Left click starts/stops a recording in whatever mode was used last
+// (Recorder.mode — screen/region/window, remembered from the last time a
+// recording actually started, whether via this widget or the OSD picker).
+// Right click opens RecorderModeOsd to pick/change mode — but only while
+// idle; while recording, stopping goes through the left click only, a
+// single path instead of two ways to stop.
 Item {
     id: root
 
@@ -17,6 +19,10 @@ Item {
     implicitWidth:  row.implicitWidth + 16
     implicitHeight: 26
 
+    HoverHandler { id: hov }
+
+    readonly property bool active: hov.hovered
+
     function _fmtElapsed() {
         const m = Math.floor(Recorder.elapsedSeconds / 60)
         const s = Recorder.elapsedSeconds % 60
@@ -26,9 +32,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Style.cornerRadius
-        color:        root.colors.m3surfaceContainerHigh
-        border.width: 1
-        border.color: Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
+        color: "transparent"
         Behavior on color { CAnim {} }
     }
 
@@ -40,10 +44,13 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text:           "󰻃"
-            color:          Recorder.recording ? root.colors.m3error : root.colors.m3onSurface
+            color:          Recorder.recording ? root.colors.m3error : (root.active ? root.colors.m3primary : root.colors.m3onSurface)
             font.family:    Style.fontFamily
             font.pixelSize: 13
+            scale: root.active ? 1.35 : 1.0
+            transformOrigin: Item.Center
             Behavior on color { CAnim {} }
+            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
 
         Text {
@@ -62,8 +69,15 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: mouse => {
             if (mouse.button === Qt.LeftButton) {
-                if (Recorder.recording) Recorder.stop()
-                else                    Recorder.startScreen()
+                if (Recorder.recording) {
+                    Recorder.stop()
+                } else if (Recorder.mode === "region") {
+                    Recorder.startRegion()
+                } else if (Recorder.mode === "window") {
+                    Recorder.startWindow()
+                } else {
+                    Recorder.startScreen()
+                }
             } else if (mouse.button === Qt.RightButton && !Recorder.recording) {
                 Visibilities.recorderOsdCenterX = root.mapToItem(null, root.width / 2, 0).x
                 Visibilities.toggle("recorderModeOsd")

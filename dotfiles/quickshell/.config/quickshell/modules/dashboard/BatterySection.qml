@@ -1,6 +1,7 @@
 import QtQuick
 import "../../services"
 import "../../components"
+import "../../components/controls"
 
 Item {
     id: root
@@ -124,31 +125,17 @@ Item {
         }
 
         // ── Progress bar ──
-        Item {
+        SegmentedMeter {
             width:  parent.width - 24
-            height: 6
+            height: 14
             anchors.horizontalCenter: parent.horizontalCenter
 
-            Rectangle {
-                anchors.fill: parent
-                radius: Style.cornerRadius
-                color:        Qt.alpha(Colours.m3surfaceContainerHighest, 0.6)
-                Behavior on color { CAnim {} }
-            }
-
-            Rectangle {
-                height: parent.height
-                radius: Style.cornerRadius
-                color:  Battery.charging
-                            ? Colours.m3primary
-                            : Battery.percentage < 20
-                                ? Colours.m3error
-                                : Colours.m3secondary
-                Behavior on color { CAnim {} }
-                Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.InOutCubic } }
-
-                width: Math.max(radius * 2, (Battery.percentage / 100) * parent.width)
-            }
+            value:     Battery.percentage
+            fillColor: Battery.charging
+                           ? Colours.m3primary
+                           : Battery.percentage < 20
+                               ? Colours.m3error
+                               : Colours.m3secondary
         }
     }
 }

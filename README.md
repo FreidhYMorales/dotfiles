@@ -32,7 +32,10 @@ curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/instal
 With flags:
 
 ```bash
-# Skip NVIDIA drivers (e.g. ThinkPad / AMD)
+# Skip GPU driver install entirely — ALL vendors, not just NVIDIA (VM, no
+# real GPU, or managing drivers manually). Real hardware — including AMD,
+# Intel, and hybrid setups — should run without this flag: bootstrap
+# auto-detects and installs the right drivers for whatever's present.
 curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/install.sh | bash -s -- --no-gpu
 
 # Skip GRUB theme (e.g. systemd-boot)

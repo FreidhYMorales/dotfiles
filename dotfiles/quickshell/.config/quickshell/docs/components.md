@@ -38,24 +38,6 @@ property bool animate: false   // true → crossfade (fade out/in) al cambiar `t
 property var  fontStyle        // objeto de fuente (family/pixelSize/weight) aplicado sobre los defaults
 ```
 
-### `MaterialIcon.qml`
-
-`Text` que renderiza un glyph de Material Symbols Rounded (`font.family: "Material Symbols Rounded"`, `pixelSize: 20` default).
-
-```qml
-property bool animate: false   // habilita ColorAnimation (150ms) en cambios de color; sin animate, el color salta
-property var  fontStyle        // solo pixelSize/weight — no family, ya está fijo al icon font
-```
-
-### `AnimLoader.qml`
-
-`Loader` con crossfade automático al cambiar de `Component` — evita el "pop" de un `Loader` normal al swapear contenido.
-
-```qml
-property Component sourceComp: null  // alias de sourceComponent — nombre Caelestia-compatible
-property int fadeDuration: 150       // fade out → swap → fade in, mismo total en ms
-```
-
 ### `StateLayer.qml`
 
 `Rectangle` de overlay Material Design para hover/press (tinte semitransparente sobre el elemento que lo contiene) — encapsula el `MouseArea` interno para no repetirlo en cada botón.
@@ -69,19 +51,39 @@ property int   cursorShape:    Qt.ArrowCursor
 signal clicked()
 ```
 
-`radius` sigue automáticamente el de `parent` (`radius: parent ? parent.radius : 0`) — no hace falta setearlo si ya está sobre un `Rectangle` con radius.
+`radius` sigue automáticamente el de `parent` (`radius: parent ? parent.radius : 0`, con guard `!== undefined` — si el padre es un `Item` liso sin `radius` propio, cae a `0` en vez de `undefined`).
 
-### `Logo.qml`
+### `Capsule.qml`
 
-Placeholder de logo del proyecto (glyph de texto, no SVG/Image real todavía) — reemplazar cuando exista un asset definitivo.
+`Rectangle` con el estilo terminal-alike de las tarjetas del dashboard ya preconfigurado: `radius: Style.cornerRadius`, `border.width: 2`, `border.color: Qt.alpha(Colours.m3primary, 0.9)`, `Behavior on color { CAnim {} }`. `color` por defecto es `Colours.layer(Colours.m3surfaceContainer, 2)` — pisable (el panel de perfil usa `Colours.m3surfaceContainer` liso). Usado por las 5 cápsulas de `DashboardContent.qml` (panel de perfil, notificación, clima, batería+performance, música) — antes cada una repetía las mismas 4 líneas de estilo.
+
+### `MonitorOsdWindow.qml`
+
+Wrapper compartido para los OSD simples de la barra (`TrayMenuOsd`, `BatteryProfileOsd`, `RecorderModeOsd`) — un `PanelWindow` por pantalla (solo visible en la enfocada), paleta por monitor ya resuelta, capa/namespace/anchors estándar. Raíz es un `Item` (no `Variants` directo) porque `Variants` trata cualquier hijo declarado en su default property como parte de la expansión por modelo e intenta inyectarle `modelData` — rompía los `Timer`/`Connections` que cada OSD agrega encima.
 
 ```qml
-property int size: 32   // implicitWidth/implicitHeight
+MonitorOsdWindow {
+    namespace:  "deadlock-algo"
+    osdHeight:  60
+    osdVisible: _visible   // cada OSD maneja su propio show/hide timer + Connections
+    content: Component {
+        Item {
+            property PanelWindow win: null  // NO required property — ver nota abajo
+            property var osd: null          // referencia al MonitorOsdWindow externo (funciones como pauseAutoClose())
+            anchors.fill: parent
+            // ... usa win.colors / win.isFocused / win.width sin calificar
+        }
+    }
+}
 ```
+
+`win`/`osd` se pasan como propiedades iniciales de `createObject(win.contentItem, { win: win, osd: root })` — **no** `Loader.onLoaded`, evita que los bindings del contenido evalúen una vez con `win = null` antes de que se asigne. Parentear a `win` directo (no `win.contentItem`) tira `"Created graphical object was not placed in the graphics scene"` — una `PanelWindow` no es un `Item` de la escena.
+
+El show/hide timer + `Connections` a `Visibilities.*` quedan a propósito fuera de este componente — cada OSD los agrega como hijos extra del `MonitorOsdWindow` (funciona porque la raíz es `Item`, no `Variants`). `Osd.qml` (volumen/brillo) no usa este wrapper — tiene dos flujos de show/hide independientes y matemática de posicionamiento propia por pantalla, no encaja en el modelo de una sola bandera `osdVisible`.
 
 ### `qmldir`
 
-Registra los 8 tipos del módulo: `Anim`, `CAnim`, `StyledRect`, `StyledText`, `MaterialIcon`, `AnimLoader`, `StateLayer`, `Logo`. Necesario para que QML los encuentre con `import "../../components"`.
+Registra los tipos del módulo: `Anim`, `CAnim`, `Capsule`, `StyledRect`, `StyledText`, `StateLayer`, `MonitorOsdWindow`. Necesario para que QML los encuentre con `import "../../components"`.
 
 ---
 
@@ -91,12 +93,9 @@ Cada subdirectorio tiene su propio `qmldir` — se importan igual, por ruta rela
 
 | Subdirectorio | Componentes |
 |---|---|
-| `containers/` | `ClippingRectangle`, `StyledListView` |
-| `controls/` | `ButtonRow`, `IconButton`, `LoadingIndicator`, `Slider`, `Toggle` |
-| `effects/` | `ColouredIcon`, `Colouriser`, `Mask` |
-| `images/` | `CachingImage`, `FadeImage` |
-| `misc/` | `CustomShortcut` |
-| `widgets/` | `WavyTopRect` |
+| `controls/` | `IconButton`, `SegmentedMeter`, `Slider`, `Toggle` |
+
+`containers/`, `effects/`, `images/`, `misc/` y `widgets/` existieron pero se borraron — cada uno tenía solo componentes sin ningún call site en el proyecto (código muerto, nunca conectado).
 
 ---
 

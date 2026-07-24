@@ -21,13 +21,13 @@ Variants {
             visible: dashContent.open &&
                      screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
 
-            WlrLayershell.layer:         WlrLayer.Overlay
+            WlrLayershell.layer:         WlrLayer.Top
             WlrLayershell.namespace:     "deadlock-dashboard"
             WlrLayershell.exclusiveZone: -1
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
             anchors { top: true; right: true; bottom: true }
-            margins { top: 43; right: 8; bottom: 8 }
+            margins { top: 44; right: 10; bottom: 10 }
             implicitWidth: 340
 
             // Dismiss on click outside the panel content

@@ -24,9 +24,10 @@ Singleton {
     }
 
     // Poll current brightness — inotify does not fire on sysfs virtual files,
-    // so FileView watchChanges would never detect external changes (keyboard keys)
+    // so FileView watchChanges would never detect external changes (keyboard keys).
+    // 500ms, not 250 — still feels instant for the OSD, half the forks/sec.
     Timer {
-        interval: 250
+        interval: 500
         running:  true
         repeat:   true
         onTriggered: pollProc.running = true

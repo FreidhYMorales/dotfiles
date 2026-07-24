@@ -175,11 +175,12 @@ Item {
 
                 Item {
                     width: 32; height: 32
-                    HoverHandler { id: prevHov }
-                    Rectangle {
-                        anchors.fill: parent; radius: Style.cornerRadius
-                        color: prevHov.hovered ? Qt.alpha(Colours.m3onSurface, 0.1) : "transparent"
-                        Behavior on color { CAnim {} }
+                    StateLayer {
+                        tintColor:    Colours.m3onSurface
+                        hoverOpacity: 0.1
+                        enabled:      Mpris.canPrev
+                        cursorShape:  Qt.PointingHandCursor
+                        onClicked:    Mpris.previous()
                     }
                     Text {
                         anchors.centerIn: parent
@@ -187,7 +188,6 @@ Item {
                         color: Mpris.canPrev ? Colours.m3onSurface : Colours.m3onSurfaceVariant
                         Behavior on color { CAnim {} }
                     }
-                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; enabled: Mpris.canPrev; onClicked: Mpris.previous() }
                 }
 
                 Item {
@@ -205,11 +205,12 @@ Item {
 
                 Item {
                     width: 32; height: 32
-                    HoverHandler { id: nextHov }
-                    Rectangle {
-                        anchors.fill: parent; radius: Style.cornerRadius
-                        color: nextHov.hovered ? Qt.alpha(Colours.m3onSurface, 0.1) : "transparent"
-                        Behavior on color { CAnim {} }
+                    StateLayer {
+                        tintColor:    Colours.m3onSurface
+                        hoverOpacity: 0.1
+                        enabled:      Mpris.canNext
+                        cursorShape:  Qt.PointingHandCursor
+                        onClicked:    Mpris.next()
                     }
                     Text {
                         anchors.centerIn: parent
@@ -217,7 +218,6 @@ Item {
                         color: Mpris.canNext ? Colours.m3onSurface : Colours.m3onSurfaceVariant
                         Behavior on color { CAnim {} }
                     }
-                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; enabled: Mpris.canNext; onClicked: Mpris.next() }
                 }
             }
 

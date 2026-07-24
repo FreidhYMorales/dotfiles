@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
@@ -51,13 +50,13 @@ Variants {
                 }
             }
 
-            WlrLayershell.layer:         WlrLayer.Overlay
+            WlrLayershell.layer:         WlrLayer.Top
             WlrLayershell.namespace:     "deadlock-calendar"
             WlrLayershell.exclusiveZone: -1
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
             anchors { top: true; left: true; right: true }
-            margins.top:    43
+            margins.top:    44
             implicitHeight: 280
 
             MouseArea {
@@ -65,61 +64,6 @@ Variants {
                 z:            0
                 enabled:      Visibilities.calendar
                 onClicked:    Visibilities.toggle("calendar")
-            }
-
-            // Left concave ear: fills the corner between bar bottom and card's left wall.
-            // The arc bulges inward (concave from outside) — center at local (0,12).
-            Shape {
-                z:      1
-                x:      card.x - 12
-                y:      win.isFocused && Visibilities.calendar ? 0 : -12
-                width:  12
-                height: 12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor:   card.color
-                    strokeColor: "transparent"
-                    strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc {
-                        x: 12; y: 12
-                        radiusX: 12; radiusY: 12
-                        direction: PathArc.Clockwise
-                    }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-
-            // Right concave ear: mirror of the left ear.
-            Shape {
-                z:      1
-                x:      card.x + card.width
-                y:      win.isFocused && Visibilities.calendar ? 0 : -12
-                width:  12
-                height: 12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor:   card.color
-                    strokeColor: "transparent"
-                    strokeWidth: 0
-                    startX: 12; startY: 0
-                    PathArc {
-                        x: 0; y: 12
-                        radiusX: 12; radiusY: 12
-                        direction: PathArc.Counterclockwise
-                    }
-                    PathLine { x: 0; y: 0 }
-                }
             }
 
             Rectangle {
@@ -137,11 +81,12 @@ Variants {
                     }
                 }
                 radius: Style.cornerRadius
-                topLeftRadius:  0
-                topRightRadius: 0
                 color:         win.colors.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(win.colors.m3primary, 0.9)
                 clip:          true
                 layer.enabled: true
+
 
                 HoverHandler {
                     onHoveredChanged: hovered ? calCloseTimer.stop() : calCloseTimer.restart()

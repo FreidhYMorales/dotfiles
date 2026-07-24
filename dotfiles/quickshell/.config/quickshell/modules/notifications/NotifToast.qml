@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
@@ -30,13 +29,13 @@ Variants {
 
             visible: isFocused && toastNotif !== null
 
-            WlrLayershell.layer:         WlrLayer.Overlay
+            WlrLayershell.layer:         WlrLayer.Top
             WlrLayershell.namespace:     "deadlock-notif-toast"
             WlrLayershell.exclusiveZone: -1
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
             anchors { top: true; left: true; right: true }
-            margins.top: 43
+            margins.top: 44
 
             implicitHeight: 160
 
@@ -74,28 +73,6 @@ Variants {
                 onTriggered: win.showing = false
             }
 
-            // ── Ear left ─────────────────────────────────────────────────
-            Shape {
-                z: 1
-                x: card.x - 12
-                y: win.isFocused && win.cardOpen ? 0 : -12
-                width:  12
-                height: 12
-                Behavior on y {
-                    NumberAnimation {
-                        duration: 350; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-                ShapePath {
-                    fillColor:   card.color
-                    strokeColor: "transparent"; strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc  { x: 12; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Clockwise }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-
             // ── Toast card ────────────────────────────────────────────────
             Rectangle {
                 id: card
@@ -112,15 +89,16 @@ Variants {
                     }
                 }
 
-                topLeftRadius:  0
-                topRightRadius: 0
                 radius: Style.cornerRadius
 
                 color: Colours.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(Colours.m3primary, 0.9)
                 Behavior on color { CAnim {} }
 
                 clip:          true
                 layer.enabled: true
+
 
                 HoverHandler {
                     onHoveredChanged: hovered ? dismissTimer.stop() : dismissTimer.restart()

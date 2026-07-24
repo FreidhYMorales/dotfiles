@@ -5,6 +5,7 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import QtQuick
 import "utils"
 import "services"
 import "modules/background"
@@ -68,4 +69,21 @@ ShellRoot {
     ScreensaverPreview {}
 
     Lock {}
+
+    // Fires once every module above has finished its initial construction —
+    // useful after a reinstall/reboot to know the shell is actually up
+    // without watching the terminal log. ShellRoot itself doesn't support
+    // the Component attached property, so this lives on a plain child Item.
+    Item {
+        // The NotificationServer above registers on DBus asynchronously —
+        // firing notify-send in the same tick as Component.onCompleted can
+        // race ahead of that registration and get silently dropped. A short
+        // delay is enough since registration only takes a moment.
+        Timer {
+            interval: 800
+            running: true
+            onTriggered: Quickshell.execDetached(
+                ["notify-send", "-a", "Quickshell", "-i", "dialog-information", "Quickshell", "Shell loaded"])
+        }
+    }
 }

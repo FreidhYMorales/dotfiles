@@ -29,7 +29,9 @@ Variants {
                                                                : WlrKeyboardFocus.None
 
             anchors { bottom: true; left: true; right: true }
-            margins { bottom: 8 }
+            // Matches Hyprland's gaps_out (general.lua) — window borders sit
+            // the same distance from the screen edge as this panel does.
+            margins { bottom: 10 }
 
             implicitHeight: 560
 

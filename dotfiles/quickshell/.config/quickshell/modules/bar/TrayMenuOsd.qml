@@ -2,9 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
@@ -12,49 +10,34 @@ import "../../components"
 // ears+card visual language as the other bar OSDs, but its content comes
 // from the tray item's own QsMenuHandle (DBusMenu under the hood) instead
 // of anything this project defines.
-Variants {
-    model: Quickshell.screens
+MonitorOsdWindow {
+    id: osd
 
-    delegate: Scope {
-        id: screenScope
-        required property ShellScreen modelData
+    namespace:  "deadlock-tray-menu"
+    osdHeight:  300
+    osdVisible: _menuVisible
 
-        PanelWindow {
-            id: win
-            screen: screenScope.modelData
-            color:  "transparent"
+    property bool _menuVisible: false
+    Timer { id: menuHideTimer; interval: 400; onTriggered: osd._menuVisible = false }
 
-            readonly property bool isFocused:
-                screenScope.modelData.name === (Hyprland.focusedMonitor?.name ?? "")
-            // Per-monitor palette (bar/panels only — see Colours.paletteFor).
-            readonly property var colors: Colours.paletteFor(screenScope.modelData.name)
-
-            property bool _menuVisible: false
-
-            Timer { id: menuHideTimer; interval: 400; onTriggered: win._menuVisible = false }
-
-            Connections {
-                target: Visibilities
-                function onTrayMenuChanged() {
-                    if (Visibilities.trayMenu) {
-                        menuHideTimer.stop()
-                        win._menuVisible = true
-                    } else {
-                        menuHideTimer.restart()
-                    }
-                }
+    Connections {
+        target: Visibilities
+        function onTrayMenuChanged() {
+            if (Visibilities.trayMenu) {
+                menuHideTimer.stop()
+                osd._menuVisible = true
+            } else {
+                menuHideTimer.restart()
             }
+        }
+    }
 
-            visible: isFocused && win._menuVisible
-
-            WlrLayershell.layer:         WlrLayer.Overlay
-            WlrLayershell.namespace:     "deadlock-tray-menu"
-            WlrLayershell.exclusiveZone: -1
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-            anchors { top: true; left: true; right: true }
-            margins.top:    43
-            implicitHeight: 300
+    content: Component {
+        Item {
+            id: contentRoot
+            anchors.fill: parent
+            property PanelWindow win: null
+            property var osd: null
 
             MouseArea {
                 anchors.fill: parent
@@ -89,70 +72,35 @@ Variants {
                 return max
             }
 
-            // Left ear
-            Shape {
-                z: 1
-                x: card.x - 12
-                y: win.isFocused && Visibilities.trayMenu ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
-                                      easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
-                }
-                ShapePath {
-                    fillColor: card.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 0; startY: 0
-                    PathArc  { x: 12; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Clockwise }
-                    PathLine { x: 12; y: 0 }
-                }
-            }
-
-            // Right ear
-            Shape {
-                z: 1
-                x: card.x + card.width
-                y: win.isFocused && Visibilities.trayMenu ? 0 : -12
-                width: 12; height: 12
-                Behavior on y {
-                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
-                                      easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
-                }
-                ShapePath {
-                    fillColor: card.color; strokeColor: "transparent"; strokeWidth: 0
-                    startX: 12; startY: 0
-                    PathArc  { x: 0; y: 12; radiusX: 12; radiusY: 12; direction: PathArc.Counterclockwise }
-                    PathLine { x: 0; y: 0 }
-                }
-            }
-
             Rectangle {
                 id:    card
                 z:     1
-                x:     Math.max(8, Math.min(
+                x:     Math.max(10, Math.min(
                            Visibilities.trayMenuIconX - width / 2,
-                           win.width - width - 8
+                           win.width - width - 10
                        ))
-                y:      win.isFocused && Visibilities.trayMenu ? 0 : -(menuColumn.implicitHeight + 8)
+                y:      win.isFocused && Visibilities.trayMenu ? 0 : -(menuColumn.implicitHeight + 16)
                 Behavior on y {
                     NumberAnimation { duration: 350; easing.type: Easing.BezierSpline
                                       easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0] }
                 }
-                width:          Math.max(120, Math.min(320, win._maxEntryTextWidth + 48))
-                height:         menuColumn.implicitHeight + 8
+                width:          Math.max(120, Math.min(320, contentRoot._maxEntryTextWidth + 48))
+                height:         menuColumn.implicitHeight + 16
                 radius: Style.cornerRadius
-                topLeftRadius:  0
-                topRightRadius: 0
                 color:          win.colors.m3surfaceContainer
+                border.width: 2
+                border.color: Qt.alpha(win.colors.m3primary, 0.9)
                 clip:           true
                 layer.enabled:  true
                 Behavior on color { CAnim {} }
                 Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
+
                 MouseArea { anchors.fill: parent; z: 0 }
 
                 Column {
                     id: menuColumn
-                    anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 4 }
+                    anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 8 }
 
                     Repeater {
                         model: opener.children?.values ?? []
@@ -169,13 +117,19 @@ Variants {
                                 color:  Colours.mid(win.colors.m3surfaceContainer, win.colors.m3surfaceContainerHigh)
                             }
 
-                            Rectangle {
+                            StateLayer {
                                 visible: !entryDelegate.modelData.isSeparator
                                 anchors.fill: parent
                                 anchors { leftMargin: 4; rightMargin: 4 }
-                                radius: Style.cornerRadius
-                                color:   itemHov.hovered ? win.colors.m3surfaceContainerHigh : "transparent"
-                                Behavior on color { CAnim {} }
+                                radius:       Style.cornerRadius
+                                tintColor:    win.colors.m3surfaceContainerHigh
+                                hoverOpacity: 1.0
+                                enabled:      entryDelegate.modelData.enabled
+                                cursorShape:  Qt.PointingHandCursor
+                                onClicked: {
+                                    entryDelegate.modelData.triggered()
+                                    Visibilities.toggle("trayMenu")
+                                }
 
                                 Text {
                                     anchors {
@@ -191,18 +145,6 @@ Variants {
                                     font.pixelSize: 12
                                     elide:          Text.ElideRight
                                     Behavior on color { CAnim {} }
-                                }
-
-                                HoverHandler { id: itemHov; enabled: entryDelegate.modelData.enabled }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    enabled:      entryDelegate.modelData.enabled
-                                    cursorShape:  Qt.PointingHandCursor
-                                    onClicked: {
-                                        entryDelegate.modelData.triggered()
-                                        Visibilities.toggle("trayMenu")
-                                    }
                                 }
                             }
                         }

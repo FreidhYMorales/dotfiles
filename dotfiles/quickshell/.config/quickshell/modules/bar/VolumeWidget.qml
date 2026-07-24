@@ -5,7 +5,7 @@ import "../../components"
 
 Item {
     id: root
-    implicitWidth:  Math.max(26, row.implicitWidth) + (standalone ? 16 : 0)
+    implicitWidth:  Math.max(26, row.implicitWidth) + 16
     implicitHeight: 26
 
     property bool standalone:   true
@@ -14,6 +14,10 @@ Item {
     // Defaults to the shared global palette so this widget still works
     // wherever else it might be instantiated without a screen context.
     property var  colors:       Colours.palette
+
+    HoverHandler { id: hov }
+
+    readonly property bool active: hov.hovered
 
     Timer {
         id: hideTimer
@@ -53,10 +57,13 @@ Item {
             text:           Audio.muted       ? "󰖁" :
                             Audio.volume > 66 ? "󰕾" :
                             Audio.volume > 33 ? "󰖀" : "󰕿"
-            color:          Audio.muted ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface
+            color:          root.active ? root.colors.m3primary : (Audio.muted ? root.colors.m3onSurfaceVariant : root.colors.m3onSurface)
             font.family:    Style.fontFamily
             font.pixelSize: 13
+            scale: root.active ? 1.35 : 1.0
+            transformOrigin: Item.Center
             Behavior on color { CAnim {} }
+            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
 
         Item {

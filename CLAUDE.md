@@ -5,7 +5,7 @@ como fuente de verdad para dotfiles, referencias y memoria de proyecto.
 
 **Usuario:** deadlock — yannelmorales51@gmail.com  
 **Stack:** Arch Linux · Hyprland · Quickshell (QML/Qt6) · Neovim · Yazi · zsh  
-**Máquina:** Dell — Intel HD 520 (i915) + AMD Topaz (amdgpu), sin NVIDIA. Usar `--no-gpu` en bootstrap.
+**Máquina:** Dell — Intel HD 520 (i915) + AMD Topaz (amdgpu), sin NVIDIA. **No usar `--no-gpu`** en bootstrap — el auto-detect por `lspci` ya instala los drivers correctos de Intel y AMD (setup híbrido); `--no-gpu` saltaría esos dos también, no solo NVIDIA (era necesario en versiones viejas del script que asumían NVIDIA siempre, ya no aplica desde el auto-detect).
 
 ---
 
@@ -51,10 +51,11 @@ Configuraciones/
 ## Estado actual del proyecto
 
 ### Dotfiles / Bootstrap
-- **Git repo inicializado** en la raíz de `Configuraciones/` — 4 commits (rama `main`)
+- **Git repo inicializado** en la raíz de `Configuraciones/` (rama `main`) — ver `git log` para el historial, no hardcodear el conteo de commits acá (queda desactualizado de inmediato)
 - **`install.sh`** — entry point curl-able. Detecta si el repo ya existe en disco o clona desde `$REPO_URL`. Luego llama a `bootstrap.sh`. Flags: `--no-gpu`, `--dir=<path>`
 - **`dotfiles/bootstrap.sh`** — 33 pasos, cubre todo el sistema desde cero:
-  - Flags: `--no-gpu` (salta NVIDIA — usar en ThinkPad), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
+  - Flags: `--no-gpu` (salta drivers de GPU de **cualquier** fabricante detectado — NVIDIA/AMD/Intel juntos, no solo NVIDIA; usar en ThinkPad), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
+  - Sin flags, el paso de GPU se auto-detecta por `lspci` (commit `91104b4`) e instala drivers para cada fabricante presente — soporta setups híbridos (ej. Intel+AMD) instalando ambos
   - Instala: Hyprland, GPU, shell+OMZ, CLI tools, Neovim+runtimes, Yazi, Audio+sof-firmware, screenshots, clipboard, notificaciones, OCR, screen recording, theming (matugen+spicetify), **apps (vesktop+zen-browser-bin+chromium+mpv)**, Quickshell+qt5/qt6-wayland, system utils (power-profiles-daemon+ntfs-3g), fonts, SDDM silent theme, termfilechooser, iwd+impala+bluez+bluetui, lenguajes (lua, java, c++, python-extras, pnpm), GRUB Star Wars
   - Step 31 — Boot optimization: mask `systemd-networkd-wait-online` (~2 min de boot), cups socket activation, Intel xe Early KMS (cuando `--no-gpu`)
   - GRUB timeout = 3s, kernel params `quiet loglevel=3 nowatchdog`
@@ -72,7 +73,7 @@ Configuraciones/
 - Proyecto en `backup/quickshell/` — estructura:
   - `modules/lock/` — lockscreen completo, port visual del theme SDDM "silent" (ver `lockscreen.md` en el proyecto, fases 0-6 terminadas)
   - `modules/bar/`, `dashboard/`, `launcher/`, `notifications/` — en progreso
-  - `components/` — StyledText, MaterialIcon, AnimLoader, StateLayer, Logo + submodules (controls, containers, effects, images, widgets, misc)
+  - `components/` — StyledText, StyledRect, StateLayer, Capsule, MonitorOsdWindow, Anim, CAnim + submódulo `controls/` (IconButton, SegmentedMeter, Slider, Toggle). `containers/`, `effects/`, `images/`, `misc/`, `widgets/` y varios componentes sueltos (MaterialIcon, AnimLoader, Logo) se borraron en la auditoría de arquitectura — código muerto sin ningún call site
   - `services/` — Audio, Battery, Colours (con .palette/.tPalette), Time, Weather, Notifs, Players, Hypr, SysInfo...
   - `utils/` — Paths, SysInfo (string props), Icons, CUtils
 - **Próximo paso: implementar plugins propios** — ver `backup/references/quickshell-pending-plugins.md`
@@ -96,11 +97,11 @@ Configuraciones/
 - **Reloj muestra solo `hh:mm`** (usa `Time.time24`, no `Time.timeFull`) — los segundos fueron removidos.
 - **`BgAppsWidget` ahora lee `Quickshell.Services.SystemTray`** (antes leía `Hyprland.toplevels`, que no puede ver apps sin ventana como Vesktop minimizado a bandeja) — click derecho en un ícono abre `TrayMenuOsd.qml` (mismo estilo orejas+tarjeta que los demás OSD, usando `QsMenuOpener`/`QsMenuEntry`).
 - **Click en los círculos de workspace** ahora sí cambia de workspace — usaba `Hyprland.dispatch()` (roto en este Hyprland, ver gotcha de Lua abajo), corregido a `hyprctl dispatch "hl.dsp.focus({workspace=N})"`.
-- **Widget de grabación de pantalla** (`RecorderWidget.qml` + `services/Recorder.qml` + `RecorderModeOsd.qml`) — envuelve `gpu-screen-recorder` (AUR, **no instalado todavía**, correr `yay -S gpu-screen-recorder`). Auto-detecta GPU por equipo (NVENC/VAAPI), así funciona igual en el desktop NVIDIA y en la Thinkpad Intel. Click izquierdo: inicia/detiene grabación de pantalla completa. Click derecho (solo si no está grabando): abre el picker de 3 modos (pantalla/región/ventana). "Modo ventana" es un recorte estático al bounding box de la ventana elegida (vía `hyprctl clients -j` + `slurp -r`), no sigue a la ventana si se mueve — en Wayland/Hyprland no hay captura de ventana en vivo confiable (`-w window` es solo X11, `-w portal` tiene bug documentado en Hyprland). Detalle completo: memoria `screen_recorder_widget.md`, engram `quickshell/screen-recorder`.
+- **Widget de grabación de pantalla** (`RecorderWidget.qml` + `services/Recorder.qml` + `RecorderModeOsd.qml`) — envuelve `gpu-screen-recorder` (AUR, instalado, `bootstrap.sh` ya lo cubre con `yay -S --needed --noconfirm gpu-screen-recorder-git`). Auto-detecta GPU por equipo (NVENC/VAAPI), así funciona igual en el desktop NVIDIA y en la Thinkpad Intel. Click izquierdo: inicia/detiene grabación de pantalla completa. Click derecho (solo si no está grabando): abre el picker de 3 modos (pantalla/región/ventana). "Modo ventana" es un recorte estático al bounding box de la ventana elegida (vía `hyprctl clients -j` + `slurp -r`), no sigue a la ventana si se mueve — en Wayland/Hyprland no hay captura de ventana en vivo confiable (`-w window` es solo X11, `-w portal` tiene bug documentado en Hyprland). Confirmado funcionando en la Dell tras instalar `intel-media-driver` (ver "Instalación actual" abajo). Detalle completo: memoria `screen_recorder_widget.md`, engram `quickshell/screen-recorder`, `recorder.md`.
 
 #### Estado actual del launcher (`modules/launcher/`)
 - Anclado en la parte inferior (`bottom: true`), crece hacia arriba
-- Animación: precircle (arc) → circle (logo Arch) → bar → open
+- Animación: punto → línea (crece hacia arriba) → brackets `[`/`]` con ícono Arch adentro → bar → open — terminal-alike, reemplazó la anterior de círculo+arco. Glyph de apertura extraído a `LauncherIntroGlyph.qml` (detalle: `docs/launcher.md`)
 - **Navegación con teclado**: Up/Down cambian `selectedIndex`, auto-scroll con `positionViewAtIndex(selectedIndex, ListView.Contain)`
 - **Mouse hover**: también actualiza `selectedIndex` (signal `hovered()` en `AppItem`)
 - **Selección visual en `AppItem`**: barra lateral de 3px (`m3primary`) + fondo `m3primaryContainer` translúcido + nombre y fondo de ícono cambian a `m3primary`
@@ -114,14 +115,25 @@ Configuraciones/
 - Click en el widget de la barra abre/cierra (`Visibilities.toggle(...)`, toggle explícito)
 - `HoverHandler` en la tarjeta/panel: hover pausa el auto-cierre; al salir del hover arranca un `Timer` de 1000ms que cierra
 - El volumen ya no tiene auto-cierre "por defecto" al abrir (se sacó el `restart()` automático que corría sin importar el hover) — ahora solo cierra por click en el botón, por hover-leave (1s), o Escape
-- **Pendiente / bug sin resolver**: el segundo click en el widget de volumen (para cerrar el OSD) no funciona, reproducido incluso tras reiniciar la PC. Escape sí cierra correctamente (confirma que la lógica de cierre en `Osd.qml` está bien) — el problema está en que el click del widget no llega a togglear `Visibilities.volume` la segunda vez. Revisado a fondo sin encontrar la causa estáticamente (un solo call site de `toggle("volume")`, sin gating raro, sin desync entre el `MouseArea` y el ancho animado del ícono+porcentaje). Próximo paso: correr `qs` en foreground o revisar su log en vivo mientras se reproduce, para cazar un warning de QML en el momento exacto del click.
+- ~~Bug: segundo click en el widget de volumen no cerraba el OSD~~ — **resuelto**. Causa: `Osd.qml` era el único OSD simple de la barra que pedía `WlrKeyboardFocus.OnDemand` (todos sus hermanos usan `None`) — Hyprland reasignando el foco de teclado a esa superficie desincronizaba el pointer/hover tracking de la propia barra. Fix: `WlrKeyboardFocus.None`, se sacó el handler de Escape que ya no hacía falta.
+- **`BatteryProfileOsd`/`TrayMenuOsd`/`RecorderModeOsd`** ahora comparten `components/MonitorOsdWindow.qml` (esqueleto de `PanelWindow` por monitor) — antes cada uno lo duplicaba. `Osd`/`CalendarPopout` siguen con el patrón inline (dos flujos de show/hide o matemática de posición propia, no encajan en el modelo de una sola bandera). Detalle: `docs/components.md`, `docs/gotchas.md`.
 
 #### Dashboard — botones de power
-- **`ProfileSection.qml`** (pill de power en el widget de perfil) y **`SessionSection.qml`** (fila de 5 acciones al pie del dashboard): los íconos usan el patrón de `PowerMenuButton` — solo el ícono `Text`, sin `Rectangle` de fondo. Hover: color `m3primary` + `scale: 1.35` con `NumberAnimation 180ms OutCubic`. Sin fondo ni highlight de área.
+- **`ProfileSection.qml`**: los íconos de la fila de power usan el patrón de `PowerMenuButton` — solo el ícono `Text`, sin `Rectangle` de fondo. Hover: color `m3primary` + `scale: 1.35` con `NumberAnimation 180ms OutCubic`. La fila en sí perdió su propio fondo/borde de píldora — ahora es un `Item` con solo un divisor de 1px arriba, terminal-alike.
+- ⚠️ **`SessionSection.qml`** existe con el mismo patrón de íconos pero **nadie lo instancia** — código muerto encontrado en la auditoría de arquitectura, no confundir con una fila realmente en uso.
+- **5 cápsulas del dashboard** (panel de perfil + notificación/clima/batería+performance/música) comparten `components/Capsule.qml` — antes cada una repetía las mismas 4 líneas de `radius`/borde/`Behavior on color`.
+- **`PerformanceSection.qml`**: filas con `BlockMetric`/`SegmentedMeter` (bloques discretos, sin fondo, separadas por divisores) en vez del `CircleMetric` anterior (arco dibujado en `Canvas`). **`BatterySection.qml`** usa el mismo `SegmentedMeter` en vez de la barra continua. Detalle: `docs/dashboard.md`, `docs/components.md`.
 
 #### Bugs corregidos
 - **Network.qml flicker**: el Timer reseteaba `connected/signal/ssid` antes de correr el proceso → ícono flickeaba cada 3s. Fix: bufferizar en props privadas del `Process` (`_connected`, `_signal`, `_ssid`) y aplicar todo junto en `onRunningChanged` cuando el proceso termina.
 - **`SysInfo.qml` detectaba GPU NVIDIA como falso positivo**: `hasGpu` se chequeaba con `command -v nvidia-smi` (solo confirma que el binario existe). En una máquina sin NVIDIA (Intel HD 520 + AMD discreta, confirmado con `lspci`) que tiene `nvidia-smi` instalado como leftover de un `bootstrap.sh` viejo (que asumía NVIDIA siempre, ver commit "auto-detect GPU vendor"), el binario existe pero falla con exit 9 al correr — el círculo de GPU del dashboard quedaba visible mostrando 0% fijo en vez de ocultarse. Fix: `nvidia-smi -L` (consulta al driver de verdad) en vez de `command -v`.
+
+#### Auditoría de performance + arquitectura (quickshell) — completa
+Sesión dedicada a auditar todo el shell y aplicar mejoras, en dos tandas (ver `docs/roadmap.md`, `docs/gotchas.md`, `docs/components.md`, `docs/services.md` para el detalle técnico completo):
+- **Performance**: `SysInfo.qml` (CPU/RAM) migrado de `grep`/`bash` por proceso a `FileView` in-process; `Hypr.qml` perdió el subsistema entero de capslock/numlock/keyboard-layout (cero consumidores en todo el proyecto); `Brightness.qml` polling 250ms → 500ms.
+- **Arquitectura**: 15+ archivos de código muerto borrados; `StateLayer.qml` (existía sin conectar) wireado en 5 archivos que repetían el patrón de hover/press a mano; `components/Capsule.qml` nuevo (dashboard); `components/MonitorOsdWindow.qml` nuevo (3 OSDs compartidos); `LauncherContent.qml` 965→846 líneas (`LauncherIntroGlyph.qml`/`AppLoader.qml` extraídos); `Colours.qml` 614→334 líneas (`services/ColoursEngine.qml` se lleva todo el spawneo de procesos de matugen, API pública sin cambios).
+- **Notificación de arranque**: `shell.qml` dispara `notify-send "Quickshell" "Shell loaded"` ~800ms después de terminar de construir todo el árbol (delay para no correr por delante del registro DBus del `NotificationServer` propio) — útil para saber que el shell ya está arriba sin mirar la terminal, especialmente después de una reinstalación.
+- **2 archivos de código muerto encontrados en el dashboard, sin borrar todavía** (fuera del alcance de esta sesión, quedan para revisar): `modules/dashboard/SessionSection.qml` y `modules/dashboard/DashboardNotificationsSection.qml` — registrados en `qmldir`, ninguno de los dos lo instancia nada en el proyecto.
 
 #### Estado actual del lockscreen (`modules/lock/`)
 - Port visual completo del theme SDDM "silent" — fases 0-6 terminadas (detalle en `lockscreen.md` del proyecto)
@@ -130,9 +142,10 @@ Configuraciones/
 - **Tema activo por defecto: `custom`** (antes `default`), con fondo = wallpaper real (sentinel `background = wallpaper`, resuelve directo a `Wallpapers.current` — **no** a `IdleManager.effectiveScreensaverSource`, ver fix de 2026-07-03 abajo) y ~12 colores de acento atados a la paleta matugen (sentinel `color = m3primary` etc., función `LockConfig.colorValue()`)
 - **Fix (2026-07-03)**: el sentinel `background = wallpaper` había empezado a seguir el fondo del salvapantallas en vez del wallpaper real, una vez que el panel `>screensaver` permitió que el salvapantallas usara una imagen distinta — las dos fuentes coincidían por casualidad antes de que existiera esa opción. Corregido en `LockSurface.qml` (detalle: `idle-screensaver.md` gotcha #15)
 - **Estilo custom del teclado virtual — portado** (`modules/lock/assets/vkeyboard-styles/.../LockKeyboard/style.qml`) — requiere `export QML_IMPORT_PATH=".../modules/lock/assets/vkeyboard-styles"` antes de lanzar `qs` (no hay launcher fijo todavía para persistir esto)
-- **Pendientes reales** (ver sección homónima en `lockscreen.md`):
-  1. `LockConfig.lockScreenDisplay` (saltar pantalla ociosa) parseado pero no consumido
-  2. `LockIconButton.qml` tiene un `Component.onCompleted` con el mismo patrón de riesgo de carrera ya arreglado en otros archivos del lock — sin síntoma reportado, sin tocar
+- **3 bugs encontrados y resueltos** (ver sección "Pendientes reales" en `lockscreen.md` para el detalle completo):
+  1. `LockConfig.lockScreenDisplay` (saltar pantalla ociosa) se parseaba pero no se consumía — ahora `LockSurface.qml`: `property bool revealed: !LockConfig.lockScreenDisplay`, `display = false` salta directo al campo de contraseña
+  2. `LockIconButton.qml` tenía un `Component.onCompleted` con el mismo patrón de riesgo de carrera ya arreglado en otros archivos del lock — alcanzable de verdad vía `LockPowerMenu.qml`, convertido a binding reactivo
+  3. **Wallpaper del lockscreen mostraba `default.jpg` en el primer bloqueo tras reinicio/reinstalación** (segundo bloqueo en adelante, correcto) — `Wallpapers.current` arranca en `""` hasta que termina de cargar (async, tanto con carpeta de wallpapers ya poblada como en instalación fresca desde cero), y si el primer lock corría antes de eso el `Image` fallaba al cargar una ruta vacía y `bgFailed` quedaba pegado en `true`. Fix de 3 partes en `LockSurface.qml`: `bgPending` (no intentar cargar nada mientras la fuente siga vacía), `resolvedSource` deriva "¿es ruta absoluta?" del propio `bgSource` en vez de un flag separado que podía ir un tick desincronizado, `bgFailed = true` diferido con `Qt.callLater` para no reentrar en el mismo tick
   - (El bug de `services/Colours.qml:151` — falta `()` en `colorsFile.text` — ya se arregló como parte del feature de wallpaper/theming, ver `wallpaper-theming.md`)
 
 #### Wallpaper picker + theming-mode picker (launcher, `>wallpaper` / `>theme`)
@@ -155,7 +168,8 @@ Configuraciones/
 - **Dos bugs encontrados probando el panel en vivo, ambos ya corregidos**: (1) si `lockTimeoutMin <= screensaverTimeoutMin` (posible desde que existen los sliders), una carrera entre los dos `IdleMonitor` podía dejar el salvapantallas mostrado para siempre sin pedir nunca la contraseña — fix: `lockMonitor` ahora siempre dispara ≥5s después del salvapantallas sin importar los valores configurados; (2) el sentinel `background = wallpaper` del lockscreen empezó a seguir el fondo del salvapantallas en vez del wallpaper real — fix arriba, sección de lockscreen. Detalle: `idle-screensaver.md` gotchas #14/#15
 
 ### Instalación actual
-- **Máquina**: Dell (Intel HD 520 + AMD Topaz) — fresh install pendiente con `./bootstrap.sh --no-gpu`
+- **Máquina**: Dell (Intel HD 520 + AMD Topaz) — ya instalada y en uso. Reinstalar con `./bootstrap.sh` **sin** `--no-gpu` (ver corrección arriba)
+- **`intel-media-driver` instalado y confirmado funcionando** — `gpu-screen-recorder` fallaba con `vaInitialize failed` en `/dev/dri/renderD128` (la Intel, la que de verdad escanea `eDP-1`) porque la instalación real de esta máquina corrió con `--no-gpu`, saltando el paso que lo hubiera instalado. Ya estaba correctamente listado en `bootstrap.sh` (paso GPU, rama Intel) — no hizo falta tocar el script, solo instalarlo a mano una vez en esta máquina ya instalada
 - **Repo en GitHub**: `https://github.com/FreidhYMorales/dotfiles`
 
 ---

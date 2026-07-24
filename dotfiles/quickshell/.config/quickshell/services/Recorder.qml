@@ -5,10 +5,11 @@ import Quickshell.Io
 import QtQuick
 import "../utils"
 
-// Screen recording via gpu-screen-recorder (AUR, not yet installed on this
-// system — auto-detects GPU vendor per-machine: NVENC on the NVIDIA desktop,
-// VAAPI on the Intel-only Thinkpad). No wf-recorder: gpu-screen-recorder
-// picks the right encoder without per-machine config.
+// Screen recording via gpu-screen-recorder (AUR) — auto-detects GPU vendor
+// per-machine: NVENC on the NVIDIA desktop, VAAPI on Intel/AMD elsewhere
+// (needs intel-media-driver on this Dell — see project CLAUDE.md). No
+// wf-recorder: gpu-screen-recorder picks the right encoder without
+// per-machine config.
 //
 // "Window mode" is NOT a live follow of a window — Wayland has no portable
 // -w window/-w focused equivalent (those are X11-only in gpu-screen-recorder;
@@ -18,6 +19,17 @@ import "../utils"
 // boxes, and the chosen box is recorded exactly like -w region. If the
 // window moves during recording, the capture does not follow it — an
 // accepted trade-off for reusing the reliable region path.
+//
+// hyprctl clients -j returns windows from EVERY workspace, not just the
+// visible one — and Hyprland lays out each workspace from the same origin,
+// so a window on a hidden workspace can report the exact same `at`/`size`
+// as one you can actually see. Fed unfiltered into slurp -r, that gives it
+// multiple exactly-overlapping candidates for the same screen spot, which
+// it can't visually disambiguate — confirmed live (two windows on different
+// workspaces, identical at:[12,66] size:[1576,822]). Filtered down to only
+// the focused monitor's active workspace (hyprctl activeworkspace -j) before
+// listing clients, so every candidate slurp -r sees is a distinct, actually
+// visible window.
 //
 // Stopping requires SIGINT specifically (gpu-screen-recorder's documented
 // "Ctrl+C: stop and save recording" — that's what triggers muxing/finalizing
@@ -32,6 +44,7 @@ Singleton {
     property string mode:           "screen"  // "screen" | "region" | "window" — display only
     property int    elapsedSeconds: 0
     property string lastOutputPath: ""
+    property int    _activeWorkspaceId: -1
 
     Timer {
         interval: 1000
@@ -75,16 +88,18 @@ Singleton {
 
     function startRegion() {
         if (root.recording) return
-        slurpRegionProc._buf = ""
+        Quickshell.execDetached(["notify-send", "-a", "Quickshell", "-t", "3000",
+            "Select a region to record", "Drag with your mouse — Esc to cancel"])
         slurpRegionProc.running = false
         slurpRegionProc.running = true
     }
 
     function startWindow() {
         if (root.recording) return
-        hyprctlClientsProc._buf = ""
-        hyprctlClientsProc.running = false
-        hyprctlClientsProc.running = true
+        Quickshell.execDetached(["notify-send", "-a", "Quickshell", "-t", "3000",
+            "Select a window to record", "Click a window — Esc to cancel"])
+        activeWorkspaceProc.running = false
+        activeWorkspaceProc.running = true
     }
 
     function stop() {
@@ -110,61 +125,86 @@ Singleton {
     }
 
     // --- region mode: plain interactive slurp ---
+    //
+    // StdioCollector, not SplitParser + manual buffering: reading the buffer
+    // from onExited raced the last chunk of stdout still arriving — slurp's
+    // single line of output could still be in flight when onExited fired,
+    // silently dropping the selection (looked like clicking "region" just
+    // did nothing). Same race Colours.qml hit with matugen's larger preview
+    // JSON. onStreamFinished only fires once the full stream is captured.
     Process {
         id: slurpRegionProc
         running: false
-        property string _buf: ""
         command: ["slurp"]
-        stdout: SplitParser {
-            onRead: line => slurpRegionProc._buf += line + "\n"
-        }
-        onExited: (exitCode, exitStatus) => {
-            const raw = slurpRegionProc._buf.trim()
-            slurpRegionProc._buf = ""
-            if (exitCode === 0 && raw) {
-                root._startRecorder(["-w", "region", "-region", root._slurpToRegionArg(raw)], "region")
-            } else {
-                console.warn("Recorder: region selection cancelled or failed")
+        stdout: StdioCollector {
+            id: slurpRegionStdout
+            onStreamFinished: {
+                const raw = slurpRegionStdout.text.trim()
+                if (raw) {
+                    root._startRecorder(["-w", "region", "-region", root._slurpToRegionArg(raw)], "region")
+                } else {
+                    console.warn("Recorder: region selection cancelled or failed")
+                    Quickshell.execDetached(["notify-send", "-a", "Quickshell",
+                        "Region selection cancelled", "No recording was started"])
+                }
             }
         }
     }
 
-    // --- window mode: hyprctl clients -j -> candidate rects -> slurp -r ---
+    // --- window mode: active workspace -> hyprctl clients -j (filtered) ->
+    // candidate rects -> slurp -r ---
+    Process {
+        id: activeWorkspaceProc
+        running: false
+        command: ["hyprctl", "activeworkspace", "-j"]
+        stdout: StdioCollector {
+            id: activeWorkspaceStdout
+            onStreamFinished: {
+                try {
+                    root._activeWorkspaceId = JSON.parse(activeWorkspaceStdout.text).id
+                } catch (e) {
+                    console.warn("Recorder: failed to parse hyprctl activeworkspace output:", e)
+                    root._activeWorkspaceId = -1
+                }
+                hyprctlClientsProc.running = false
+                hyprctlClientsProc.running = true
+            }
+        }
+    }
+
     Process {
         id: hyprctlClientsProc
         running: false
-        property string _buf: ""
         command: ["hyprctl", "clients", "-j"]
-        stdout: SplitParser {
-            onRead: line => hyprctlClientsProc._buf += line + "\n"
-        }
-        onExited: (exitCode, exitStatus) => {
-            const buf = hyprctlClientsProc._buf
-            hyprctlClientsProc._buf = ""
-            if (exitCode !== 0) {
-                console.warn("Recorder: hyprctl clients failed, exit code", exitCode)
-                return
-            }
-            try {
-                const clients = JSON.parse(buf)
-                const lines = []
-                for (let i = 0; i < clients.length; i++) {
-                    const c = clients[i]
-                    if (c.mapped === false || c.hidden === true) continue
-                    if (!c.size || !c.at) continue
-                    const [w, h] = c.size
-                    const [x, y] = c.at
-                    if (w <= 0 || h <= 0) continue
-                    const label = (c.title || c.class || "window").replace(/\n/g, " ")
-                    lines.push(`${x},${y} ${w}x${h} ${label}`)
+        stdout: StdioCollector {
+            id: hyprctlClientsStdout
+            onStreamFinished: {
+                try {
+                    const clients = JSON.parse(hyprctlClientsStdout.text)
+                    const lines = []
+                    for (let i = 0; i < clients.length; i++) {
+                        const c = clients[i]
+                        if (c.mapped === false || c.hidden === true) continue
+                        if (!c.size || !c.at) continue
+                        if (!c.workspace || c.workspace.id !== root._activeWorkspaceId) continue
+                        const [w, h] = c.size
+                        const [x, y] = c.at
+                        if (w <= 0 || h <= 0) continue
+                        const label = (c.title || c.class || "window").replace(/\n/g, " ")
+                        lines.push(`${x},${y} ${w}x${h} ${label}`)
+                    }
+                    if (lines.length === 0) {
+                        console.warn("Recorder: no windows available for window-mode selection")
+                        Quickshell.execDetached(["notify-send", "-a", "Quickshell", "-u", "critical",
+                            "Window recording failed", "No windows available to pick from"])
+                        return
+                    }
+                    root._pickWindowRegion(lines)
+                } catch (e) {
+                    console.warn("Recorder: failed to parse hyprctl clients output:", e)
+                    Quickshell.execDetached(["notify-send", "-a", "Quickshell", "-u", "critical",
+                        "Window recording failed", "Could not read window list"])
                 }
-                if (lines.length === 0) {
-                    console.warn("Recorder: no windows available for window-mode selection")
-                    return
-                }
-                root._pickWindowRegion(lines)
-            } catch (e) {
-                console.warn("Recorder: failed to parse hyprctl clients output:", e)
             }
         }
     }
@@ -176,7 +216,6 @@ Singleton {
     // on this machine, not just inferred: -r takes no argument, the
     // candidate list is fed on stdin in slurp's own output format.
     function _pickWindowRegion(lines) {
-        slurpWindowProc._buf = ""
         slurpWindowProc.stdinEnabled = true
         slurpWindowProc.running = false
         slurpWindowProc.running = true
@@ -187,18 +226,18 @@ Singleton {
     Process {
         id: slurpWindowProc
         running: false
-        property string _buf: ""
         command: ["slurp", "-r"]
-        stdout: SplitParser {
-            onRead: line => slurpWindowProc._buf += line + "\n"
-        }
-        onExited: (exitCode, exitStatus) => {
-            const raw = slurpWindowProc._buf.trim()
-            slurpWindowProc._buf = ""
-            if (exitCode === 0 && raw) {
-                root._startRecorder(["-w", "region", "-region", root._slurpToRegionArg(raw)], "window")
-            } else {
-                console.warn("Recorder: window selection cancelled or failed")
+        stdout: StdioCollector {
+            id: slurpWindowStdout
+            onStreamFinished: {
+                const raw = slurpWindowStdout.text.trim()
+                if (raw) {
+                    root._startRecorder(["-w", "region", "-region", root._slurpToRegionArg(raw)], "window")
+                } else {
+                    console.warn("Recorder: window selection cancelled or failed")
+                    Quickshell.execDetached(["notify-send", "-a", "Quickshell",
+                        "Window selection cancelled", "No recording was started"])
+                }
             }
         }
     }

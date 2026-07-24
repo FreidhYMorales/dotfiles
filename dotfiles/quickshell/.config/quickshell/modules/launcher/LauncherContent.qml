@@ -1,9 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import Quickshell.Io
 import QtQuick
-import "../../utils"
 import "../../services"
 import "../../components"
 
@@ -11,8 +9,6 @@ Item {
     id: root
 
     property string stage:         "closed"
-    property var    apps:          []
-    property string _buf:          ""
     property int    selectedIndex: 0
     // Which monitor the ">wallpaper" picker is currently targeting — ""
     // means "all monitors" (Wallpapers.commit's default/sync behavior).
@@ -141,7 +137,7 @@ Item {
             return []
         if (root.mode === "commands")
             return q ? root.commands.filter(c => c.name.toLowerCase().includes(q) || c.id.includes(q)) : root.commands
-        return q ? root.apps.filter(a => a.name.toLowerCase().includes(q)) : root.apps
+        return q ? appLoader.apps.filter(a => a.name.toLowerCase().includes(q)) : appLoader.apps
     }
 
     onFilteredChanged: {
@@ -177,6 +173,8 @@ Item {
 
     readonly property int panelHeight: listH + searchH + (listH > 0 ? 8 : 0)
 
+    AppLoader { id: appLoader }
+
     // ── State machine ──────────────────────────────────────────────────────
 
     Connections {
@@ -189,8 +187,7 @@ Item {
                 return
             }
             closeAnim.stop()
-            root._buf = ""
-            appsProc.running = true
+            appLoader.reload()
             openAnim.start()
             // Re-arm the wallpaper hover-movement guard on every fresh open,
             // not just on a mode change — the search text (and so `mode`)
@@ -202,21 +199,38 @@ Item {
         }
     }
 
+    // Open: point → line (grows up) → brackets (split + corner ticks + Arch
+    // icon) → bar → open. The "point splitting into two lines" is just the
+    // two spines starting at separation 0 — coincident, so it already reads
+    // as a single line without a separate stage.
     SequentialAnimation {
         id: openAnim
-        ScriptAction { script: root.stage = "precircle" }
+        ScriptAction { script: root.stage = "line" }
         NumberAnimation {
-            target: arcCanvas; property: "arcEnd"
-            from: 0; to: 360; duration: 320; easing.type: Easing.InOutQuart
+            target: introGroup; property: "spineH"
+            from: 0; to: introGroup.spineHTarget; duration: 220; easing.type: Easing.OutCubic
         }
-        PauseAnimation { duration: 60 }
-        ScriptAction  { script: root.stage = "circle" }
-        PauseAnimation { duration: 180 }
+        PauseAnimation { duration: 40 }
+        ScriptAction  { script: root.stage = "brackets" }
+        ParallelAnimation {
+            NumberAnimation {
+                target: introGroup; property: "separation"
+                from: 0; to: introGroup.separationTarget; duration: 260; easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                target: introGroup; property: "capReveal"
+                from: 0; to: 1; duration: 260; easing.type: Easing.OutCubic
+            }
+        }
+        PauseAnimation { duration: 160 }
         ScriptAction  { script: root.stage = "bar" }
         PauseAnimation { duration: 360 }
         ScriptAction  { script: { root.stage = "open"; focusTimer.restart() } }
     }
 
+    // Close: mirrors the open sequence — bar collapses back to the fully
+    // formed brackets, which un-form back into a line, which shrinks to
+    // nothing.
     SequentialAnimation {
         id: closeAnim
         ScriptAction {
@@ -226,10 +240,25 @@ Item {
             }
         }
         PauseAnimation { duration: 300 }
-        ScriptAction  { script: root.stage = "circle" }
-        PauseAnimation { duration: 380 }
+        ScriptAction  { script: root.stage = "brackets" }
+        PauseAnimation { duration: 180 }
+        ParallelAnimation {
+            NumberAnimation {
+                target: introGroup; property: "separation"
+                to: 0; duration: 220; easing.type: Easing.InCubic
+            }
+            NumberAnimation {
+                target: introGroup; property: "capReveal"
+                to: 0; duration: 220; easing.type: Easing.InCubic
+            }
+        }
+        ScriptAction  { script: root.stage = "line" }
+        NumberAnimation {
+            target: introGroup; property: "spineH"
+            to: 0; duration: 180; easing.type: Easing.InCubic
+        }
         ScriptAction  { script: root.stage = "closing" }
-        PauseAnimation { duration: 200 }
+        PauseAnimation { duration: 160 }
         ScriptAction  { script: root.stage = "closed" }
     }
 
@@ -248,25 +277,30 @@ Item {
 
         width: {
             switch (stage) {
-                case "closed": case "precircle": case "circle": case "closing": return 60
+                case "closed": case "line": case "brackets": case "closing": return 60
                 default: return 600
             }
         }
         height: {
             switch (stage) {
-                case "closed": case "precircle": case "circle": case "closing": return 60
+                case "closed": case "line": case "brackets": case "closing": return 60
                 case "bar":    return searchH
                 default:       return panelHeight
             }
         }
-        radius: {
-            switch (stage) {
-                case "closed": case "precircle": case "circle": case "closing": return 30
-                default: return 14
-            }
-        }
-        opacity: (stage === "closed" || stage === "closing") ? 0 : 1
+        // Square throughout — matches the sharp "[" / "]" brackets in
+        // introGroup, no rounded-vs-square mismatch at the handoff.
+        radius: Style.cornerRadius
+        // Invisible through the intro glyph (line/brackets) — introGroup
+        // draws that part; the panel body itself only appears once the
+        // brackets hand off into the bar.
+        opacity: (stage === "closed" || stage === "closing" ||
+                  stage === "line"   || stage === "brackets") ? 0 : 1
         color:   Colours.m3surfaceContainer
+        // Only framed once it looks like a panel (bar/open) — the intro
+        // glyph (line/brackets) handles its own look via introGroup.
+        border.width: (stage === "bar" || stage === "open") ? 2 : 0
+        border.color: Qt.alpha(Colours.m3primary, 0.9)
 
         Behavior on width   { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
         Behavior on height  { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
@@ -275,34 +309,6 @@ Item {
         Behavior on color   { CAnim {} }
 
         MouseArea { anchors.fill: parent }
-
-        // ── Arc canvas (precircle stage) ───────────────────────────────────
-
-        Canvas {
-            id: arcCanvas
-            anchors.fill: parent
-            visible:      root.stage === "precircle"
-
-            property real arcEnd: 0
-            onArcEndChanged: requestPaint()
-
-            onPaint: {
-                var ctx   = getContext("2d")
-                ctx.clearRect(0, 0, width, height)
-                if (arcEnd <= 0) return
-                var cx    = width  / 2
-                var cy    = height / 2
-                var r     = Math.min(width, height) / 2 - 5
-                var start = -Math.PI / 2
-                var end   = start + (arcEnd / 360) * 2 * Math.PI
-                ctx.beginPath()
-                ctx.arc(cx, cy, r, start, end)
-                ctx.strokeStyle = Colours.m3primary
-                ctx.lineWidth   = 3
-                ctx.lineCap     = "round"
-                ctx.stroke()
-            }
-        }
 
         // ── App list ───────────────────────────────────────────────────────
 
@@ -660,8 +666,8 @@ Item {
             id: searchBar
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
             height:  searchH
-            opacity: (stage === "precircle" || stage === "circle" ||
-                      stage === "closed"    || stage === "closing") ? 0 : 1
+            opacity: (stage === "line"   || stage === "brackets" ||
+                      stage === "closed" || stage === "closing") ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: 200 } }
 
             Rectangle {
@@ -828,36 +834,13 @@ Item {
             }
         }
 
-        // ── Arch logo (circle stage) ───────────────────────────────────────
-
-        Text {
-            anchors.centerIn: parent
-            text:           "󰣇"
-            color:          Colours.m3primary
-            font.family:    Style.fontFamily
-            font.pixelSize: 26
-            opacity:        stage === "circle" ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: 200 } }
-            Behavior on color   { CAnim {} }
-        }
     }
 
-    // ── App loader ─────────────────────────────────────────────────────────
-
-    Process {
-        id: appsProc
-        command: ["python3", Paths.scripts + "/list-apps.py"]
-        stdout: SplitParser {
-            onRead: line => { root._buf += line }
-        }
-        onRunningChanged: {
-            if (running) return
-            try {
-                root.apps = JSON.parse(root._buf)
-            } catch(e) {
-                console.warn("Launcher: failed to parse app list:", e)
-            }
-            root._buf = ""
-        }
+    // Intro glyph (line → brackets → Arch icon), driven by openAnim/closeAnim
+    // above via NumberAnimation { target: introGroup; property: ... }.
+    LauncherIntroGlyph {
+        id: introGroup
+        stage:   root.stage
+        searchH: root.searchH
     }
 }

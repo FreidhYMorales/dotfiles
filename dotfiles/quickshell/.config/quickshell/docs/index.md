@@ -42,4 +42,4 @@ exec-once = uwsm-app -- qs -p ~/.config/quickshell
 - **Fuente**: DepartureMono Nerd Font (vía `Style.fontFamily`)
 - **Estilo**: bordes cuadrados (`Style.cornerRadius = 0`), ver [services.md](./services.md#styleqml)
 - **Colores**: matugen → `~/.config/matugen/colors.json` → `Colours` singleton
-- **IPC con Hyprland**: `Quickshell.Hyprland` + `CustomShortcut`
+- **IPC con Hyprland**: `Quickshell.Hyprland` (dispatch, eventos) + `hyprctl` para lo que el módulo no cubre

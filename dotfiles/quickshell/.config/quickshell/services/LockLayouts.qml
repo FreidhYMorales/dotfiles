@@ -5,8 +5,7 @@ import Quickshell.Io
 
 // Keyboard layout list + switcher for the lockscreen, replacing SDDM's
 // `keyboard.layouts`/`keyboard.currentLayout` (no Quickshell equivalent)
-// with Hyprland IPC. Same Process+python3-json shell-out pattern as
-// services/Hypr.qml's kbProc.
+// with Hyprland IPC via a Process+python3-json shell-out.
 Singleton {
     id: root
 

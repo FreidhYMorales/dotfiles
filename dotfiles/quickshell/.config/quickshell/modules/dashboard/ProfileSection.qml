@@ -108,16 +108,20 @@ Item {
             Behavior on color { CAnim {} }
         }
 
-        // Power button pill — same fill/border treatment as the bar's pills
-        // (workspaces, CPU, RAM, BgApps, clock) for a consistent look.
-        Rectangle {
+        // Power button row — flush against the panel, no nested pill (the
+        // panel itself already carries a 2px border; a bordered pill inside
+        // it double-framed the same edge). Separated from name/uptime by a
+        // plain divider, same convention as the rest of the dashboard.
+        Item {
             height: 28
             width:  parent.width
-            radius: Style.cornerRadius
-            color:        Colours.m3surfaceContainerHigh
-            border.width: 1
-            border.color: Colours.mid(Colours.m3surfaceContainer, Colours.m3surfaceContainerHigh)
-            Behavior on color { CAnim {} }
+
+            Rectangle {
+                anchors { top: parent.top; left: parent.left; right: parent.right }
+                height: 1
+                color:  Qt.alpha(Colours.m3outlineVariant, 0.25)
+                Behavior on color { CAnim {} }
+            }
 
             Row {
                 id: powerRow
@@ -125,8 +129,6 @@ Item {
                     left:           parent.left
                     right:          parent.right
                     verticalCenter: parent.verticalCenter
-                    leftMargin:     8
-                    rightMargin:    8
                 }
                 spacing: Math.max(0, (width - 5 * 24) / 4)
 

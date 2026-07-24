@@ -14,6 +14,10 @@ Item {
     // wherever else it might be instantiated without a screen context.
     property var  colors:     Colours.palette
 
+    HoverHandler { id: hov }
+
+    readonly property bool active: hov.hovered
+
     Rectangle {
         anchors.fill: parent
         visible:      root.standalone
@@ -26,11 +30,15 @@ Item {
         anchors.centerIn: parent
         text:           !Bluetooth.powered   ? "󰂲" :
                         !Bluetooth.connected ? "󰂯" : "󰂱"
-        color:          !Bluetooth.powered   ? root.colors.m3onSurfaceVariant :
+        color:          root.active ? root.colors.m3primary :
+                        !Bluetooth.powered   ? root.colors.m3onSurfaceVariant :
                         !Bluetooth.connected ? root.colors.m3onSurface : root.colors.m3primary
         font.family:    Style.fontFamily
         font.pixelSize: 13
+        scale: root.active ? 1.35 : 1.0
+        transformOrigin: Item.Center
         Behavior on color { CAnim {} }
+        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
     }
 
     Process {

@@ -21,15 +21,15 @@
 | WifiWidget | `bar/WifiWidget.qml` | Click abre `impala` en kitty — lee `services/Network.qml` |
 | DashboardButton | `bar/DashboardButton.qml` | Con badge de notif unread |
 | Dashboard panel | `dashboard/Dashboard.qml` | Panel derecho 340px |
-| Dashboard content | `dashboard/DashboardContent.qml` | 4 cápsulas, scroll sin scrollbar |
-| ProfileSection | `dashboard/ProfileSection.qml` | |
-| SessionSection | `dashboard/SessionSection.qml` | |
-| BatterySection | `dashboard/BatterySection.qml` | |
-| PerformanceSection | `dashboard/PerformanceSection.qml` | CircleMetric, CPU/RAM/GPU/Disk |
+| Dashboard content | `dashboard/DashboardContent.qml` | Panel de perfil fijo arriba + 4 cápsulas con scroll sin scrollbar, todas sobre `components/Capsule.qml` |
+| ProfileSection | `dashboard/ProfileSection.qml` | Fila de power terminal-alike (sin fondo/borde propio, solo divisor) |
+| BatterySection | `dashboard/BatterySection.qml` | `SegmentedMeter` (bloques discretos), no barra continua |
+| PerformanceSection | `dashboard/PerformanceSection.qml` | Filas con `BlockMetric`/`SegmentedMeter`, CPU/RAM/GPU/Disk — reemplazó el `CircleMetric` (arco en Canvas) anterior |
 | MediaSection | `dashboard/MediaSection.qml` | MPRIS completo, selector multi-player |
-| DashboardNotificationsSection | `dashboard/DashboardNotificationsSection.qml` | Preview en dashboard |
+| ~~SessionSection~~ | `dashboard/SessionSection.qml` | ⚠️ **código muerto** — registrado en `qmldir`, no lo instancia nadie |
+| ~~DashboardNotificationsSection~~ | `dashboard/DashboardNotificationsSection.qml` | ⚠️ **código muerto** — registrado en `qmldir`, no lo instancia nadie |
 | Launcher | `launcher/Launcher.qml` | Keyboard exclusive, bottom-center |
-| LauncherContent | `launcher/LauncherContent.qml` | Animación multi-stage |
+| LauncherContent | `launcher/LauncherContent.qml` | Animación multi-stage (line→brackets→bar→open), 846 líneas — glyph de apertura y loader de apps extraídos a `LauncherIntroGlyph.qml`/`AppLoader.qml` |
 | AppItem | `launcher/AppItem.qml` | |
 | NotificationPanel | `notifications/NotificationPanel.qml` | Wireado en `shell.qml` (`NotificationPanel {}`) |
 | NotificationPanelContent | `notifications/NotificationPanelContent.qml` | 3 tabs |
@@ -54,6 +54,35 @@
 | Screen recorder | `services/Recorder.qml`, `bar/RecorderWidget.qml`, `bar/RecorderModeOsd.qml` | gpu-screen-recorder (screen/region/window) — ver `recorder.md` |
 | Screensaver panel | `launcher/ScreensaverForm.qml`, `screensaver/ScreensaverPreview.qml` | Panel `>screensaver` en el launcher, timeouts encadenados (screensaver/lock/suspend) — ver `idle-screensaver.md` y `wallpaper-theming.md` |
 | Keybind cheatsheet | `launcher/KeybindsList.qml`, `services/Keybinds.qml` | Comando `>keybinds` en el launcher, wireado en `LauncherContent.qml` |
+
+---
+
+### Auditoría de performance + arquitectura (quickshell)
+
+Auditoría completa del shell, dos tandas:
+
+**Performance**
+- `services/SysInfo.qml`: CPU/RAM via `FileView` en vez de `grep`/`bash` por proceso (cero fork/exec por tick)
+- `services/Hypr.qml`: eliminado el subsistema entero de capslock/numlock/keyboard-layout — cero consumidores en todo el proyecto
+- `services/Brightness.qml`: intervalo de polling 250ms → 500ms
+
+**Arquitectura**
+- 15+ archivos de código muerto borrados (`components/{containers,effects,images,misc,widgets}/`, `MaterialIcon.qml`, `AnimLoader.qml`, `Logo.qml`, etc.) — todos sin ningún call site
+- `components/StateLayer.qml` (existía sin usar) conectado en 5 archivos que repetían el patrón de hover/press a mano (`NotificationItem`, `CalendarCard`, `CalendarTab`, `MediaSection`, `TrayMenuOsd`)
+- `components/Capsule.qml` — estilo de tarjeta del dashboard (antes repetido 5 veces) extraído a un componente compartido
+- `components/MonitorOsdWindow.qml` — esqueleto de `PanelWindow` por monitor compartido por `TrayMenuOsd`/`BatteryProfileOsd`/`RecorderModeOsd` (antes duplicado en los 3)
+- `LauncherContent.qml` (965 → 846 líneas) — glyph de apertura extraído a `LauncherIntroGlyph.qml`, loader de apps a `AppLoader.qml`
+- `Colours.qml` (614 → 334 líneas) — todo el spawneo de procesos de matugen/ffmpegthumbnailer movido a `services/ColoursEngine.qml`, API pública sin cambios
+
+Detalle completo en `docs/gotchas.md`, `docs/components.md`, `docs/services.md`, `docs/launcher.md`, `docs/dashboard.md`, `docs/bar.md`.
+
+### Lockscreen — 3 bugs encontrados y resueltos
+
+- Wallpaper mostrando `default.jpg` en el primer bloqueo tras reinicio (carrera con `Wallpapers.current` cargando async)
+- `LockConfig.lockScreenDisplay` se parseaba pero nunca se conectaba — ahora salta la pantalla idle cuando está en `false`
+- `LockIconButton.qml` — mismo patrón de carrera de `Component.onCompleted` que ya se había arreglado en otros archivos del lock, alcanzable de verdad vía `LockPowerMenu.qml`
+
+Detalle en `lockscreen.md`.
 
 ---
 

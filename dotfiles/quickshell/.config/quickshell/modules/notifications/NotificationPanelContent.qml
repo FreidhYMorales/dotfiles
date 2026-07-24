@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
-import QtQuick.Shapes
 import "../../services"
 import "../../components"
 
@@ -42,33 +41,10 @@ Item {
         onTriggered: root.open = false
     }
 
-    // Left ear — same pattern as NotifToast: fills the 14px gap to the left of the panel
-    Shape {
-        z:      2
-        x:      0
-        y:      root.panelOpen ? 0 : -14
-        width:  14
-        height: 14
-        Behavior on y {
-            NumberAnimation {
-                duration: 350; easing.type: Easing.BezierSpline
-                easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-            }
-        }
-        ShapePath {
-            fillColor:   panel.color
-            strokeColor: "transparent"
-            strokeWidth: 0
-            startX: 0; startY: 0
-            PathArc  { x: 14; y: 14; radiusX: 14; radiusY: 14; direction: PathArc.Clockwise }
-            PathLine { x: 14; y: 0 }
-        }
-    }
-
     Rectangle {
         id:            panel
         anchors.right: parent.right
-        width:         root.width - 14
+        width:         root.width
         height:        root.height
         y:             root.panelOpen ? 0 : -root.height
         Behavior on y {
@@ -80,12 +56,13 @@ Item {
         }
 
         radius: Style.cornerRadius
-        topLeftRadius:  0
-        topRightRadius: 0
         color:          Colours.m3surfaceContainer
+        border.width: 2
+        border.color: Qt.alpha(Colours.m3primary, 0.9)
         clip:           true
         layer.enabled:  true
         Behavior on color { CAnim {} }
+
 
         MouseArea { anchors.fill: parent }
 
