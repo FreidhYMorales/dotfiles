@@ -230,4 +230,9 @@ curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/instal
 #   5. Configurar Spicetify con paths correctos de Spotify
 #   6. Revisar safe.directory en .gitconfig si cambió la ruta del disco
 #   7. grub-install (machine-specific — ver instrucciones en bootstrap.sh step 25)
+#   8. Driver de NPU Intel (Lunar Lake / Core Ultra 2xxV+, ej. ThinkPad X1 Carbon
+#      Gen 13 — "Intel AI Boost"): bootstrap.sh NO lo instala. Paquetes AUR
+#      (intel-npu-driver / intel-npu-driver-bin) tenían issues de build/mantenimiento
+#      activos al momento de investigar — no son seguros para un --noconfirm
+#      desatendido. Revisar estado del AUR a mano e instalar si sigue haciendo falta.
 ```
