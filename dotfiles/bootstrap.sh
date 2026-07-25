@@ -254,7 +254,11 @@ step "Fonts"
 sudo pacman -S --needed --noconfirm \
     ttf-iosevkaterm-nerd noto-fonts noto-fonts-emoji noto-fonts-cjk \
     ttf-nerd-fonts-symbols
-yay -S --needed --noconfirm redhat-fonts
+# DepartureMono Nerd Font is the active quickshell font (services/Style.qml,
+# Style.fontFamily) since the Iosevka -> DepartureMono migration — kept
+# ttf-iosevkaterm-nerd above too (unused but harmless) rather than ripping
+# it out while the pixel-font patch project is still in progress.
+yay -S --needed --noconfirm redhat-fonts otf-departure-mono-nerd
 
 # ── 23. System info ───────────────────────────────────────────────────────────
 step "System info"
