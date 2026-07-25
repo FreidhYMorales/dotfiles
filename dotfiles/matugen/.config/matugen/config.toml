@@ -35,3 +35,9 @@ output_path = "~/.config/zellij/themes/matugen.kdl"
 [templates.userContent]
 input_path  = "~/.config/matugen/templates/userContent.css"
 output_path = "~/.config/matugen/output/userContent.css"
+
+# Obsidian — post-hook copies to .obsidian/themes/Quickshell/ in every vault
+# registered in ~/.config/obsidian/obsidian.json
+[templates.obsidian]
+input_path  = "~/.config/matugen/templates/obsidian-theme.css"
+output_path = "~/.config/matugen/output/obsidian-theme.css"

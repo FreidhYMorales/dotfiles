@@ -176,6 +176,36 @@ EOF
     fi
 fi
 
+# ── Obsidian — copy theme into every vault's .obsidian/themes/ ───────────────
+OBSIDIAN_CSS_SRC="$HOME/.config/matugen/output/obsidian-theme.css"
+OBSIDIAN_MANIFEST_SRC="$HOME/.config/matugen/templates/obsidian-manifest.json"
+OBSIDIAN_STATE="$HOME/.config/obsidian/obsidian.json"
+
+if [[ -f "$OBSIDIAN_CSS_SRC" && -f "$OBSIDIAN_STATE" ]] && command -v python3 &>/dev/null; then
+    python3 -c "
+import json, os, shutil, sys
+
+css_src = sys.argv[1]
+manifest_src = sys.argv[2]
+state_path = sys.argv[3]
+
+try:
+    vaults = json.load(open(state_path)).get('vaults', {})
+except (json.JSONDecodeError, OSError):
+    vaults = {}
+
+for v in vaults.values():
+    path = v.get('path')
+    if not path or not os.path.isdir(path):
+        continue
+    dest = os.path.join(path, '.obsidian', 'themes', 'Quickshell')
+    os.makedirs(dest, exist_ok=True)
+    shutil.copy(css_src, os.path.join(dest, 'theme.css'))
+    if os.path.isfile(manifest_src):
+        shutil.copy(manifest_src, os.path.join(dest, 'manifest.json'))
+" "$OBSIDIAN_CSS_SRC" "$OBSIDIAN_MANIFEST_SRC" "$OBSIDIAN_STATE" 2>/dev/null || true
+fi
+
 # ── Chromium — generate global vars userstyle for Stylus ─────────────────────
 # Wraps the already-generated userContent.css in UserStyle metadata so Stylus
 # can import it as a global style that injects --mat-* into all pages.
