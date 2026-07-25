@@ -168,6 +168,12 @@ keybind(mainMod .. " + V", exec(clipHistory), descrip("Clipboard history"))
 -- Power button → lock screen (logind HandlePowerKey=ignore lets this through)
 keybind("XF86PowerOff", exec("qs ipc call lock lock"), { description = "Power button: lock screen" })
 
+-- NOTE: lid close is intentionally NOT bound here. A "switch:on:Lid Switch"
+-- bind was tried and never fired in this fork's Lua bridge (confirmed live
+-- across two lid close/open cycles + reboots — no trace in hyprland.log).
+-- logind handles lid → suspend natively instead (system/logind), with
+-- lock-before-sleep done via a systemd system-sleep hook, not Hyprland.
+
 -- TUI apps
 keybind(mainMod .. " + A", exec("kitty --class wiremix -e wiremix"), descrip("Open audio mixer"))
 keybind(mainMod .. " + SHIFT + B", exec("kitty --class bluetui -e bluetui"), descrip("Open bluetooth manager"))

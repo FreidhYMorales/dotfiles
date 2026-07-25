@@ -18,6 +18,11 @@ WlSessionLockSurface {
     // with its lockState/loginState initial state.
     property bool revealed: !LockConfig.lockScreenDisplay
     property bool bgFailed: false
+    // Retries before giving up to default.jpg — covers a transient Image
+    // decode error right after resuming from suspend (GPU/compositor still
+    // re-initializing), which fails with the SAME bgSource so onBgSourceChanged
+    // never fires to self-correct it like the original cold-start race did.
+    property int bgRetries: 0
 
     // Set by Lock.qml when services/IdleManager.qml's idle chain (not a
     // manual lock) triggered this session lock — keeps showing the same
@@ -81,7 +86,7 @@ WlSessionLockSurface {
         ? `file://${Paths.lockBackgroundsDir}/default.jpg`
         : (root.bgSource.startsWith("/") ? `file://${root.bgSource}` : `file://${Paths.lockBackgroundsDir}/${root.bgSource}`)
 
-    onBgSourceChanged: root.bgFailed = false
+    onBgSourceChanged: { root.bgFailed = false; root.bgRetries = 0 }
 
     color: "black"
 
@@ -110,15 +115,39 @@ WlSessionLockSurface {
             // perfectly valid image source as failed too.
             if (status === Image.Error && !root.bgFailed) {
                 const failedWasVideo = /\.(avi|mp4|mov|mkv|m4v|webm)$/i.test(background.source.toString())
-                // Deferred: setting bgFailed synchronously here feeds back
-                // into resolvedSource (which this Image's own `source` binds
-                // to), and if LockConfig/Wallpapers happen to settle several
-                // upstream properties in the same update batch (cfg reload,
-                // revealed's config-driven initial value, etc.), that
-                // same-tick feedback can trip QML's binding-loop detector.
-                // Qt.callLater pushes the write to the next tick, same
-                // observable result, no reentrancy.
-                if (!failedWasVideo) Qt.callLater(() => { root.bgFailed = true })
+                if (!failedWasVideo) {
+                    if (root.bgRetries < 3) {
+                        // Same source, transient failure (e.g. GPU/compositor
+                        // still waking up from suspend) — ride it out instead
+                        // of falling back straight to default.jpg.
+                        root.bgRetries++
+                        bgRetryTimer.restart()
+                    } else {
+                        // Deferred: setting bgFailed synchronously here feeds
+                        // back into resolvedSource (which this Image's own
+                        // `source` binds to), and if LockConfig/Wallpapers
+                        // happen to settle several upstream properties in the
+                        // same update batch (cfg reload, revealed's
+                        // config-driven initial value, etc.), that same-tick
+                        // feedback can trip QML's binding-loop detector.
+                        // Qt.callLater pushes the write to the next tick,
+                        // same observable result, no reentrancy.
+                        Qt.callLater(() => { root.bgFailed = true })
+                    }
+                }
+            } else if (status === Image.Ready) {
+                root.bgRetries = 0
+            }
+        }
+
+        Timer {
+            id: bgRetryTimer
+            interval: 400
+            onTriggered: {
+                // Image won't refetch a URL it thinks is unchanged — force it
+                // by clearing source then restoring it.
+                background.source = ""
+                background.source = root.showImage ? root.resolvedSource : ""
             }
         }
     }

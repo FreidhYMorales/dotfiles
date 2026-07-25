@@ -58,6 +58,15 @@ echo 'LANG=en_US.UTF-8' | sudo tee /etc/locale.conf >/dev/null
 sudo timedatectl set-timezone America/Guatemala
 sudo timedatectl set-ntp true
 
+step "/etc/hosts: hostname entry"
+# archinstall/pacstrap don't always add this. Without it, sudo hangs doing a
+# hostname lookup for its audit log on EVERY invocation — slow always, and a
+# real problem for anything sudo-based that runs during network transitions
+# (e.g. the system-sleep hook that locks the screen before suspend).
+HOSTNAME_VALUE=$(cat /etc/hostname)
+grep -q "$HOSTNAME_VALUE" /etc/hosts ||
+    printf '127.0.1.1\t%s\n' "$HOSTNAME_VALUE" | sudo tee -a /etc/hosts >/dev/null
+
 # ── 1. Pre-AUR bootstrap ─────────────────────────────────────────────────────
 step "Base tools"
 sudo pacman -S --needed --noconfirm git base-devel stow unzip
@@ -291,6 +300,11 @@ step "logind: power button config"
 sudo mkdir -p /etc/systemd/logind.conf.d
 sudo cp "$REPO_ROOT/system/logind/logind.conf.d/deadlock.conf" /etc/systemd/logind.conf.d/
 sudo systemctl restart systemd-logind 2>/dev/null || true
+
+step "systemd-sleep: lock before suspend"
+sudo cp "$REPO_ROOT/system/systemd/system-sleep/lock-before-sleep" /usr/lib/systemd/system-sleep/
+sudo chown root:root /usr/lib/systemd/system-sleep/lock-before-sleep
+sudo chmod 755 /usr/lib/systemd/system-sleep/lock-before-sleep
 
 # ── 26. XDG portal — term file chooser ───────────────────────────────────────
 step "xdg-desktop-portal-termfilechooser"
