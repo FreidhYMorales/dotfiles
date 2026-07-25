@@ -60,6 +60,7 @@ Configuraciones/
   - Step 31 — Boot optimization: mask `systemd-networkd-wait-online` (~2 min de boot), cups socket activation, Intel xe Early KMS (cuando `--no-gpu`)
   - Step 32 — Cybersecurity: núcleo de herramientas para trabajo estilo HTB (nmap, wireshark-qt + grupo `wireshark` para captura sin root, tcpdump, hashcat, john, metasploit, binwalk, exiftool, + seclists/burpsuite vía AUR). Deliberadamente **sin BlackArch** — el repo completo es redundante con AUR (que ya cubre el resto a demanda) y sus paquetes re-empaquetados arriesgan conflictos de reemplazo en `-Syu`
   - GRUB timeout = 3s, kernel params `quiet loglevel=3 nowatchdog`
+  - `GRUB_DEFAULT=0` (siempre arranca la primera entrada del menú = Arch, `10_linux` corre antes que `30_os-prober` así que Arch siempre queda primero) — antes era `GRUB_DEFAULT=saved` + `GRUB_SAVEDEFAULT=true`, que recordaba para siempre la última entrada elegida a mano: elegir otro SO una vez (apagados/reinicios en dual boot) lo dejaba como default hasta volver a elegir Arch a mano. Con `=0`, elegir otro SO en el menú lo arranca esa vez nada más, sin quedar pegado
   - Termina con `deploy.sh`, `xdg-user-dirs-update`, `fc-cache`, `luarocks magick`, `ya pack -i`, MPD, sddm-theme-sync helper
 - **Paquetes Stow activos** (todos en `PENDING=()`): nvim, yazi, zsh, kitty, hypr, quickshell, git, scripts, matugen, fonts, vesktop, betterdiscord, mimeapps, termfilechooser, xdg-portal + otros
 - `secrets.zsh` vive en `dotfiles/zsh/.config/zsh/secrets.zsh` (gitignoreado) — restaurar GEMINI_API_KEY manualmente

@@ -371,10 +371,16 @@ if [[ "$SKIP_GRUB" == false ]]; then
     else
         echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
     fi
-    # Remember last selected OS across reboots
-    sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$GRUB_DEFAULTS"
-    grep -q "^GRUB_SAVEDEFAULT" "$GRUB_DEFAULTS" ||
-        echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
+    # Always default to Arch (first menu entry — os-prober entries for other
+    # distros always land after it, 10_linux runs before 30_os-prober) on
+    # every boot, regardless of what was manually picked last time. Manually
+    # selecting another OS at the menu still boots it for that one time —
+    # GRUB just doesn't remember it afterward. `saved`+`GRUB_SAVEDEFAULT`
+    # (the previous setting) did remember it, which is exactly the annoyance
+    # of "tener que re-seleccionar Arch a cada rato" after booting into
+    # another OS once.
+    sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=0/' "$GRUB_DEFAULTS"
+    sudo sed -i '/^GRUB_SAVEDEFAULT/d' "$GRUB_DEFAULTS"
     # 3s — enough to select Windows on dual boot, fast enough on single boot
     sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' "$GRUB_DEFAULTS"
     # Quiet boot + disable NMI watchdog (saves ~200ms, reduces kernel log spam)
