@@ -433,6 +433,18 @@ if [[ -n "$ROOT_UUID" ]] && grep -q "$ROOT_UUID" /etc/fstab; then
     sudo mount -o remount,noatime /
 fi
 
+# ── 32. Cybersecurity ────────────────────────────────────────────────────────
+# Core toolset for HTB-style work (network recon, cracking, web testing,
+# forensics/stego). Anything beyond this list installs on demand via AUR —
+# deliberately NOT pulling in the full BlackArch repo (redundant with AUR,
+# and its re-packaged versions of extra/AUR packages risk replacement
+# conflicts on -Syu).
+step "Cybersecurity"
+sudo pacman -S --needed --noconfirm \
+    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool
+sudo usermod -aG wireshark "$USER"
+yay -S --needed --noconfirm seclists burpsuite
+
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"
 # Remove auto-generated files that would conflict with Stow symlinks.

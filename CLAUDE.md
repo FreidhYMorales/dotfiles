@@ -53,11 +53,12 @@ Configuraciones/
 ### Dotfiles / Bootstrap
 - **Git repo inicializado** en la raíz de `Configuraciones/` (rama `main`) — ver `git log` para el historial, no hardcodear el conteo de commits acá (queda desactualizado de inmediato)
 - **`install.sh`** — entry point curl-able. Detecta si el repo ya existe en disco o clona desde `$REPO_URL`. Luego llama a `bootstrap.sh`. Flags: `--no-gpu`, `--dir=<path>`
-- **`dotfiles/bootstrap.sh`** — 33 pasos, cubre todo el sistema desde cero:
+- **`dotfiles/bootstrap.sh`** — 32 pasos, cubre todo el sistema desde cero:
   - Flags: `--no-gpu` (salta drivers de GPU de **cualquier** fabricante detectado — NVIDIA/AMD/Intel juntos, no solo NVIDIA; usar en ThinkPad), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
   - Sin flags, el paso de GPU se auto-detecta por `lspci` (commit `91104b4`) e instala drivers para cada fabricante presente — soporta setups híbridos (ej. Intel+AMD) instalando ambos
   - Instala: Hyprland, GPU, shell+OMZ, CLI tools, Neovim+runtimes, Yazi, Audio+sof-firmware, screenshots, clipboard, notificaciones, OCR, screen recording, theming (matugen+spicetify), **apps (vesktop+zen-browser-bin+chromium+mpv)**, Quickshell+qt5/qt6-wayland, system utils (power-profiles-daemon+ntfs-3g), fonts, SDDM silent theme, termfilechooser, iwd+impala+bluez+bluetui, lenguajes (lua, java, c++, python-extras, pnpm), GRUB Star Wars
   - Step 31 — Boot optimization: mask `systemd-networkd-wait-online` (~2 min de boot), cups socket activation, Intel xe Early KMS (cuando `--no-gpu`)
+  - Step 32 — Cybersecurity: núcleo de herramientas para trabajo estilo HTB (nmap, wireshark-qt + grupo `wireshark` para captura sin root, tcpdump, hashcat, john, metasploit, binwalk, exiftool, + seclists/burpsuite vía AUR). Deliberadamente **sin BlackArch** — el repo completo es redundante con AUR (que ya cubre el resto a demanda) y sus paquetes re-empaquetados arriesgan conflictos de reemplazo en `-Syu`
   - GRUB timeout = 3s, kernel params `quiet loglevel=3 nowatchdog`
   - Termina con `deploy.sh`, `xdg-user-dirs-update`, `fc-cache`, `luarocks magick`, `ya pack -i`, MPD, sddm-theme-sync helper
 - **Paquetes Stow activos** (todos en `PENDING=()`): nvim, yazi, zsh, kitty, hypr, quickshell, git, scripts, matugen, fonts, vesktop, betterdiscord, mimeapps, termfilechooser, xdg-portal + otros
