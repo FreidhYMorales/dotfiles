@@ -83,6 +83,15 @@ rule({
 	size = "70% 65%",
 })
 
+-- Opacity + blur: Obsidian (Electron doesn't support this natively like kitty's
+-- background_opacity, but forcing opacity via windowrule + the global blur
+-- decoration already enabled above achieves the same effect on any window)
+rule({
+	name = "blur-obsidian",
+	match = { class = "obsidian" },
+	opacity = 0.85,
+})
+
 -- Layer rules: blur for Quickshell power menu overlay
 hl.layer_rule({ match = { namespace = "qs-powermenu" }, blur = true })
 hl.layer_rule({ match = { namespace = "qs-powermenu" }, ignore_alpha = 0.2 })
