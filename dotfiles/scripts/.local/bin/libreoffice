@@ -1,0 +1,20 @@
+#!/bin/bash
+# Wrapper for LibreOffice that always enables the UNO API socket, so external
+# tools (e.g. the matugen post-hook) can push live theme changes into an
+# already-open LibreOffice via ConfigurationUpdateAccess + commitChanges,
+# without closing/reopening the app. Verified live with python-uno.
+#
+# Only attaches the socket on a fresh launch — if LibreOffice is already
+# running, this new invocation just opens a window in that existing process
+# (LO's own single-instance behavior) and the flag has no effect there.
+
+set -e
+
+real_bin=/usr/lib/libreoffice/program/soffice
+uno_port=2002
+
+if ss -tln 2>/dev/null | grep -q ":$uno_port "; then
+  exec "$real_bin" "$@"
+else
+  exec "$real_bin" --accept="socket,host=localhost,port=$uno_port;urp;" "$@"
+fi

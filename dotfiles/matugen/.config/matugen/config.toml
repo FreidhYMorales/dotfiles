@@ -41,3 +41,15 @@ output_path = "~/.config/matugen/output/userContent.css"
 [templates.obsidian]
 input_path  = "~/.config/matugen/templates/obsidian-theme.css"
 output_path = "~/.config/matugen/output/obsidian-theme.css"
+
+# GTK3 — chrome colors for native GTK3 apps (e.g. LibreOffice's own toolbar).
+# GTK has no live-reload for gtk.css — applies the next time each app opens,
+# post-hook not needed (same as Zellij above).
+[templates.gtk3]
+input_path  = "~/.config/matugen/templates/gtk3-colors.css"
+output_path = "~/.config/gtk-3.0/gtk.css"
+
+# GTK4 / libadwaita — same static-apply behavior as gtk3 above
+[templates.gtk4]
+input_path  = "~/.config/matugen/templates/gtk4-colors.css"
+output_path = "~/.config/gtk-4.0/gtk.css"

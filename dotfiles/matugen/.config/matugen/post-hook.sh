@@ -19,6 +19,97 @@ fi
 # ── btop — theme reload via SIGUSR2 ──────────────────────────────────────────
 killall -USR2 btop 2>/dev/null || true
 
+# ── LibreOffice — static "Quickshell" color scheme ────────────────────────────
+# Same static/next-launch contract as gtk.css: no live push, no UNO socket, no
+# dependency on how the app was launched. LO overwrites registrymodifications.xcu
+# wholesale with its in-memory state on exit, so this only patches the file while
+# LO is closed — otherwise our write would just get clobbered when it quits.
+# Requires the "Quickshell" scheme node to already exist once (LO creates the
+# full ~90-property structure itself the first time any custom scheme is saved
+# via Tools > Options > Application Colors — this only overwrites the handful
+# of properties we drive from the palette, leaving the rest of that structure
+# intact).
+LO_XCU="$HOME/.config/libreoffice/4/user/registrymodifications.xcu"
+COLORS_JSON_LO="$HOME/.config/matugen/colors.json"
+if [[ -f "$LO_XCU" && -f "$COLORS_JSON_LO" ]] && ! pgrep -x soffice.bin > /dev/null; then
+    python3 - "$COLORS_JSON_LO" "$LO_XCU" << 'PYEOF' 2>/dev/null || true
+import json, re, sys
+
+colors_path, xcu_path = sys.argv[1], sys.argv[2]
+colors = json.load(open(colors_path))["colors"]
+
+def int24(role):
+    return int(colors[role]["hex"].lstrip("#"), 16)
+
+# prop_name -> (matugen role, has IsVisible toggle in this LO version's schema)
+PROPERTIES = {
+    "DocColor":                ("background",               False),
+    "AppBackground":           ("surface_container_lowest", False),
+    "FontColor":               ("on_background",            False),
+    "Links":                   ("primary",                  True),
+    "LinksVisited":            ("tertiary",                 True),
+    "Spell":                   ("error",                    False),
+    "Shadow":                  ("shadow",                   True),
+    "DocBoundaries":           ("outline_variant",          False),
+    "TableBoundaries":         ("outline_variant",          False),
+    "WriterSectionBoundaries": ("outline_variant",          False),
+    "WriterIdxShadings":       ("surface_container_low",    True),
+    "WriterFieldShadings":     ("surface_container_low",    True),
+    "CalcGrid":                ("outline_variant",          False),
+    "CalcPageBreak":           ("secondary",                False),
+    "CalcPageBreakManual":     ("secondary",                False),
+    "DrawGrid":                ("outline_variant",          True),
+}
+
+VALUE_RE = r'(<value[^>]*>.*?</value>|<value[^>]*/>)'
+
+xml = open(xcu_path, encoding="utf-8").read()
+
+m = re.search(r'<node oor:name="Quickshell" oor:op="replace">.*?</node></item>', xml)
+if not m:
+    sys.exit(0)  # no bootstrap node yet — save any custom scheme once via the LO UI first
+
+node = m.group()
+
+for prop_name, (role, has_visible) in PROPERTIES.items():
+    color_pat = re.compile(
+        rf'(<node oor:name="{re.escape(prop_name)}"><prop oor:name="Color" oor:op="fuse">){VALUE_RE}(</prop>)'
+    )
+    node = color_pat.sub(rf'\g<1><value>{int24(role)}</value>\g<3>', node, count=1)
+
+    if has_visible:
+        visible_pat = re.compile(
+            rf'(<node oor:name="{re.escape(prop_name)}">.*?<prop oor:name="IsVisible" oor:op="fuse">){VALUE_RE}(</prop>)'
+        )
+        node = visible_pat.sub(r'\g<1><value>true</value>\g<3>', node, count=1)
+
+xml = xml[:m.start()] + node + xml[m.end():]
+
+current_scheme_item = r'<item oor:path="/org\.openoffice\.Office\.UI/ColorScheme"><prop oor:name="CurrentColorScheme" oor:op="fuse">' + VALUE_RE + r'(</prop></item>)'
+if re.search(current_scheme_item, xml):
+    xml = re.sub(current_scheme_item, r'<item oor:path="/org.openoffice.Office.UI/ColorScheme"><prop oor:name="CurrentColorScheme" oor:op="fuse"><value>Quickshell</value>\g<2>', xml)
+else:
+    xml = xml.replace(
+        "</oor:items>",
+        '<item oor:path="/org.openoffice.Office.UI/ColorScheme"><prop oor:name="CurrentColorScheme" oor:op="fuse"><value>Quickshell</value></prop></item>\n</oor:items>',
+    )
+
+# Force off the bitmap fill for the app background (factory default ships
+# "maple-leaves.jpg" tiled behind the document — LibreOffice/Common/Appearance,
+# unrelated to the ColorScheme node above) so the solid AppBackground color wins.
+use_bmp_item = r'<item oor:path="/org\.openoffice\.Office\.Common/Appearance"><prop oor:name="UseBmpForAppBack" oor:op="fuse">' + VALUE_RE + r'(</prop></item>)'
+if re.search(use_bmp_item, xml):
+    xml = re.sub(use_bmp_item, r'<item oor:path="/org.openoffice.Office.Common/Appearance"><prop oor:name="UseBmpForAppBack" oor:op="fuse"><value>false</value>\g<2>', xml)
+else:
+    xml = xml.replace(
+        "</oor:items>",
+        '<item oor:path="/org.openoffice.Office.Common/Appearance"><prop oor:name="UseBmpForAppBack" oor:op="fuse"><value>false</value></prop></item>\n</oor:items>',
+    )
+
+open(xcu_path, "w", encoding="utf-8").write(xml)
+PYEOF
+fi
+
 # ── Hyprland — reload config (picks up new colors.lua) ───────────────────────
 hyprctl reload 2>/dev/null || true
 
