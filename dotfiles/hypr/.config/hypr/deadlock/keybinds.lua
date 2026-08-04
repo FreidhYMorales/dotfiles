@@ -13,7 +13,6 @@ local mainMod = "SUPER"
 local terminal = "kitty"
 local browser = "zen-browser"
 local fileManager = "kitty -e yazi"
-local music = "kitty -e ncmpcpp"
 
 -- Volume
 local raiseVolume = "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"
@@ -63,7 +62,6 @@ local qsIpc = "qs ipc call"
 keybind(mainMod .. " + RETURN", exec(terminal), descrip("Open Terminal"))
 keybind(mainMod .. " + B", exec(browser), descrip("Open Browser"))
 keybind(mainMod .. " + E", exec(fileManager), descrip("Open File Manager"))
-keybind(mainMod .. " + SHIFT + M", exec(music), descrip("Open Local Music"))
 
 -- Window
 -- Behaviore
@@ -95,16 +93,16 @@ keybind(
 
 -- Movement
 -- Move focus with mainMod + arrow keys
-keybind(mainMod .. " + left",  focus("left"),  descrip("Move focus left"))
+keybind(mainMod .. " + left", focus("left"), descrip("Move focus left"))
 keybind(mainMod .. " + right", focus("right"), descrip("Move focus right"))
-keybind(mainMod .. " + up",    focus("up"),    descrip("Move focus up"))
-keybind(mainMod .. " + down",  focus("down"),  descrip("Move focus down"))
+keybind(mainMod .. " + up", focus("up"), descrip("Move focus up"))
+keybind(mainMod .. " + down", focus("down"), descrip("Move focus down"))
 
 -- Move window with mainMod + CTRL + arrow keys
-keybind(mainMod .. " + CTRL + left",  movewindow("left"),  descrip("Move window left"))
+keybind(mainMod .. " + CTRL + left", movewindow("left"), descrip("Move window left"))
 keybind(mainMod .. " + CTRL + right", movewindow("right"), descrip("Move window right"))
-keybind(mainMod .. " + CTRL + up",    movewindow("up"),    descrip("Move window up"))
-keybind(mainMod .. " + CTRL + down",  movewindow("down"),  descrip("Move window down"))
+keybind(mainMod .. " + CTRL + up", movewindow("up"), descrip("Move window up"))
+keybind(mainMod .. " + CTRL + down", movewindow("down"), descrip("Move window down"))
 
 -- Move / resize window with mouse
 keybind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Move window with the mouse" })
@@ -127,6 +125,22 @@ end
 -- Scratchpad genérico
 keybind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"), descrip("Toggle scratchpad"))
 keybind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }), descrip("Move to scratchpad"))
+
+-- Música
+keybind(mainMod .. " + SHIFT + M", hl.dsp.workspace.toggle_special("music"), descrip("Toggle music workspace"))
+keybind(
+	mainMod .. " + ALT + M",
+	hl.dsp.window.move({ workspace = "special:music" }),
+	descrip("Move to music workspace")
+)
+
+-- Mensajería
+keybind(mainMod .. " + SHIFT + C", hl.dsp.workspace.toggle_special("messaging"), descrip("Toggle messaging workspace"))
+keybind(
+	mainMod .. " + ALT + C",
+	hl.dsp.window.move({ workspace = "special:messaging" }),
+	descrip("Move to messaging workspace")
+)
 
 -- Misc
 keybind(mainMod .. " + W", close, descrip("Close current window"))

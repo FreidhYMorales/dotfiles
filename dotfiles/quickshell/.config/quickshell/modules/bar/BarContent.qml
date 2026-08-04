@@ -101,6 +101,7 @@ Item {
                 color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
             }
             WorkspacesWidget { colors: root.colors }
+            SpecialWorkspacesWidget { colors: root.colors }
         }
     }
 
