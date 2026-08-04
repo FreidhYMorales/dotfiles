@@ -22,6 +22,3 @@ env("HYPRCURSOR_THEME",                    "Nordzy-hyprcursors")
 
 -- Portals / GTK file chooser
 env("GTK_USE_PORTAL",                      "1")
-
--- Misc
-env("LIBVIRT_DEFAULT_URI",                "qemu:///system")
