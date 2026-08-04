@@ -1,0 +1,16 @@
+#%PAM-1.0
+# Fingerprint-only PAM service — used exclusively by the Quickshell lockscreen's
+# second PamContext (modules/lock/LockAuth.qml) to run a fingerprint scan in
+# parallel with the normal password conversation ("passwd" service). Kept
+# separate from system-auth on purpose: pam_fprintd has no timeout limit here
+# (module restarts itself on failure — see LockAuth.qml), since this
+# conversation isn't blocking anything else while it waits.
+# max-tries=1: without it, pam_fprintd's own default (3) keeps this single
+# conversation alive across up to 3 bad swipes before it ever calls
+# completed() — LockAuth.qml's restart timer (which starts a brand new
+# conversation, i.e. a fresh try counter) never gets a chance to run until
+# all 3 are burned, so a wrong finger made a correct one afterwards feel
+# stuck/slow. With max-tries=1, one bad swipe completes immediately and
+# LockAuth.qml's own fast restart loop takes over instead.
+auth       required     pam_fprintd.so max-tries=1
+account    required     pam_permit.so
