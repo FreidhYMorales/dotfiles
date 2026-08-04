@@ -108,8 +108,8 @@ Variants {
 
                         readonly property var buttons: [
                             { icon: "󰐥", cmd: ["systemctl", "poweroff"] },
-                            { icon: "󰑩", cmd: ["systemctl", "reboot"] },
-                            { icon: "󰒲", cmd: ["systemctl", "suspend"] },
+                            { icon: "󰜉", cmd: ["systemctl", "reboot"] },
+                            { icon: "󰤄", cmd: ["systemctl", "suspend"] },
                             { icon: "󰌾", cmd: ["qs", "ipc", "-p", Quickshell.shellDir, "call", "lock", "lock"] },
                             { icon: "󰍃", cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"] }
                         ]

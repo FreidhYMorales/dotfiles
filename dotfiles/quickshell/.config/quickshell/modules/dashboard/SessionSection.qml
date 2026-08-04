@@ -14,8 +14,8 @@ Item {
     //   toggle — Visibilities panel name to toggle instead
     readonly property var buttons: [
         { icon: "󰐥", label: "Power",   toggle: "powerMenu"                              },
-        { icon: "󰑩", label: "Reboot",  cmd: ["systemctl", "reboot"]                    },
-        { icon: "󰒲", label: "Suspend", cmd: ["systemctl", "suspend"]                   },
+        { icon: "󰜉", label: "Reboot",  cmd: ["systemctl", "reboot"]                    },
+        { icon: "󰤄", label: "Suspend", cmd: ["systemctl", "suspend"]                   },
         { icon: "󰌾", label: "Lock",    cmd: ["qs", "ipc", "-p", Quickshell.shellDir, "call", "lock", "lock"] },
         { icon: "󰍃", label: "Logout",  cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"] }
     ]
