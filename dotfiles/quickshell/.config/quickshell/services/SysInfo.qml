@@ -11,8 +11,15 @@ Singleton {
     property int  ram:     0
     property int  gpu:     0
     property int  gpuTemp: 0
+    property int  igpu:    0
+    property bool hasIgpu: false
     property int  disk:    0
     property bool hasGpu:  false
+
+    property string _igpuMode: ""
+    property string _igpuPath: ""
+    property real   _lastIgpuIdle: -1
+    property real   _lastIgpuTime: 0
 
     property string osName:   "Arch Linux"
     property string wmName:   "Hyprland"
@@ -27,7 +34,8 @@ Singleton {
 
     // Detect nvidia-smi once at startup; enables GPU polling only when available
     Component.onCompleted: {
-        gpuCheckProc.running = true
+        gpuCheckProc.running  = true
+        igpuCheckProc.running = true
         const u = Quickshell.env("USER")
         if (u) root.userName = u
     }
@@ -43,6 +51,33 @@ Singleton {
         }
     }
 
+    // Detect the Intel iGPU driver once at startup — this repo runs on both
+    // i915 machines (Dell, HD 520) and xe machines (ThinkPad, Lunar Lake Arc)
+    // so both are checked. Matches strictly on the driver symlink name (not
+    // just file presence) since amdgpu also exposes a "gpu_busy_percent"
+    // file with the same name, which would misattribute a discrete AMD GPU's
+    // usage as the iGPU's on the Dell's hybrid Intel+AMD setup.
+    Process {
+        id: igpuCheckProc
+        command: ["bash", "-c",
+            "for c in /sys/class/drm/card*/device; do " +
+            "drv=$(basename $(readlink -f $c/driver 2>/dev/null) 2>/dev/null); " +
+            "if [ \"$drv\" = i915 ] && [ -f $c/gpu_busy_percent ]; then echo i915:$c/gpu_busy_percent; exit 0; fi; " +
+            "if [ \"$drv\" = xe ] && [ -f $c/tile0/gt0/gtidle/idle_residency_ms ]; then echo xe:$c/tile0/gt0/gtidle/idle_residency_ms; exit 0; fi; " +
+            "done; echo none"
+        ]
+        stdout: SplitParser {
+            onRead: line => {
+                const s = line.trim()
+                const idx = s.indexOf(":")
+                if (idx < 0) { root.hasIgpu = false; return }
+                root._igpuMode = s.slice(0, idx)
+                root._igpuPath = s.slice(idx + 1)
+                root.hasIgpu   = true
+            }
+        }
+    }
+
     // CPU/RAM used to be a `grep /proc/stat`/`grep /proc/meminfo` Process
     // spawned every 2s, forever — a fork+exec just to read two small files
     // Qt can already read in-process. FileView.reload() below does the same
@@ -55,7 +90,8 @@ Singleton {
         onTriggered: {
             statFile.reload()
             memFile.reload()
-            if (root.hasGpu) gpuProc.running = true
+            if (root.hasGpu)  gpuProc.running = true
+            if (root.hasIgpu) igpuFile.reload()
         }
     }
 
@@ -90,6 +126,16 @@ Singleton {
         onTextChanged: root._parseRam(text())
     }
 
+    // Path is set dynamically by igpuCheckProc above — i915 reports a ready-
+    // made busy percentage, xe only exposes cumulative idle time so it needs
+    // the same delta-over-wall-time approach as _parseCpu below.
+    FileView {
+        id: igpuFile
+        path: root._igpuPath
+        watchChanges: false
+        onTextChanged: root._parseIgpu(text())
+    }
+
     function _parseCpu(text) {
         const line = text.split("\n").find(l => l.startsWith("cpu "))
         if (!line) return
@@ -113,6 +159,27 @@ Singleton {
         if (availMatch) root._memFree  = +availMatch[1]
         if (root._memTotal > 0)
             root.ram = Math.round((1 - root._memFree / root._memTotal) * 100)
+    }
+
+    function _parseIgpu(text) {
+        if (root._igpuMode === "i915") {
+            const v = parseInt(text.trim())
+            if (!isNaN(v)) root.igpu = Math.max(0, Math.min(100, v))
+            return
+        }
+        if (root._igpuMode === "xe") {
+            const idle = parseFloat(text.trim())
+            if (isNaN(idle)) return
+            const now = Date.now()
+            if (root._lastIgpuIdle >= 0) {
+                const dIdle = idle - root._lastIgpuIdle
+                const dTime = now - root._lastIgpuTime
+                if (dTime > 0)
+                    root.igpu = Math.max(0, Math.min(100, Math.round((1 - dIdle / dTime) * 100)))
+            }
+            root._lastIgpuIdle = idle
+            root._lastIgpuTime = now
+        }
     }
 
     Process {

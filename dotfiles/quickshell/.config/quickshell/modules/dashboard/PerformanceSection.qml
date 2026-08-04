@@ -122,6 +122,15 @@ Item {
         }
 
         BlockMetric {
+            visible:  SysInfo.hasIgpu
+            width:    parent.width
+            value:    SysInfo.igpu
+            icon:     "󰾲"
+            label:    "iGPU"
+            arcColor: Colours.m3tertiary
+        }
+
+        BlockMetric {
             width:    parent.width
             value:    SysInfo.disk
             icon:     "󰋊"
