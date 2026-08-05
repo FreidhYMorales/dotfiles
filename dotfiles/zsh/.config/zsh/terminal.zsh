@@ -43,4 +43,7 @@ function do_render {
     esac
 }
 
+_load_functions
+_load_completions
+
 # cat ~/.local/state/caelestia/sequences.txt 2>/dev/null
