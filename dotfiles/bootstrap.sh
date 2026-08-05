@@ -128,20 +128,20 @@ fi
 
 # ── 4b. NPU (Intel AI Boost — Lunar Lake / Core Ultra 2xxV and newer) ─────────
 # Independent of --no-gpu: this isn't a GPU, and a real NPU can be present
-# even on a run that opts out of GPU driver install. AUR package (repackaged
-# from Intel's official .deb-only releases — no native Arch build exists
-# upstream) has a known packaging bug: its udev rule ships with the
-# executable bit set, which trips a parser warning. Non-fatal — a missing/
-# broken NPU driver shouldn't abort the rest of the bootstrap.
+# even on a run that opts out of GPU driver install. Intel only ships
+# official .deb releases (no native Arch build) — the AUR package repackages
+# those same .deb payloads (driver-compiler, firmware, level-zero-npu) and
+# adds its own udev rule granting the `render` group access to /dev/accel*
+# (the .deb releases don't ship one at all — confirmed by inspecting
+# v1.35.0's payload directly). Checked the actual PKGBUILD, not just AUR
+# comments: no udev permission bug in the current package — that turned out
+# to be about an older version. Real remaining gap: the AUR package trails
+# upstream (pinned ~3 months behind latest at last check). Non-fatal — a
+# missing/broken NPU driver shouldn't abort the rest of the bootstrap.
 sudo pacman -S --needed --noconfirm pciutils
 if lspci | grep -qi "Processing accelerators.*NPU"; then
     step "NPU: Intel AI Boost driver"
     yay -S --needed --noconfirm intel-npu-driver-bin || true
-    NPU_UDEV_RULE="/etc/udev/rules.d/10-intel-npu.rules"
-    if [[ -f "$NPU_UDEV_RULE" ]]; then
-        sudo chmod 644 "$NPU_UDEV_RULE"
-        sudo udevadm control --reload-rules 2>/dev/null || true
-    fi
 fi
 
 # ── 5. Shell & Terminal ───────────────────────────────────────────────────────
