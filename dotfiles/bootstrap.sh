@@ -159,7 +159,7 @@ step "CLI tools"
 sudo pacman -S --needed --noconfirm \
     eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
     rsync caligula aria2 7zip tealdeer procs dust qrencode poppler \
-    pacman-contrib transmission-cli
+    pacman-contrib transmission-cli atuin
 sudo systemctl enable paccache.timer
 
 step "CLI tools: AUR"
