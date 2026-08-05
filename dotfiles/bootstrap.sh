@@ -50,6 +50,10 @@ sudo sed -i 's/^#ParallelDownloads = 5$/ParallelDownloads = 5/' /etc/pacman.conf
 grep -q "^ILoveCandy" /etc/pacman.conf ||
     sudo sed -i '/^Color/a ILoveCandy' /etc/pacman.conf
 
+step "pacman: enable multilib (32-bit libs — required by Steam)"
+sudo sed -i '/^#\[multilib\]$/,/^#Include = \/etc\/pacman.d\/mirrorlist$/ s/^#//' /etc/pacman.conf
+sudo pacman -Sy
+
 # ── 0b. Locale & timezone ─────────────────────────────────────────────────────
 step "Locale (en_US.UTF-8) + timezone (America/Guatemala)"
 sudo sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' /etc/locale.gen
@@ -210,7 +214,7 @@ yay -S --needed --noconfirm matugen spicetify-cli spotify
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
 yay -S --needed --noconfirm vesktop zen-browser-bin chromium obsidian nordzy-cursors nordzy-hyprcursors nwg-displays
-sudo pacman -S --needed --noconfirm mpv libreoffice-fresh gnome-keyring libsecret
+sudo pacman -S --needed --noconfirm mpv yt-dlp swayimg libreoffice-fresh gnome-keyring libsecret steam
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
