@@ -395,16 +395,19 @@ yay -S --needed --noconfirm lazydocker
 
 # ── 29. AI tools ─────────────────────────────────────────────────────────────
 # Previously commented out: these used to abort the whole bootstrap run and
-# leave everything after this step un-installed. Two real bugs, both fixed
-# below — `set -euo pipefail` means either one kills the script outright:
-#   1. `npm install -g` without sudo fails (EACCES) — this system's npm
-#      prefix is /usr (`npm config get prefix`), owned by root.
-#   2. `opencode` is not the real npm package name — 404s. The actual
-#      package is `opencode-ai` (confirmed via `npm view opencode-ai`).
-# gemini-cli and the gentle-ai installer script were dropped from this list —
-# gemini-cli was superseded by Antigravity CLI below (same product family).
-step "AI tools: Claude Code + OpenCode (npm)"
-sudo npm install -g @anthropic-ai/claude-code opencode-ai
+# leave everything after this step un-installed. Two real bugs killed it
+# under `set -euo pipefail`: `npm install -g` without sudo fails (EACCES —
+# this system's npm prefix is /usr, root-owned), and `opencode` isn't the
+# real npm package name (404s; it's `opencode-ai`). Sidestepped entirely by
+# using each tool's official native installer instead of npm — both
+# Anthropic and OpenCode's own docs recommend the native/curl path over npm
+# as of 2026 (self-contained binary, no Node.js runtime, no sudo/permission
+# dance). gemini-cli and the gentle-ai installer script were dropped from
+# this list — gemini-cli was superseded by Antigravity CLI below (same
+# product family).
+step "AI tools: Claude Code + OpenCode (native installers)"
+curl -fsSL https://claude.ai/install.sh | bash
+curl -fsSL https://opencode.ai/install | bash
 
 step "AI tools: Antigravity CLI (agy)"
 # Standalone Go binary, not npm-based. Installer script's non-interactivity
