@@ -142,6 +142,12 @@ sudo pacman -S --needed --noconfirm pciutils
 if lspci | grep -qi "Processing accelerators.*NPU"; then
     step "NPU: Intel AI Boost driver"
     yay -S --needed --noconfirm intel-npu-driver-bin || true
+    # The udev rule grants the `render` group access to /dev/accel* — same
+    # group Intel's GPU driver package creates for /dev/dri/renderD*, but it
+    # ships with zero members. Without this, userspace can't touch the NPU
+    # at all until logging in as root. Verified live: group existed, empty,
+    # /dev/accel/accel0 unreachable by the normal user until added here.
+    sudo usermod -aG render "$USER"
 fi
 
 # ── 5. Shell & Terminal ───────────────────────────────────────────────────────
