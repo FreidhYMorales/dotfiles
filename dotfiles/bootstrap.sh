@@ -507,7 +507,7 @@ fi
 # conflicts on -Syu).
 step "Cybersecurity"
 sudo pacman -S --needed --noconfirm \
-    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool
+    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool bandwhich
 sudo usermod -aG wireshark "$USER"
 yay -S --needed --noconfirm seclists burpsuite
 
