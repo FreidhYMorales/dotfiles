@@ -400,6 +400,9 @@ yay -S --needed --noconfirm lazydocker
 # npm install -g opencode
 # curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
 
+step "AI tools: herdr (terminal workspace manager for coding agents)"
+yay -S --needed --noconfirm herdr-bin
+
 # ── 30. GRUB theme + dual boot ───────────────────────────────────────────────
 if [[ "$SKIP_GRUB" == false ]]; then
     step "GRUB: packages"
