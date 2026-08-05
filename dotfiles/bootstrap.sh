@@ -580,8 +580,15 @@ systemctl --user enable --now mpd
 
 step "Post-install: default Quickshell state"
 mkdir -p "$HOME/.local/state/quickshell"
+# Wallpapers.qml scans Paths.wallpapersDir (~/Pictures/Wallpaper) with a Qt
+# FolderListModel — if the dir doesn't exist yet when Quickshell first
+# launches, its filesystem watcher never attaches, and creating the dir
+# later doesn't get picked up without a Quickshell/session restart. Create
+# it now and seed the default wallpaper so it's there from the first launch.
+mkdir -p "$HOME/Pictures/Wallpaper"
+cp -n "$HOME/.config/hypr/assets/arch.png" "$HOME/Pictures/Wallpaper/arch.png"
 # Default wallpaper — Quickshell reads this on first launch
-echo "$HOME/.config/hypr/assets/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
+echo "$HOME/Pictures/Wallpaper/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
 # Default theme state — dynamic:true so changing the wallpaper triggers matugen
 echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
 # weather-loc.json is NOT written here — get-location uses GeoClue2 (WiFi) automatically.
@@ -606,6 +613,15 @@ if [[ ! -f "$SUDOERS_FILE" ]]; then
         sudo tee "$SUDOERS_FILE" >/dev/null
     sudo chmod 440 "$SUDOERS_FILE"
 fi
+
+step "Post-install: generate theme from default wallpaper"
+# The custom.conf bootstrapped above (step 24) is just the theme's stock
+# default until matugen actually runs once — same command ColoursEngine.qml
+# runs when a wallpaper is picked from the launcher, so first boot ends up
+# themed identically to a manual pick instead of staying on stock colors.
+matugen image "$HOME/Pictures/Wallpaper/arch.png" \
+    --type scheme-content --mode dark --source-color-index 0 --quiet
+"$HOME/.config/matugen/post-hook.sh" dark
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
