@@ -326,6 +326,13 @@ sudo cp "$REPO_ROOT/system/pam.d/sddm" /etc/pam.d/sddm
 sudo cp "$REPO_ROOT/system/pam.d/quickshell-fprint" /etc/pam.d/quickshell-fprint
 sudo cp "$REPO_ROOT/system/pam.d/quickshell-password" /etc/pam.d/quickshell-password
 
+# TPM2 / Secure Boot prep — not wired into anything yet. Pre-staged tooling
+# for a planned future migration to TPM2-backed disk unlock + Secure Boot.
+# pamtester also doubles as the PAM debugging tool used throughout
+# auditorias/autenticacion/README.md.
+step "TPM2 tooling (Secure Boot migration prep)"
+sudo pacman -S --needed --noconfirm clevis tpm2-tools pamtester
+
 # ── 25. logind — power button behavior ───────────────────────────────────────
 step "logind: power button config"
 sudo mkdir -p /etc/systemd/logind.conf.d
