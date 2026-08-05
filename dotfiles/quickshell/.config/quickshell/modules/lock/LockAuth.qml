@@ -21,6 +21,10 @@ Item {
     readonly property string userName: Quickshell.env("USER") || Quickshell.env("LOGNAME") || ""
     property string authState: "normal" // normal | authenticating
     property bool showKeyboard: !LockConfig.virtualKeyboardStartHidden
+    // Fingerprint runs independently of authState/password — it's a
+    // passive background listener, not a blocking "authenticating" step,
+    // so it never disables the password field. listening | success | error
+    property string fingerprintState: "listening"
 
     // "left"/"right" put the avatar beside the username+password column
     // instead of above it (see silvia.conf/rei.conf) — this drives both the
@@ -46,7 +50,17 @@ Item {
     // focus on reveal and stray keys (e.g. the one that woke the idle
     // screen) can fall through and fire an empty submit.
     onFocusChanged: {
-        if (root.focus) root.resetFocus()
+        if (root.focus) {
+            root.resetFocus()
+            // Security.fingerprintEnabled (">security" in the launcher) —
+            // when off, pamFingerprint is simply never started, same as if
+            // the feature didn't exist. It's still declared/instantiated
+            // below; only .start() calls are gated, so there's nothing to
+            // tear down/recreate here.
+            if (Security.fingerprintEnabled && !pamFingerprint.start()) fingerprintRestart.restart()
+        } else {
+            if (pamFingerprint.active) pamFingerprint.abort()
+        }
     }
 
     function reset() {
@@ -67,7 +81,17 @@ Item {
     // (confirmed against the real libpam backend before writing this).
     PamContext {
         id: pam
-        config: "passwd"
+        // NOT "passwd": that service `include`s system-auth, whose auth
+        // stack starts with `auth sufficient pam_fprintd.so timeout=4` —
+        // every attempt here would silently run an up-to-4s fingerprint
+        // check FIRST (delaying the real password check behind it), and a
+        // sensor touch during that window could unlock with NO password
+        // check at all, bypassing the ">security" toggle entirely (that
+        // toggle only gates pamFingerprint below, not this system-wide
+        // stack). "quickshell-password" (system/pam.d/quickshell-password)
+        // is system-auth's own auth section minus that one line — see
+        // auditorias/autenticacion/README.md §11.
+        config: "quickshell-password"
         user: root.userName
 
         onResponseRequiredChanged: {
@@ -76,6 +100,15 @@ Item {
 
         onCompleted: result => {
             if (result === PamResult.Success) {
+                // Guarded the same way pamFingerprint's own onCompleted
+                // already guards `pam.abort()` below — this side just never
+                // needed it before, because pamFingerprint used to always be
+                // started unconditionally. Now that Security.fingerprintEnabled
+                // (">security") can skip starting it entirely, this branch
+                // could call .abort() on a PamContext that was never active,
+                // which threw and skipped the `locked = false` line right
+                // after it.
+                if (pamFingerprint.active) pamFingerprint.abort()
                 root.lock.locked = false
             } else {
                 root.authState = "normal"
@@ -88,6 +121,77 @@ Item {
             root.authState = "normal"
             passwordInput.text = ""
             loginMessage.warn("Authentication error", "error")
+        }
+    }
+
+    // Runs in parallel with the password PamContext above, independent
+    // conversation via a dedicated fprintd-only PAM service (no pam_unix —
+    // see system/pam.d/quickshell-fprint) — either one unlocking wins,
+    // matching the same either/or pattern GDM uses (see
+    // auditorias/autenticacion/README.md §7.2/§9.4: PAM serializes a single
+    // conversation, so a real dual-factor listen requires two independent
+    // PamContexts, not two modules in one PAM stack). Auto-(re)started on
+    // reveal via onFocusChanged above.
+    PamContext {
+        id: pamFingerprint
+        config: "quickshell-fprint"
+        user: root.userName
+
+        onResponseRequiredChanged: {
+            if (pamFingerprint.responseRequired) pamFingerprint.respond("")
+        }
+
+        onCompleted: result => {
+            if (result === PamResult.Success) {
+                root.fingerprintState = "success"
+                if (pam.active) pam.abort()
+                root.lock.locked = false
+            } else {
+                // max-tries=1 in quickshell-fprint means a single bad swipe
+                // completes immediately (see the PAM service's own comment)
+                // — restart a fresh conversation right away so a correct
+                // touch right after a bad one isn't stuck waiting.
+                root.fingerprintState = "error"
+                fingerprintRestart.restart()
+            }
+        }
+
+        onError: () => {
+            root.fingerprintState = "error"
+            fingerprintRestart.restart()
+        }
+    }
+
+    // Restarting too soon after a failed scan can hit fprintd while it's
+    // still tearing down the previous conversation's device claim —
+    // confirmed live: `fprintd: Authorization denied ... Device was already
+    // claimed`. When that happens, start() returns false synchronously and
+    // no completed()/error() signal ever fires for it, so a naive
+    // "restart once" dead-ends here permanently. Fix: check start()'s own
+    // return value and keep retrying on this timer until it actually
+    // claims the device, instead of assuming one retry is always enough.
+    //
+    // Deliberately NOT gated on root.focus: confirmed live (extensive
+    // session debugging with tagged console.log across LockAuth/LockSurface)
+    // that root.focus can read false here even though the user never left
+    // the auth screen — nothing pressed, nothing else able to steal focus
+    // under Wayland's session-lock protocol. Root cause not identified
+    // (reads like a QtQuick focus-property quirk, not a real reveal/hide —
+    // LockSurface.revealed itself never changed when this happened), but
+    // gating on it was the actual bug: it made a wrong-finger touch
+    // silently kill the retry loop until something unrelated (like a
+    // password attempt) happened to re-trigger onFocusChanged. abort() in
+    // onFocusChanged's else branch is the real "stop" signal for this
+    // listener now; retrying unconditionally here is safe even if focus
+    // happens to read wrong, since a stray successful unlock while the
+    // screen is genuinely hidden isn't harmful.
+    Timer {
+        id: fingerprintRestart
+        interval: 300
+        onTriggered: {
+            if (!Security.fingerprintEnabled) return
+            root.fingerprintState = "listening"
+            if (!pamFingerprint.start()) fingerprintRestart.restart()
         }
     }
 
@@ -220,6 +324,64 @@ Item {
                 Layout.alignment: root.columnAlignment
                 Layout.topMargin: LockConfig.passwordInputMarginTop
                 visible: root.authState === "authenticating"
+            }
+
+            Text {
+                id: fingerprintIcon
+                // Hardcoded, not Style.fontFamily: modules/lock/ deliberately
+                // doesn't depend on the main shell's Colours/Style singletons
+                // (its own LockConfig.qml is the theming source here — see
+                // docs/services.md#styleqml) — DepartureMono Nerd Font is
+                // still what's installed system-wide (bootstrap.sh step 22),
+                // just referenced directly instead of through Style.
+                readonly property string iconFontFamily: "DepartureMono Nerd Font"
+
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                Layout.topMargin: LockConfig.passwordInputMarginTop
+                horizontalAlignment: Text.AlignHCenter
+                visible: root.authState !== "authenticating" && Security.fingerprintEnabled
+                font.family: fingerprintIcon.iconFontFamily
+                font.pixelSize: (root.fingerprintState === "listening" ? 50 : 100) * LockConfig.generalScale * (Screen.width / 1920)
+                text: String.fromCodePoint(0xf0237) // md-fingerprint (Nerd Fonts)
+                color: root.fingerprintState === "success" ? LockConfig.loginButtonActiveContentColor
+                    : root.fingerprintState === "error" ? LockConfig.warningMessageErrorColor
+                    : LockConfig.warningMessageNormalColor
+
+                Behavior on font.pixelSize {
+                    NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                }
+                Behavior on color {
+                    ColorAnimation { duration: 180 }
+                }
+
+                // "Actively scanning" breathing pulse — only while idle/listening,
+                // not during success/error (those are answers, not activity).
+                // Same enableAnimations gate LockSpinner.qml uses for its own
+                // RotationAnimation, for consistency.
+                SequentialAnimation {
+                    id: scanPulse
+                    running: root.fingerprintState === "listening" && LockConfig.enableAnimations
+                    loops: Animation.Infinite
+                    onRunningChanged: if (!running) fingerprintIcon.opacity = 1
+
+                    NumberAnimation {
+                        target: fingerprintIcon
+                        property: "opacity"
+                        from: 1.0
+                        to: 0.35
+                        duration: 900
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        target: fingerprintIcon
+                        property: "opacity"
+                        from: 0.35
+                        to: 1.0
+                        duration: 900
+                        easing.type: Easing.InOutSine
+                    }
+                }
             }
 
             Text {

@@ -38,6 +38,7 @@ Singleton {
     readonly property string themeStatePath:  `${appState}/theme.json`
     readonly property string idleStatePath:   `${appState}/idle.json`
     readonly property string weatherLocPath:  `${appState}/weather-loc.json`
+    readonly property string securityStatePath: `${appState}/security.json`
 
     // Screen recording (services/Recorder.qml) — session-only state, no
     // persistence file, just an output folder.

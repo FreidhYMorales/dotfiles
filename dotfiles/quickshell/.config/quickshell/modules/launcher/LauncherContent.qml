@@ -31,6 +31,7 @@ Item {
         { id: "wallpaper",   name: "Wallpaper",   description: "Choose the desktop wallpaper", icon: "󰸉" },
         { id: "theme",       name: "Theme",       description: "Choose the color theming mode", icon: "󰏘" },
         { id: "screensaver", name: "Screensaver", description: "Configure screensaver, lock and suspend", icon: "󰍹" },
+        { id: "security",    name: "Security",    description: "Manage lockscreen unlock methods", icon: "󰌾" },
         { id: "keybinds",    name: "Keybinds",    description: "Keyboard shortcuts cheatsheet", icon: "󰌌" },
         { id: "webapp",      name: "Web App",     description: "Install a web app launcher",      icon: "󰖟" }
     ]
@@ -40,6 +41,7 @@ Item {
         if (t.startsWith(">wallpaper "))   return "wallpapers"
         if (t.startsWith(">theme "))       return "themes"
         if (t.startsWith(">screensaver ")) return "screensaver"
+        if (t.startsWith(">security "))    return "security"
         if (t.startsWith(">keybinds "))    return "keybinds"
         if (t.startsWith(">webapp "))      return "webapp"
         if (t.startsWith(">"))             return "commands"
@@ -50,6 +52,7 @@ Item {
         if (root.mode === "wallpapers")   return t.slice(">wallpaper ".length).trim().toLowerCase()
         if (root.mode === "themes")       return t.slice(">theme ".length).trim().toLowerCase()
         if (root.mode === "screensaver")  return ""
+        if (root.mode === "security")     return ""
         if (root.mode === "keybinds")     return ""
         if (root.mode === "webapp")       return ""
         if (root.mode === "commands")     return t.slice(1).trim().toLowerCase()
@@ -91,6 +94,10 @@ Item {
         // keeps it correct if keybinds.lua changed and Hyprland reloaded
         // since the shell started.
         if (root.mode === "keybinds") Keybinds.refresh()
+        // Re-read fprintd every time the panel is opened — keeps enrollment
+        // status correct if it changed from a terminal (fprintd-enroll/
+        // -delete run directly) since the shell started.
+        if (root.mode === "security") Security.refresh()
         if (root.mode === "webapp") {
             webAppForm.reset()
             Qt.callLater(() => webAppForm.focusName())
@@ -133,7 +140,8 @@ Item {
         // lists driven by this property, so there's nothing here worth
         // computing (would just be pure apps.filter() waste on every
         // keystroke while either mode is active).
-        if (root.mode === "screensaver" || root.mode === "keybinds" || root.mode === "webapp")
+        if (root.mode === "screensaver" || root.mode === "security" ||
+            root.mode === "keybinds" || root.mode === "webapp")
             return []
         if (root.mode === "commands")
             return q ? root.commands.filter(c => c.name.toLowerCase().includes(q) || c.id.includes(q)) : root.commands
@@ -163,6 +171,7 @@ Item {
     readonly property int listH: {
         if (stage !== "open") return 0
         if (root.mode === "screensaver") return screensaverForm.formH
+        if (root.mode === "security")    return securityForm.formH
         if (root.mode === "keybinds")    return keybindsList.formH
         if (root.mode === "webapp")      return webAppForm.formH
         if (root.mode === "wallpapers" && root.filtered.length > 0)
@@ -604,6 +613,22 @@ Item {
             Behavior on opacity { NumberAnimation { duration: 180 } }
         }
 
+        // ── Security settings (">security" mode) ────────────────────────────
+
+        SecurityForm {
+            id: securityForm
+            anchors {
+                top:         parent.top
+                bottom:      searchBar.top
+                left:        parent.left
+                right:       parent.right
+                topMargin:   8
+            }
+            visible: root.mode === "security"
+            opacity: stage === "open" ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+        }
+
         // ── Keybinds cheatsheet (">keybinds" mode) ──────────────────────────
 
         KeybindsList {
@@ -643,13 +668,14 @@ Item {
                 top:              parent.top
                 topMargin:        (root.listH - font.pixelSize) / 2 + 8
             }
-            // root.mode === "screensaver"/"keybinds" also have
+            // root.mode === "screensaver"/"security"/"keybinds" also have
             // filtered.length === 0 (see the `filtered` computed property
             // above) — without this, the placeholder would overlap their
             // own content any time the search text is non-empty there.
             visible:        stage === "open" && root.filtered.length === 0 &&
                              searchField.text.length > 0 &&
-                             root.mode !== "screensaver" && root.mode !== "keybinds" && root.mode !== "webapp"
+                             root.mode !== "screensaver" && root.mode !== "security" &&
+                             root.mode !== "keybinds" && root.mode !== "webapp"
             text:           root.mode === "wallpapers" ? "No wallpapers found"
                             : root.mode === "themes"    ? "No themes found"
                             : root.mode === "commands"  ? "No commands found"

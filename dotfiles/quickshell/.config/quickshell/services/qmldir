@@ -20,6 +20,7 @@ singleton LockLayouts  1.0 LockLayouts.qml
 singleton LockLanguages 1.0 LockLanguages.qml
 singleton Wallpapers   1.0 Wallpapers.qml
 singleton IdleManager  1.0 IdleManager.qml
+singleton Security     1.0 Security.qml
 singleton Recorder     1.0 Recorder.qml
 singleton Keybinds     1.0 Keybinds.qml
 singleton Style        1.0 Style.qml

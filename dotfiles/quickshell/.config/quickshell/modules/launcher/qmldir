@@ -7,5 +7,6 @@ WallpaperCard 1.0 WallpaperCard.qml
 ThemeModeItem 1.0 ThemeModeItem.qml
 CommandItem 1.0 CommandItem.qml
 ScreensaverForm 1.0 ScreensaverForm.qml
+SecurityForm 1.0 SecurityForm.qml
 KeybindsList 1.0 KeybindsList.qml
 WebAppForm 1.0 WebAppForm.qml
