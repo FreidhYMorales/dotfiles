@@ -126,6 +126,24 @@ if [[ "$SKIP_GPU" == false ]]; then
     fi
 fi
 
+# ── 4b. NPU (Intel AI Boost — Lunar Lake / Core Ultra 2xxV and newer) ─────────
+# Independent of --no-gpu: this isn't a GPU, and a real NPU can be present
+# even on a run that opts out of GPU driver install. AUR package (repackaged
+# from Intel's official .deb-only releases — no native Arch build exists
+# upstream) has a known packaging bug: its udev rule ships with the
+# executable bit set, which trips a parser warning. Non-fatal — a missing/
+# broken NPU driver shouldn't abort the rest of the bootstrap.
+sudo pacman -S --needed --noconfirm pciutils
+if lspci | grep -qi "Processing accelerators.*NPU"; then
+    step "NPU: Intel AI Boost driver"
+    yay -S --needed --noconfirm intel-npu-driver-bin || true
+    NPU_UDEV_RULE="/etc/udev/rules.d/10-intel-npu.rules"
+    if [[ -f "$NPU_UDEV_RULE" ]]; then
+        sudo chmod 644 "$NPU_UDEV_RULE"
+        sudo udevadm control --reload-rules 2>/dev/null || true
+    fi
+fi
+
 # ── 5. Shell & Terminal ───────────────────────────────────────────────────────
 step "Shell & terminal"
 sudo pacman -S --needed --noconfirm zsh kitty fish zoxide
@@ -626,38 +644,3 @@ matugen image "$HOME/Pictures/Wallpaper/arch.png" \
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "Bootstrap complete."
-echo ""
-echo "Manual steps remaining:"
-echo "  1. Set API keys:"
-echo "       echo 'export GEMINI_API_KEY=\"...\"' >> ~/.config/zsh/secrets.zsh"
-echo ""
-echo "  2. Restore SSH keys:"
-echo "       cp ~/Mio/Configuraciones/backup/backups/ssh/* ~/.ssh/"
-echo "       chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_ed25519"
-echo "       ssh -T git@github.com"
-echo ""
-echo "  3. Restore GPG keys:"
-echo "       gpg --import ~/Mio/Configuraciones/backup/backups/gnupg/public-keys.asc"
-echo ""
-echo "  4. GitHub CLI:"
-echo "       cp ~/Mio/Configuraciones/backup/backups/gh/* ~/.config/gh/"
-echo "       gh auth status  # or: gh auth login"
-echo ""
-echo "  5. Spicetify — edit config after Spotify runs once:"
-echo "       ~/.config/spicetify/config-xpui.ini → update spotify_path + prefs_path"
-echo "       spicetify backup apply"
-echo ""
-echo "  6. Update safe.directory in ~/.gitconfig if disk path changed."
-echo ""
-echo "  7. GRUB install (machine-specific — run once after partitioning):"
-echo "       sudo grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB"
-echo "     If Windows EFI files are missing from /boot/EFI/, restore them:"
-echo "       cp -r ~/Mio/Configuraciones/backup/archive/restorations/probe-os/efi/Microsoft /boot/EFI/"
-echo "       sudo grub-mkconfig -o /boot/grub/grub.cfg"
-echo ""
-echo "  8. Intel NPU driver (Lunar Lake / Core Ultra 2xxV and newer, e.g. ThinkPad"
-echo "     X1 Carbon Gen 13 — 'Intel AI Boost'): NOT installed by this script."
-echo "     AUR packages (intel-npu-driver / intel-npu-driver-bin) had ongoing build/"
-echo "     maintenance issues as of the last check, so they're not safe to pin into"
-echo "     an unattended --noconfirm run. Check AUR status manually and install by hand"
-echo "     if still needed: yay -S intel-npu-driver-bin"
