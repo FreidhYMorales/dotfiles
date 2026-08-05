@@ -13,6 +13,12 @@ Item {
     // Which monitor the ">wallpaper" picker is currently targeting — ""
     // means "all monitors" (Wallpapers.commit's default/sync behavior).
     property string activeScreen:  ""
+    // True when a polkit request auto-opened an otherwise-closed launcher
+    // (see the Polkit Connections block below) — tells that same handler
+    // whether to auto-close again once the request resolves, vs. leave the
+    // launcher open because the user was already using it for something
+    // else (e.g. mid->security enroll) when the request came in.
+    property bool   polkitAutoOpened: false
 
     readonly property int itemH:   64
     readonly property int searchH: 56
@@ -37,6 +43,9 @@ Item {
     ]
 
     readonly property string mode: {
+        // Highest priority, independent of whatever's typed — a pending
+        // polkit request always takes over the panel until it resolves.
+        if (Polkit.active) return "polkit"
         const t = searchField.text
         if (t.startsWith(">wallpaper "))   return "wallpapers"
         if (t.startsWith(">theme "))       return "themes"
@@ -48,6 +57,7 @@ Item {
         return "apps"
     }
     readonly property string query: {
+        if (root.mode === "polkit") return ""
         const t = searchField.text
         if (root.mode === "wallpapers")   return t.slice(">wallpaper ".length).trim().toLowerCase()
         if (root.mode === "themes")       return t.slice(">theme ".length).trim().toLowerCase()
@@ -71,6 +81,7 @@ Item {
         searchField.text = ">" + cmdId + " "
         searchField.cursorPosition = searchField.text.length
     }
+
     // Light/dark toggle — resets to the currently committed value whenever
     // the picker is (re)entered. Also mirrors whatever mode row is picked
     // next (see the ListView delegates' onClicked below).
@@ -102,6 +113,10 @@ Item {
             webAppForm.reset()
             Qt.callLater(() => webAppForm.focusName())
         }
+        // Covers entering polkit mode while the launcher was ALREADY open
+        // (e.g. mid ">security" enroll) — the closed->auto-open path is
+        // handled by focusTimer instead, once openAnim actually finishes.
+        if (root.mode === "polkit" && root.stage === "open") Qt.callLater(() => polkitForm.focusInput())
         if (root.mode === "wallpapers") {
             root.activeScreen = ""
             root._wallpaperRealMove = false
@@ -140,7 +155,7 @@ Item {
         // lists driven by this property, so there's nothing here worth
         // computing (would just be pure apps.filter() waste on every
         // keystroke while either mode is active).
-        if (root.mode === "screensaver" || root.mode === "security" ||
+        if (root.mode === "polkit" || root.mode === "screensaver" || root.mode === "security" ||
             root.mode === "keybinds" || root.mode === "webapp")
             return []
         if (root.mode === "commands")
@@ -170,6 +185,7 @@ Item {
 
     readonly property int listH: {
         if (stage !== "open") return 0
+        if (root.mode === "polkit")      return polkitForm.formH
         if (root.mode === "screensaver") return screensaverForm.formH
         if (root.mode === "security")    return securityForm.formH
         if (root.mode === "keybinds")    return keybindsList.formH
@@ -185,6 +201,27 @@ Item {
     AppLoader { id: appLoader }
 
     // ── State machine ──────────────────────────────────────────────────────
+
+    // Drives the launcher open/closed around polkit requests (services/
+    // Polkit.qml) — see root.polkitAutoOpened's own comment for the "leave
+    // it open if the user was already in it" logic. Opening goes through
+    // Visibilities.toggle("launcher") so the normal openAnim/focusTimer path
+    // (Connections below) runs exactly as it would for any other trigger;
+    // closing does the same in reverse, only when we're the one who opened
+    // it and nothing else has closed it out from under us meanwhile.
+    Connections {
+        target: Polkit
+        function onActiveChanged() {
+            if (Polkit.active) {
+                root.polkitAutoOpened = !Visibilities.launcher
+                if (root.polkitAutoOpened) Visibilities.toggle("launcher")
+                else if (root.stage === "open") Qt.callLater(() => polkitForm.focusInput())
+            } else if (root.polkitAutoOpened) {
+                root.polkitAutoOpened = false
+                if (Visibilities.launcher) Visibilities.toggle("launcher")
+            }
+        }
+    }
 
     Connections {
         target: Visibilities
@@ -274,7 +311,10 @@ Item {
     Timer {
         id: focusTimer
         interval: 50
-        onTriggered: searchField.forceActiveFocus()
+        onTriggered: {
+            if (root.mode === "polkit") polkitForm.focusInput()
+            else searchField.forceActiveFocus()
+        }
     }
 
     // ── Panel rectangle (anchored to bottom, grows upward) ─────────────────
@@ -597,6 +637,22 @@ Item {
             }
         }
 
+        // ── Polkit authentication prompt (takes over regardless of mode) ────
+
+        PolkitForm {
+            id: polkitForm
+            anchors {
+                top:         parent.top
+                bottom:      searchBar.top
+                left:        parent.left
+                right:       parent.right
+                topMargin:   8
+            }
+            visible: root.mode === "polkit"
+            opacity: stage === "open" ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+        }
+
         // ── Screensaver settings (">screensaver" mode) ──────────────────────
 
         ScreensaverForm {
@@ -668,13 +724,13 @@ Item {
                 top:              parent.top
                 topMargin:        (root.listH - font.pixelSize) / 2 + 8
             }
-            // root.mode === "screensaver"/"security"/"keybinds" also have
-            // filtered.length === 0 (see the `filtered` computed property
-            // above) — without this, the placeholder would overlap their
-            // own content any time the search text is non-empty there.
+            // root.mode === "polkit"/"screensaver"/"security"/"keybinds" also
+            // have filtered.length === 0 (see the `filtered` computed
+            // property above) — without this, the placeholder would overlap
+            // their own content any time the search text is non-empty there.
             visible:        stage === "open" && root.filtered.length === 0 &&
                              searchField.text.length > 0 &&
-                             root.mode !== "screensaver" && root.mode !== "security" &&
+                             root.mode !== "polkit" && root.mode !== "screensaver" && root.mode !== "security" &&
                              root.mode !== "keybinds" && root.mode !== "webapp"
             text:           root.mode === "wallpapers" ? "No wallpapers found"
                             : root.mode === "themes"    ? "No themes found"
@@ -724,7 +780,9 @@ Item {
                     rightMargin:    8
                 }
                 visible: searchField.text.length === 0 && (stage === "bar" || stage === "open")
-                text:           "Search apps, or type > for commands"
+                text:           root.mode === "polkit"
+                                 ? "Authentication required — see above"
+                                 : "Search apps, or type > for commands"
                 color:          Colours.m3onSurfaceVariant
                 font.family:    Style.fontFamily
                 font.pixelSize: 13
@@ -747,7 +805,25 @@ Item {
                 clip:           true
                 Behavior on color { CAnim {} }
 
-                Keys.onEscapePressed: Visibilities.toggle("launcher")
+                // PolkitForm.qml owns its own password field (right above
+                // its Cancel/Submit row) — this search bar just goes inert
+                // while root.mode === "polkit", showing the static
+                // placeholder above instead of accepting input.
+                enabled: root.mode !== "polkit"
+
+                Keys.onEscapePressed: {
+                    // Mid-enrollment, Escape cancels the scan and returns to
+                    // the finger list/chips (same as PolkitForm's password
+                    // field cancelling back to whatever mode was underneath)
+                    // instead of blowing away the whole launcher — which
+                    // would also leave fprintd-enroll running in the
+                    // background with nothing left to cancel it.
+                    if (root.mode === "security" && Security.enrolling) {
+                        Security.cancelEnroll()
+                        return
+                    }
+                    Visibilities.toggle("launcher")
+                }
                 Keys.onReturnPressed: {
                     if (root.filtered.length === 0) return
                     const idx = Math.min(root.selectedIndex, root.filtered.length - 1)

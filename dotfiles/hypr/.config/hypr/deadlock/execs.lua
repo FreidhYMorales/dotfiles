@@ -5,7 +5,12 @@ local exec = hl.exec_cmd
 
 local dbus = "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
 local wallpaper = "hyprpaper"
-local polkit = "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+-- polkit-gnome-authentication-agent-1 (GTK, visually mismatched with the
+-- rest of the shell) replaced by Quickshell's own native agent
+-- (services/Polkit.qml + modules/launcher/PolkitForm.qml, rendered inside
+-- the launcher itself) — only one polkit agent can be registered per
+-- session, so this one must stay gone for ours to register. See
+-- auditorias/autenticacion/README.md §11.
 local keyring = "/usr/bin/gnome-keyring-daemon --start --components=secrets"
 local cliphistText = "wl-paste --type text --watch cliphist store"
 local cliphistImg = "wl-paste --type image --watch cliphist store"
@@ -15,7 +20,6 @@ local term_file_chosser = "/usr/lib/xdg-desktop-portal-termfilechooser"
 hl.on("hyprland.start", function()
 	exec(dbus)
 	exec(wallpaper)
-	exec(polkit)
 	exec(keyring)
 	exec(cliphistText)
 	exec(cliphistImg)
