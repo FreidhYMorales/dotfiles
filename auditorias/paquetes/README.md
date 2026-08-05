@@ -3,7 +3,7 @@
 **Fecha:** 2026-08-05
 **Alcance:** paquetes explícitos instalados en esta máquina vs. lo que `bootstrap.sh` realmente reproduce, dependencias de binarios en `dotfiles/scripts/`, y recomendaciones de apps nuevas para el stack.
 **Máquina de esta sesión:** ThinkPad X1 Carbon Gen 13 (Core Ultra 200V "Lunar Lake", Arc Graphics integrada — confirmado con `lspci`, un solo GPU Intel). **No es** la Dell Intel+AMD que `CLAUDE.md` documenta como máquina principal — importante tenerlo en cuenta al leer los hallazgos de GPU más abajo.
-**Estado:** §1 (gap de paquetes) y §2 (scripts) cerrados. Pendiente: §3 (recomendaciones de apps nuevas).
+**Estado:** cerrada de punta a punta — §1, §2 y §3 (incluidos los opcionales `atuin`/`bandwhich` y `herdr-bin`) resueltos.
 
 ---
 
@@ -61,7 +61,7 @@ Verificado en vivo: `/etc/tmpfiles.d/battery-thresholds.conf` **sí existe en es
 |---|---|
 | `p7zip` + `7zip` | **Ambos instalados explícitamente**, mismo propósito ("File archiver for extremely high compression"). Arch renombró/reemplazó `p7zip` por `7zip` (el 7-Zip real, mismo autor upstream) — es común terminar con los dos si `7zip` se instaló manualmente sin quitar `p7zip` primero. |
 
-**Decisión**: migrar a `7zip`. `bootstrap.sh` (step 6, CLI tools) cambiado de `p7zip` → `7zip`. `p7zip` queda pendiente de desinstalar a mano en esta máquina (`sudo pacman -R p7zip`) — esta sesión no tiene permisos sudo, igual que con `evtest`.
+**Decisión**: migrar a `7zip`. `bootstrap.sh` (step 6, CLI tools) cambiado de `p7zip` → `7zip`. `p7zip` desinstalado por el usuario en esta máquina.
 
 ### 1.5 Marcados como explícitos pero con pinta de dependencia — ✅ RESUELTO 2026-08-05
 
@@ -127,12 +127,20 @@ Hoy no hay ningún visor de imágenes standalone bindeado en ningún lado — Ya
 
 **2026-08-05 — ✅ Resuelto**: el usuario probó los dos a mano y eligió **`swayimg`** (disponible en `extra`, repo oficial — confirmado con `pacman -Si swayimg`). Agregado a `bootstrap.sh` step 16 (Apps), junto a `mpv`/`yt-dlp`.
 
-### 3.3 Opcional — depende de si te sirve el caso de uso
+### 3.3 Opcional — depende de si te sirve el caso de uso — ✅ AGREGADOS 2026-08-05
 
-| Paquete | Por qué podría encajar | Por qué NO lo puse en "alta confianza" |
+| Paquete | Por qué podría encajar | Trade-off | Dónde quedó |
+|---|---|---|---|
+| `atuin` | Historial de shell buscable/con stats, sincronizable entre máquinas | **Cambia UX de verdad** — reemplaza el historial nativo de zsh. Instalado con el hook activado; el server de sync (opcional, self-hostable) no se configuró — queda apagado hasta que decidas si lo querés | `bootstrap.sh` step 6 (CLI tools) + `dotfiles/zsh/.config/zsh/functions/atuin.zsh` (nuevo, mismo patrón que `direnv.zsh`) |
+| `bandwhich` | Monitor de ancho de banda por proceso en terminal — complementa el kit de cybersecurity que ya tenés (`nmap`, `wireshark-qt`, `tcpdump`) | Necesita `cap_net_raw` o correr con sudo cada vez — fricción de uso | `bootstrap.sh` step 32 (Cybersecurity) |
+
+### 3.5 Agregado fuera de lo propuesto — pedido directo del usuario
+
+| Paquete | Qué es | Dónde quedó |
 |---|---|---|
-| `atuin` | Historial de shell buscable/con stats, sincronizable entre máquinas | **Cambia UX de verdad** — reemplaza el historial nativo de zsh, no es un agregado neutro. Requiere que decidas si querés el server de sync (opcional, self-hostable) o no |
-| `bandwhich` | Monitor de ancho de banda por proceso en terminal — complementa el kit de cybersecurity que ya tenés (`nmap`, `wireshark-qt`, `tcpdump`) | Necesita `cap_net_raw` o correr con sudo cada vez — fricción de uso |
+| `herdr-bin` (AUR) | "Terminal workspace manager for AI coding agents" (sesiones/worktrees para agentes de código tipo Claude Code) — provee `herdr`, verificado en AUR (`yay -Si herdr-bin`) | `bootstrap.sh`, nuevo step junto al bloque comentado de "AI tools" (step 29) |
+
+Nota: en AUR existen `herdr` (build desde fuente) y `herdr-bin` (binario precompilado) — ambos figuran "out-of-date" al momento de revisar, pero son el mismo proyecto activo (`github.com/ogulcancelik/herdr`). Se eligió `herdr-bin` para no depender de compilar en cada reinstalación, mismo criterio que `zen-browser-bin`.
 
 ### 3.4 Descartado (ya cubierto o no encaja)
 
