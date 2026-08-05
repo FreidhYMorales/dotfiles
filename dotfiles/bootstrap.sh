@@ -341,7 +341,18 @@ sudo pacman -S --needed --noconfirm clevis tpm2-tools pamtester
 step "logind: power button config"
 sudo mkdir -p /etc/systemd/logind.conf.d
 sudo cp "$REPO_ROOT/system/logind/logind.conf.d/deadlock.conf" /etc/systemd/logind.conf.d/
-sudo systemctl restart systemd-logind 2>/dev/null || true
+# Restarting systemd-logind live kills the active graphical session (it owns
+# session/seat tracking for whatever compositor SDDM started) — safe only on
+# a fresh install with no session yet. Detect an active wayland/x11 session
+# and skip the live restart when re-running on an already-installed desktop;
+# the conf.d file is already written and takes effect on the next reboot.
+if loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}' |
+    xargs -I{} loginctl show-session {} -p Type --value 2>/dev/null |
+    grep -qE '^(wayland|x11)$'; then
+    echo "  → sesión gráfica activa detectada — se salta el restart en caliente (mataría la sesión). Aplica en el próximo reinicio."
+else
+    sudo systemctl restart systemd-logind 2>/dev/null || true
+fi
 
 step "systemd-sleep: lock before suspend"
 sudo cp "$REPO_ROOT/system/systemd/system-sleep/lock-before-sleep" /usr/lib/systemd/system-sleep/
