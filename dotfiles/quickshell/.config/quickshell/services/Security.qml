@@ -21,21 +21,47 @@ Singleton {
     readonly property bool hasEnrolledFingerprint: root.enrolledFingerNames.length > 0
 
     property bool enrolling: false
+    property string enrollingFinger: ""
     property string enrollMessage: ""
     property int enrollStageCount: 0
 
     readonly property string userName: Quickshell.env("USER") || Quickshell.env("LOGNAME") || ""
+
+    // The 10 valid finger names, confirmed against this machine's own
+    // fprintd-enroll (its own "Invalid finger name" warning lists exactly
+    // these, plus "any" which only makes sense for verify, not enroll) —
+    // not guessed, read from the running binary.
+    readonly property var allFingers: [
+        { id: "left-thumb",          label: "Left thumb" },
+        { id: "left-index-finger",   label: "Left index" },
+        { id: "left-middle-finger",  label: "Left middle" },
+        { id: "left-ring-finger",    label: "Left ring" },
+        { id: "left-little-finger",  label: "Left little" },
+        { id: "right-thumb",         label: "Right thumb" },
+        { id: "right-index-finger",  label: "Right index" },
+        { id: "right-middle-finger", label: "Right middle" },
+        { id: "right-ring-finger",   label: "Right ring" },
+        { id: "right-little-finger", label: "Right little" }
+    ]
+    readonly property var availableFingers: root.allFingers.filter(f => !root.enrolledFingerNames.includes(f.id))
+
+    function fingerLabel(fingerName) {
+        const f = root.allFingers.find(f => f.id === fingerName)
+        return f ? f.label : fingerName
+    }
 
     function refresh() {
         listProc.running = false
         listProc.running = true
     }
 
-    function startEnroll() {
+    function startEnroll(fingerName) {
         if (root.enrolling) return
         root.enrolling = true
+        root.enrollingFinger = fingerName
         root.enrollStageCount = 0
         root.enrollMessage = "Touch the fingerprint sensor"
+        enrollProc.command = ["fprintd-enroll", "-f", fingerName, root.userName]
         enrollProc.running = true
     }
 
@@ -52,7 +78,13 @@ Singleton {
         root.refresh()
     }
 
-    function deleteFingerprint() {
+    // Per-finger delete — fprintd-delete <user> -f <finger> maps straight to
+    // fprintd's own DeleteEnrolledFinger D-Bus call (confirmed via `gdbus
+    // introspect` against the running service on this machine), distinct
+    // from the no-args DeleteEnrolledFingers that wipes every finger at
+    // once. Managing fingers individually needs the scoped one.
+    function deleteFinger(fingerName) {
+        deleteProc.command = ["fprintd-delete", root.userName, "-f", fingerName]
         deleteProc.running = true
     }
 
@@ -86,7 +118,6 @@ Singleton {
     Process {
         id: enrollProc
         running: false
-        command: ["fprintd-enroll", "-f", "right-index-finger", root.userName]
         stdout: SplitParser {
             onRead: line => {
                 const m = line.match(/Enroll result:\s*(\S+)/)
@@ -130,7 +161,6 @@ Singleton {
     Process {
         id: deleteProc
         running: false
-        command: ["fprintd-delete", root.userName]
         onExited: root.refresh()
     }
 
