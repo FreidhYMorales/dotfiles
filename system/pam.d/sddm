@@ -1,0 +1,39 @@
+#%PAM-1.0
+
+# auth section is self-contained (NOT `include system-login`) on purpose:
+# system-auth's own pam_fprintd.so is `sufficient`, which terminates the
+# ENTIRE auth stack the instant fingerprint succeeds — including anything
+# listed after an `include` line in THIS file, not just the rest of
+# system-auth itself. That's why password (and therefore the login keyring
+# unlock, which piggybacks on pam_unix.so actually running) used to get
+# skipped whenever fingerprint won. See
+# auditorias/autenticacion/README.md §3/§7.1 for the full writeup.
+#
+# Otherwise byte-for-byte identical to system-auth's own auth stack — the
+# only change is pam_fprintd.so: `sufficient` -> `optional`. Fingerprint can
+# no longer grant login by itself (whether it succeeds, fails, or times out
+# doesn't affect the outcome), but pam_unix.so right after it is `required`
+# and always runs — so the login keyring unlocks on every single login,
+# exactly like it already does today whenever password wins. Scoped to
+# SDDM only: system-auth itself (sudo, TTY login) is untouched, so those
+# keep today's fingerprint-OR-password behavior.
+auth        optional                    pam_fprintd.so          timeout=60
+auth        required                    pam_faillock.so         preauth
+-auth       [success=2 default=ignore]  pam_systemd_home.so
+auth        [success=1 default=bad]     pam_unix.so             try_first_pass nullok
+auth        [default=die]               pam_faillock.so         authfail
+auth        optional                    pam_permit.so
+auth        required                    pam_env.so
+auth        required                    pam_faillock.so         authsucc
+-auth       optional                    pam_gnome_keyring.so
+-auth       optional                    pam_kwallet5.so
+
+account     include     system-login
+
+password    include     system-login
+-password   optional    pam_gnome_keyring.so    use_authtok
+
+session     optional    pam_keyinit.so          force revoke
+session     include     system-login
+-session    optional    pam_gnome_keyring.so    auto_start
+-session    optional    pam_kwallet5.so         auto_start
