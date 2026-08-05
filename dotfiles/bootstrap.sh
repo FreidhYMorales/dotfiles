@@ -335,7 +335,8 @@ sudo cp "$REPO_ROOT/system/pam.d/quickshell-password" /etc/pam.d/quickshell-pass
 # pamtester also doubles as the PAM debugging tool used throughout
 # auditorias/autenticacion/README.md.
 step "TPM2 tooling (Secure Boot migration prep)"
-sudo pacman -S --needed --noconfirm clevis tpm2-tools pamtester
+sudo pacman -S --needed --noconfirm clevis tpm2-tools
+yay -S --needed --noconfirm pamtester
 
 # ── 25. logind — power button behavior ───────────────────────────────────────
 step "logind: power button config"
