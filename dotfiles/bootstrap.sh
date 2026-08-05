@@ -295,6 +295,24 @@ sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/con
 step "SDDM: enable service"
 sudo systemctl enable sddm
 
+# Fingerprint authentication (SDDM + Quickshell lockscreen) — auditorias/
+# autenticacion/README.md has the full investigation. Three PAM services:
+#   sddm               fingerprint optional, pam_unix always runs after it
+#                      (fingerprint-only login used to leave the login
+#                      keyring locked — pam_fprintd was `sufficient` in
+#                      system-auth, short-circuiting past pam_unix)
+#   quickshell-fprint  dedicated fprintd-only service for the lockscreen's
+#                      second, parallel PamContext (either/or with password)
+#   quickshell-password  the lockscreen's password PamContext — NOT the
+#                      system "passwd" service, which still runs
+#                      pam_fprintd first and would silently delay/bypass
+#                      the ">security" fingerprint-enabled toggle
+step "Fingerprint authentication: install fprintd + PAM services"
+sudo pacman -S --needed --noconfirm fprintd
+sudo cp "$REPO_ROOT/system/pam.d/sddm" /etc/pam.d/sddm
+sudo cp "$REPO_ROOT/system/pam.d/quickshell-fprint" /etc/pam.d/quickshell-fprint
+sudo cp "$REPO_ROOT/system/pam.d/quickshell-password" /etc/pam.d/quickshell-password
+
 # ── 25. logind — power button behavior ───────────────────────────────────────
 step "logind: power button config"
 sudo mkdir -p /etc/systemd/logind.conf.d
