@@ -46,4 +46,8 @@ function do_render {
 _load_functions
 _load_completions
 
+# fzf.zsh and atuin.zsh both bind ^R — fzf loads after atuin alphabetically
+# and wins by default. Force atuin explicitly so it's not order-dependent.
+bindkey -M emacs '^r' atuin-search
+
 # cat ~/.local/state/caelestia/sequences.txt 2>/dev/null
