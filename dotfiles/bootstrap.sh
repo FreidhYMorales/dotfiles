@@ -385,12 +385,13 @@ sudo pacman -S --needed --noconfirm pnpm
 
 step "Dev tools"
 sudo pacman -S --needed --noconfirm \
-    git-delta hyperfine tokei watchexec xh sqlite
+    git-delta hyperfine tokei watchexec xh sqlite direnv
 
 step "Dev: Docker"
 sudo pacman -S --needed --noconfirm docker docker-compose
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
+yay -S --needed --noconfirm lazydocker
 
 # ── 29. AI tools ─────────────────────────────────────────────────────────────
 # step "AI tools"
