@@ -394,11 +394,26 @@ sudo usermod -aG docker "$USER"
 yay -S --needed --noconfirm lazydocker
 
 # ── 29. AI tools ─────────────────────────────────────────────────────────────
-# step "AI tools"
-# npm install -g @anthropic-ai/claude-code
-# npm install -g @google/gemini-cli
-# npm install -g opencode
-# curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+# Previously commented out: these used to abort the whole bootstrap run and
+# leave everything after this step un-installed. Two real bugs, both fixed
+# below — `set -euo pipefail` means either one kills the script outright:
+#   1. `npm install -g` without sudo fails (EACCES) — this system's npm
+#      prefix is /usr (`npm config get prefix`), owned by root.
+#   2. `opencode` is not the real npm package name — 404s. The actual
+#      package is `opencode-ai` (confirmed via `npm view opencode-ai`).
+# gemini-cli and the gentle-ai installer script were dropped from this list —
+# gemini-cli was superseded by Antigravity CLI below (same product family).
+step "AI tools: Claude Code + OpenCode (npm)"
+sudo npm install -g @anthropic-ai/claude-code opencode-ai
+
+step "AI tools: Antigravity CLI (agy)"
+# Standalone Go binary, not npm-based. Installer script's non-interactivity
+# wasn't independently verified — watch the first real run of this step.
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+
+step "AI tools: Ollama"
+sudo pacman -S --needed --noconfirm ollama
+sudo systemctl enable ollama
 
 step "AI tools: herdr (terminal workspace manager for coding agents)"
 yay -S --needed --noconfirm herdr-bin
