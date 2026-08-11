@@ -1,0 +1,12 @@
+# Sourced by uwsm's environment preloader (wayland-wm-env@<compositor>.service)
+# before the compositor starts, via prepare-env.sh's load_wm_env — this runs
+# AFTER /etc/profile/~/.profile are sourced (see __LOAD_PROFILE__ block in
+# /usr/lib/uwsm/prepare-env.sh), so it's the final word on env vars for the
+# whole graphical session, unlike ~/.config/environment.d/ (systemd's normal
+# mechanism), which uwsm's own profile-loading step overwrites/ignores here.
+#
+# Without this, ~/.local/bin scripts (launch-or-focus, screenshot, ocr,
+# reminder, clipboard...) resolve fine from an interactive zsh shell but are
+# "command not found" when spawned by Hyprland/UWSM (confirmed live via
+# /proc/<Hyprland pid>/environ even after a full reboot).
+export PATH="$HOME/.local/bin:$PATH"

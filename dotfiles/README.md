@@ -36,7 +36,6 @@ scripts/.local/bin/ →  ~/.local/bin/
 |---|---|
 | `betterdiscord` | `~/.config/BetterDiscord/` |
 | `btop` | `~/.config/btop/` |
-| `environment` | `~/.config/environment.d/` — PATH fix for `~/.local/bin` in the systemd/UWSM session, see `scripts/README.md` |
 | `fastfetch` | `~/.config/fastfetch/` |
 | `fonts` | `~/.local/share/fonts/` |
 | `git` | `~/.gitconfig` |
@@ -53,6 +52,7 @@ scripts/.local/bin/ →  ~/.local/bin/
 | `starship` | `~/.config/starship.toml` |
 | `systemd` | `~/.config/systemd/user/` |
 | `termfilechooser` | `~/.config/xdg-desktop-portal-termfilechooser/` |
+| `uwsm` | `~/.config/uwsm/` — PATH fix for `~/.local/bin` in the graphical session, see `scripts/README.md` |
 | `vesktop` | `~/.config/vesktop/` |
 | `wiremix` | `~/.config/wiremix/` |
 | `xdg-portal` | `~/.config/xdg-desktop-portal/` |

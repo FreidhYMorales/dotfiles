@@ -2,7 +2,11 @@
 
 Utilidades en `.local/bin/`, deployadas a `~/.local/bin/` por Stow (sin symlinks manuales).
 
-**`~/.local/bin` en el PATH de los keybinds**: el paquete `environment` (`~/.config/environment.d/10-local-bin.conf`) agrega `~/.local/bin` al PATH de la sesión systemd/UWSM — sin esto, estos scripts resuelven bien desde una zsh interactiva (PATH seteado en `.zshrc`/`.zshenv`) pero fallan en silencio (`command not found`) al ser lanzados directo por Hyprland/UWSM vía keybind, que no leen esos archivos de shell. Requiere logout/login para tomar efecto (systemd solo genera el entorno una vez al arrancar el user-manager, `hyprctl reload` no alcanza).
+**`~/.local/bin` en el PATH de los keybinds**: el paquete `uwsm` (`~/.config/uwsm/env`) agrega `~/.local/bin` al PATH de la sesión gráfica — sin esto, estos scripts resuelven bien desde una zsh interactiva (PATH seteado en `.zshrc`/`.zshenv`) pero fallan en silencio (`command not found`) al ser lanzados directo por Hyprland/UWSM vía keybind, que no leen esos archivos de shell.
+
+Se probó primero con `~/.config/environment.d/` (mecanismo estándar de systemd) — no funcionó: UWSM levanta Hyprland a través de su propio preloader de entorno (`wayland-wm-env@hyprland.desktop.service` → `/usr/lib/uwsm/prepare-env.sh`), que sourcea `/etc/profile`/`~/.profile` y reexporta `PATH` DESPUÉS de que corren los generadores de systemd — pisando por completo lo que haya armado `environment.d`. Confirmado en vivo leyendo `/proc/<pid de Hyprland>/environ` incluso después de un reboot real. `~/.config/uwsm/env` es cargado por ese mismo preloader (`load_wm_env`, después del bloque de `/etc/profile`), así que es la última palabra real sobre el entorno de la sesión.
+
+Requiere logout/login para tomar efecto — el preloader de UWSM corre una vez por sesión, no hay forma de recargarlo con `hyprctl reload` ni reiniciando el compositor.
 
 ## clipboard
 
