@@ -3,7 +3,7 @@
 **Fecha:** 2026-08-05
 **Alcance:** `dotfiles/bootstrap.sh` y `dotfiles/deploy.sh` (idempotencia, orden, manejo de errores, redundancia); estructura general del repo (`dotfiles/` vs `backup/` vs `system/`, documentación en `backup/references/`, `.gitignore`, convenciones de nombres).
 **Fuera de alcance** (ya auditado/cerrado en otro lado, no re-tocar acá): código QML de Quickshell (performance/arquitectura), paquetes/apps instalados vs bootstrap.sh (`auditorias/paquetes/`), cadena de autenticación PAM/fprintd/polkit (`auditorias/autenticacion/`).
-**Estado:** cerrada — todos los hallazgos de scripts/estructura resueltos o descartados con criterio explícito. Queda 1 pendiente diferido a propósito (P1, ver abajo) y la vigencia de la documentación de Quickshell sin tocar (fuera de alcance).
+**Estado:** cerrada por completo — todos los hallazgos de scripts/estructura resueltos o descartados con criterio explícito, incluido P1 (ver abajo). Queda solo la vigencia de la documentación de Quickshell sin tocar (fuera de alcance).
 
 ---
 
@@ -20,22 +20,21 @@ Verificado contra el estado real del repo, no asumido desde `CLAUDE.md`:
 
 ## Pendientes diferidos (fuera del ciclo normal de esta auditoría)
 
-### P1 — API key filtrada en el historial de git (`backup/zsh/.zshenv:18`)
+### P1 — API key filtrada en el historial de git (`backup/zsh/.zshenv:18`) — **resuelto (2026-08-11)**
 
-**Qué se encontró:** `GEMINI_API_KEY` real en texto plano, trackeada por git (no cubierta por `.gitignore` — solo `dotfiles/zsh/.config/zsh/secrets.zsh` está ignorado, esta copia vieja en `backup/zsh/.zshenv` no). Presente en 20+ commits del historial completo, incluido `HEAD`, y pusheada a `origin/main` — repo `FreidhYMorales/dotfiles` confirmado **público** (`gh repo view` → `isPrivate: false`).
+**Qué se encontró:** `GEMINI_API_KEY` real en texto plano, trackeada por git (no cubierta por `.gitignore` — solo `dotfiles/zsh/.config/zsh/secrets.zsh` está ignorado, esta copia vieja en `backup/zsh/.zshenv` no). Presente en 20+ commits del historial completo, incluido `HEAD` en su momento, y pusheada a `origin/main` — repo `FreidhYMorales/dotfiles` confirmado **público** (`gh repo view` → `isPrivate: false`).
 
-**Estado:** key ya **revocada por el usuario** (2026-08-05) — sin riesgo activo hoy. Repo se deja público, no se rehace el historial por ahora.
+**Cómo se resolvió:** key ya estaba **revocada por el usuario** (2026-08-05) desde antes de esta limpieza, sin riesgo activo. Se confirmó primero (`git grep` sobre `git rev-list --all`) que la key **solo** aparece en `backup/zsh/.zshenv` — ningún otro archivo del historial la contiene. Se ejecutó el plan diseñado:
+1. `git-filter-repo` instalado (`sudo pacman -S git-filter-repo`)
+2. Backup de seguridad (`git clone --mirror`) + clon de trabajo separado, ninguno de los dos sobre el working directory real
+3. Decisión sobre el archivo completo (no solo la línea de la key): **borrar `backup/zsh/.zshenv` entero del historial** (`git filter-repo --path backup/zsh/.zshenv --invert-paths`) — el resto del archivo era puro boilerplate ya obsoleto (duplicado muerto de `dotfiles/zsh`), sin nada más que valiera la pena preservar
+4. Verificado: `git log --all -p | rg AIzaSy` → cero resultados; `git log --oneline -- backup/zsh/.zshenv` → vacío; árbol de archivos de HEAD idéntico al repo real (única diferencia: hashes de commit, esperado); 123 commits preservados
+5. Force-push a `origin` (`90193c1` → `6e35676` como nuevo HEAD de `main`)
+6. Working directory real resincronizado (`git fetch` + `git reset --hard origin/main`, sobre árbol ya limpio) + `git gc --prune=now --aggressive` local para purgar el blob viejo con la key
 
-**Por qué queda diferido:** con la key muerta, reescribir el historial (`git filter-repo` + force-push) es trabajo de higiene, no de seguridad urgente — decisión explícita del usuario de no gastar tiempo en esto ahora mismo. Pasar el repo a privado tampoco resuelve la exposición ya ocurrida (cualquier fork/clone/scraper de mientras estuvo pública ya tiene la key para siempre) — quedó explicado y descartado por el usuario también.
+**Limitación conocida, sin acción pendiente:** GitHub puede cachear por un tiempo commits ya no alcanzables desde `main` (accesibles todavía por SHA directo hasta que el GC de GitHub los limpie) — irrelevante acá porque la key ya estaba revocada antes de esta limpieza, así que no hay ventana de riesgo real.
 
-**Plan ya diseñado, listo para retomar cuando el usuario quiera dedicarle tiempo:**
-1. `sudo pacman -S git-filter-repo` (disponible en `extra`, no instalado hoy)
-2. Backup de seguridad: `git clone --mirror` a una carpeta aparte antes de tocar nada
-3. Reescribir historial: **decisión pendiente** entre (a) `git filter-repo --replace-text` (redacta solo el string de la key, deja `backup/zsh/.zshenv` intacto) o (b) borrar `backup/zsh/.zshenv` completo del historial (el archivo ya está marcado como duplicado obsoleto de `dotfiles/zsh`, ver hallazgo de redundancia backup/ más abajo — si se decide borrar `backup/zsh/` del repo actual como parte de esa limpieza, tiene sentido hacerlo en el mismo paso)
-4. Verificar: `git log --all -p | rg AIza` → cero resultados
-5. Force-push (`--force --all` + `--force --tags`) a `origin`
-
-**Cross-reference:** ligado a la limpieza de redundancia `backup/` vs `dotfiles/` (sección de esta misma auditoría) — `backup/zsh/.zshenv` es una de las copias viejas pre-Stow encontradas ahí.
+**Cross-reference:** ligado a la limpieza de redundancia `backup/` vs `dotfiles/` (sección de esta misma auditoría, ya cerrada) — `backup/zsh/.zshenv` era una de las copias viejas pre-Stow encontradas ahí, y ya no existía en el working tree desde esa limpieza (solo quedaba en el historial, que es lo que se resolvió acá).
 
 ---
 
