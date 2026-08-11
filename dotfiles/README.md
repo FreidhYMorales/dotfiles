@@ -36,6 +36,7 @@ scripts/.local/bin/ →  ~/.local/bin/
 |---|---|
 | `betterdiscord` | `~/.config/BetterDiscord/` |
 | `btop` | `~/.config/btop/` |
+| `environment` | `~/.config/environment.d/` — PATH fix for `~/.local/bin` in the systemd/UWSM session, see `scripts/README.md` |
 | `fastfetch` | `~/.config/fastfetch/` |
 | `fonts` | `~/.local/share/fonts/` |
 | `git` | `~/.gitconfig` |

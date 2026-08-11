@@ -60,7 +60,7 @@ local qsIpc = "qs ipc call"
 -- Keybinds
 -- Applications
 keybind(mainMod .. " + RETURN", exec(terminal), descrip("Open Terminal"))
-keybind(mainMod .. " + B", exec("launch-or-focus " .. browser .. " " .. browser), descrip("Open or focus Browser"))
+keybind(mainMod .. " + B", exec("launch-or-focus zen " .. browser), descrip("Open or focus Browser"))
 keybind(mainMod .. " + E", exec(fileManager), descrip("Open File Manager"))
 
 -- Window

@@ -28,6 +28,15 @@ for arg in "$@"; do
     fi
 done
 
+# Only auto-restore after --adopt if dotfiles/ had no uncommitted changes going
+# in — otherwise "git restore -- dotfiles/" would silently discard real
+# in-progress edits along with whatever --adopt pulled in from the system.
+GIT_ROOT="$(git -C "$DOTFILES_DIR" rev-parse --show-toplevel 2>/dev/null)" || true
+WAS_CLEAN=false
+if [[ -n "$GIT_ROOT" ]] && [[ -z "$(git -C "$GIT_ROOT" status --porcelain -- dotfiles/)" ]]; then
+    WAS_CLEAN=true
+fi
+
 # --adopt moves conflicting real files into the stow package so the link can be
 # created, then git restore puts back the repo version. Net effect: conflicts are
 # resolved non-interactively and the repo copy always wins.
@@ -56,10 +65,13 @@ fi
 
 if [[ "$DRY_RUN" != true ]]; then
     # Restore any files --adopt may have pulled in from the system, so the repo
-    # version always wins over whatever was on disk before stowing.
-    GIT_ROOT="$(git -C "$DOTFILES_DIR" rev-parse --show-toplevel 2>/dev/null)" || true
-    if [[ -n "$GIT_ROOT" ]]; then
+    # version always wins over whatever was on disk before stowing. Skipped if
+    # dotfiles/ already had uncommitted changes before this run (see WAS_CLEAN
+    # above) — those are real edits, not adopt side effects, and must survive.
+    if [[ -n "$GIT_ROOT" ]] && [[ "$WAS_CLEAN" == true ]]; then
         git -C "$GIT_ROOT" restore -- dotfiles/ 2>/dev/null || true
+    elif [[ -n "$GIT_ROOT" ]] && [[ "$WAS_CLEAN" == false ]]; then
+        echo "Note: dotfiles/ had uncommitted changes before this run — skipping auto-restore. Check 'git status' if --adopt pulled in unwanted system files."
     fi
 fi
 

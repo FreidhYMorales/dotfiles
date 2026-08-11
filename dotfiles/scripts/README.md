@@ -1,6 +1,8 @@
 # scripts
 
-Utilidades en `.local/bin/`, deployadas a `~/.local/bin/` por Stow (ya en `PATH`, sin symlinks manuales).
+Utilidades en `.local/bin/`, deployadas a `~/.local/bin/` por Stow (sin symlinks manuales).
+
+**`~/.local/bin` en el PATH de los keybinds**: el paquete `environment` (`~/.config/environment.d/10-local-bin.conf`) agrega `~/.local/bin` al PATH de la sesión systemd/UWSM — sin esto, estos scripts resuelven bien desde una zsh interactiva (PATH seteado en `.zshrc`/`.zshenv`) pero fallan en silencio (`command not found`) al ser lanzados directo por Hyprland/UWSM vía keybind, que no leen esos archivos de shell. Requiere logout/login para tomar efecto (systemd solo genera el entorno una vez al arrancar el user-manager, `hyprctl reload` no alcanza).
 
 ## clipboard
 
