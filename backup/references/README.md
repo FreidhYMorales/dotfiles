@@ -69,15 +69,19 @@ Completar este listado cuando explore otros dotfiles. Usar el template para cada
 
 ## Pipeline y estrategia
 
-- **[`post-install.md`](post-install.md)** — configuración manual post-bootstrap: secrets, GRUB, Spicetify, Stylus en Zen y Chromium, matugen-server, web apps, primer run de matugen.
-- **[`packages-reference.md`](packages-reference.md)** — lista completa de paquetes del sistema por categoría (pacman + AUR + yay), con one-liners y post-install checklist. Derivada de nvim, yazi, scripts y zsh configs.
-- **[`matugen-pipeline-reference.md`](matugen-pipeline-reference.md)** — pipeline completo de colores: generación → scheme.json/colors.json → Quickshell, Hyprland, terminales, apps. Tokens M3, formato de templates, postHook, decisiones para dotfiles propios.
-- **[`deploy-strategy.md`](deploy-strategy.md)** — estrategia de deploy con GNU Stow, estructura del repo, flujo de trabajo.
+- **[`post-install.md`](post-install.md)** — configuración manual post-bootstrap: secrets, GRUB (solo `grub-install`, el resto ya lo automatiza `bootstrap.sh`), Spicetify, Stylus en Zen y Chromium, matugen-server, web apps, primer run de matugen.
+- **[`matugen-pipeline-reference.md`](matugen-pipeline-reference.md)** — pipeline real de colores (verificado contra `config.toml`/`post-hook.sh`): tokens M3, los 8 templates activos, y cómo se aplica cada uno (Quickshell, Kitty, btop, Hyprland, Zen, Zellij, Obsidian, LibreOffice, SDDM).
+- **[`deploy-strategy.md`](deploy-strategy.md)** — por qué GNU Stow (vs chezmoi) y cómo funciona. Para la lista de paquetes real ver `dotfiles/README.md`.
 
 ## Herramientas
 
 - **[`dotfiles-evaluation-template.md`](dotfiles-evaluation-template.md)** — template para evaluar cualquier dotfiles nuevo.
   Rellenar una copia por dotfiles, guardar en `references/<autor>/`.
+- **[`starship-powerline-preset.toml`](starship-powerline-preset.toml)** — preset alternativo de Starship, sin usar hoy, guardado como referencia para probar en el futuro.
+
+## Features pendientes
+
+- **[`pending-features/gnome-network-displays.md`](pending-features/gnome-network-displays.md)** — guía de Miracast/screen-mirroring, nunca implementada. Interesa a futuro.
 
 ---
 

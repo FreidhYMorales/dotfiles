@@ -1,0 +1,36 @@
+#!/bin/bash
+# Install all web apps declared in ~/.local/share/webapps/apps.
+# Run after deploy.sh has symlinked the scripts to PATH.
+# Skips apps that already have a .desktop file.
+
+set -e
+shopt -s extglob
+
+APPS_FILE="$HOME/.local/share/webapps/apps"
+DESKTOP_DIR="$HOME/.local/share/applications"
+
+if [[ ! -f $APPS_FILE ]]; then
+  echo "apps file not found: $APPS_FILE"
+  exit 1
+fi
+
+while IFS='|' read -r name url icon; do
+  name="${name##*( )}"; name="${name%%*( )}"
+  url="${url##*( )}";  url="${url%%*( )}"
+  icon="${icon##*( )}"; icon="${icon%%*( )}"
+
+  [[ -z $name || $name == \#* ]] && continue
+
+  if [[ -f "$DESKTOP_DIR/$name.desktop" ]]; then
+    echo "Skip (exists): $name"
+    continue
+  fi
+
+  if [[ -n $icon ]]; then
+    webapp-install "$name" "$url" "$icon"
+  else
+    webapp-install "$name" "$url"
+  fi
+done <"$APPS_FILE"
+
+echo "Done."

@@ -16,6 +16,11 @@ local cliphistText = "wl-paste --type text --watch cliphist store"
 local cliphistImg = "wl-paste --type image --watch cliphist store"
 local quickshell = "quickshell"
 local term_file_chosser = "/usr/lib/xdg-desktop-portal-termfilechooser"
+-- Auto-empties trash items older than 30 days (trash-cli, already in bootstrap.sh)
+local trashCleanup = "trash-empty 30"
+-- Forwards Bluetooth AVRCP media controls (headphone buttons) to the active
+-- MPRIS player (mpd/spotify/etc) — without this, BT media buttons do nothing
+local mprisProxy = "mpris-proxy"
 
 hl.on("hyprland.start", function()
 	exec(dbus)
@@ -25,4 +30,6 @@ hl.on("hyprland.start", function()
 	exec(cliphistImg)
 	exec(quickshell)
 	exec(term_file_chosser)
+	exec(trashCleanup)
+	exec(mprisProxy)
 end)

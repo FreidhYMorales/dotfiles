@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh — Full system setup for a fresh Arch Linux install.
-# Installs all packages, configures shell, deploys dotfiles via Stow. (33 steps)
+# Installs all packages, configures shell, deploys dotfiles via Stow.
 #
 # Usage:
 #   ./bootstrap.sh                        — full install (auto-detects NVIDIA/AMD/Intel via
@@ -170,7 +170,7 @@ step "Zsh plugins"
 PLUGINS_DIR="$HOME/.oh-my-zsh/custom/plugins"
 declare -A ZSH_PLUGINS=(
     [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
-    [zsh-syntax - highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
+    [zsh-syntax-highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
     [zsh-256color]="https://github.com/chrissicool/zsh-256color"
     [zsh-completions]="https://github.com/zsh-users/zsh-completions"
 )
@@ -331,7 +331,11 @@ sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
 
 step "SDDM: bootstrap default custom config (replaced on first matugen run)"
-sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/configs/custom.conf
+if [[ -f "$SDDM_THEME_SRC/configs/default.conf" ]]; then
+    sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/configs/custom.conf
+else
+    echo "Warning: $SDDM_THEME_SRC/configs/default.conf not found — theme wasn't installed above, skipping custom.conf bootstrap"
+fi
 
 step "SDDM: enable service"
 sudo systemctl enable sddm
@@ -442,13 +446,14 @@ yay -S --needed --noconfirm lazydocker
 # this list — gemini-cli was superseded by Antigravity CLI below (same
 # product family).
 step "AI tools: Claude Code + OpenCode (native installers)"
-curl -fsSL https://claude.ai/install.sh | bash
-curl -fsSL https://opencode.ai/install | bash
+# Guarded — each app self-updates on launch, no need to re-download every run.
+command -v claude &>/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+command -v opencode &>/dev/null || curl -fsSL https://opencode.ai/install | bash
 
 step "AI tools: Antigravity CLI (agy)"
 # Standalone Go binary, not npm-based. Installer script's non-interactivity
 # wasn't independently verified — watch the first real run of this step.
-curl -fsSL https://antigravity.google/cli/install.sh | bash
+command -v agy &>/dev/null || curl -fsSL https://antigravity.google/cli/install.sh | bash
 
 step "AI tools: Ollama"
 sudo pacman -S --needed --noconfirm ollama
@@ -548,7 +553,7 @@ step "Boot optimization: noatime on root filesystem"
 # eliminates unnecessary writes on SSD and reduces I/O overhead
 ROOT_UUID=$(findmnt -no UUID /)
 ROOT_TYPE=$(findmnt -no FSTYPE /)
-if [[ -n "$ROOT_UUID" ]] && grep -q "$ROOT_UUID" /etc/fstab; then
+if [[ -n "$ROOT_UUID" ]] && grep -q "$ROOT_UUID" /etc/fstab && ! grep -q "$ROOT_UUID.*noatime" /etc/fstab; then
     sudo sed -i "/$ROOT_UUID/s/defaults/defaults,noatime/" /etc/fstab
     sudo mount -o remount,noatime /
 fi
@@ -602,6 +607,9 @@ fi
 step "Post-install: MPD service"
 systemctl --user enable --now mpd
 
+step "Post-install: restore web apps"
+webapp-restore || echo "Warning: webapp-restore failed — run it manually later"
+
 step "Post-install: default Quickshell state"
 mkdir -p "$HOME/.local/state/quickshell"
 # Wallpapers.qml scans Paths.wallpapersDir (~/Pictures/Wallpaper) with a Qt
@@ -611,10 +619,19 @@ mkdir -p "$HOME/.local/state/quickshell"
 # it now and seed the default wallpaper so it's there from the first launch.
 mkdir -p "$HOME/Pictures/Wallpaper"
 cp -n "$HOME/.config/hypr/assets/arch.png" "$HOME/Pictures/Wallpaper/arch.png"
-# Default wallpaper — Quickshell reads this on first launch
-echo "$HOME/Pictures/Wallpaper/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
-# Default theme state — dynamic:true so changing the wallpaper triggers matugen
-echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
+# FRESH_WALLPAPER_STATE tracks whether this is a real fresh install (no
+# wallpaper/theme chosen yet) — on a re-run over an already-configured
+# system, don't reset the user's wallpaper/theme pick back to default.
+FRESH_WALLPAPER_STATE=false
+if [[ ! -f "$HOME/.local/state/quickshell/wallpaper.txt" ]]; then
+    FRESH_WALLPAPER_STATE=true
+    # Default wallpaper — Quickshell reads this on first launch
+    echo "$HOME/Pictures/Wallpaper/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
+fi
+if [[ ! -f "$HOME/.local/state/quickshell/theme.json" ]]; then
+    # Default theme state — dynamic:true so changing the wallpaper triggers matugen
+    echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
+fi
 # weather-loc.json is NOT written here — get-location uses GeoClue2 (WiFi) automatically.
 # To pin a location manually: echo '{"loc":"lat,lon","city":"Name"}' > ~/.local/state/quickshell/weather-loc.json
 
@@ -643,9 +660,15 @@ step "Post-install: generate theme from default wallpaper"
 # default until matugen actually runs once — same command ColoursEngine.qml
 # runs when a wallpaper is picked from the launcher, so first boot ends up
 # themed identically to a manual pick instead of staying on stock colors.
-matugen image "$HOME/Pictures/Wallpaper/arch.png" \
-    --type scheme-content --mode dark --source-color-index 0 --quiet
-"$HOME/.config/matugen/post-hook.sh" dark
+# Only on a real fresh install — see FRESH_WALLPAPER_STATE above — otherwise
+# this would re-theme everything back to the default wallpaper on a re-run.
+if [[ "$FRESH_WALLPAPER_STATE" == true ]]; then
+    matugen image "$HOME/Pictures/Wallpaper/arch.png" \
+        --type scheme-content --mode dark --source-color-index 0 --quiet
+    "$HOME/.config/matugen/post-hook.sh" dark
+else
+    echo "Skipping — wallpaper/theme already configured, not resetting to default"
+fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""

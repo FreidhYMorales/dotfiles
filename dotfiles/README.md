@@ -32,30 +32,43 @@ scripts/.local/bin/ →  ~/.local/bin/
 
 ## Paquetes
 
-| Paquete | Destino | Estado |
-|---|---|---|
-| `nvim` | `~/.config/nvim/` | pendiente de poblar |
-| `yazi` | `~/.config/yazi/` | pendiente de poblar |
-| `zsh` | `~/` | pendiente de poblar |
-| `kitty` | `~/.config/kitty/` | pendiente de poblar |
-| `btop` | `~/.config/btop/` | pendiente de poblar |
-| `fastfetch` | `~/.config/fastfetch/` | pendiente de poblar |
-| `starship` | `~/.config/` | pendiente de poblar |
-| `mpd` | `~/.config/mpd/` | pendiente de poblar |
-| `ncmpcpp` | `~/.config/ncmpcpp/` | pendiente de poblar |
-| `zellij` | `~/.config/zellij/` | pendiente de poblar |
-| `wiremix` | `~/.config/wiremix/` | pendiente de poblar |
-| `spicetify` | `~/.config/spicetify/` | pendiente de poblar |
-| `git` | `~/` | pendiente de poblar |
-| `systemd` | `~/.config/systemd/user/` | pendiente de poblar |
-| `scripts` | `~/.local/bin/` | pendiente de poblar |
-| `hypr` | `~/.config/hypr/` | 🔧 WIP — propio en construcción |
-| `quickshell` | `~/.config/quickshell/` | 🔧 WIP — en construcción |
+| Paquete | Destino |
+|---|---|
+| `betterdiscord` | `~/.config/BetterDiscord/` |
+| `btop` | `~/.config/btop/` |
+| `fastfetch` | `~/.config/fastfetch/` |
+| `fonts` | `~/.local/share/fonts/` |
+| `git` | `~/.gitconfig` |
+| `hypr` | `~/.config/hypr/` |
+| `kitty` | `~/.config/kitty/` |
+| `matugen` | `~/.config/matugen/`, `~/.config/systemd/user/matugen-server.service` |
+| `mimeapps` | `~/.config/mimeapps.list` |
+| `mpd` | `~/.config/mpd/` |
+| `ncmpcpp` | `~/.config/ncmpcpp/` |
+| `nvim` | `~/.config/nvim/` |
+| `quickshell` | `~/.config/quickshell/` |
+| `scripts` | `~/.local/bin/`, `~/.local/share/webapps/` — ver `scripts/README.md` |
+| `spicetify` | `~/.config/spicetify/` |
+| `starship` | `~/.config/starship.toml` |
+| `systemd` | `~/.config/systemd/user/` |
+| `termfilechooser` | `~/.config/xdg-desktop-portal-termfilechooser/` |
+| `vesktop` | `~/.config/vesktop/` |
+| `wiremix` | `~/.config/wiremix/` |
+| `xdg-portal` | `~/.config/xdg-desktop-portal/` |
+| `yazi` | `~/.config/yazi/` |
+| `zsh` | `~/.zshrc`, `~/.zshenv`, `~/.p10k.zsh` |
+
+**No deployados por Stow** (`PENDING` en `deploy.sh`):
+
+| Paquete | Por qué |
+|---|---|
+| `stylus` | Userstyles para la extensión Stylus — se importan a mano en el navegador, no se symlinkean |
+| `chromium-extension` | Se carga directo desde el path del repo vía "Load unpacked" de Chrome (ver `backup/references/post-install.md`) |
 
 ## Referencias
 
-Ver `~/Files/Configuraciones/references/` para:
-- Patterns de Caelestia shell (Quickshell/QML)
-- Patterns de ii/end-4 (Quickshell/QML)
+Ver `backup/references/README.md` para:
+- Patterns de Caelestia shell y de ii/end-4 (Quickshell/QML)
 - Pipeline de matugen
-- Estrategia de deploy completa
+- Estrategia de deploy con Stow
+- Configuración manual post-bootstrap

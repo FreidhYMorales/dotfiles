@@ -2,8 +2,8 @@
 	email = yannelmorales51@gmail.com
 	name = deadlock
 [safe]
-	directory = /home/deadlock/Files/Configuraciones/dotfiles
-	directory = /home/deadlock/Files/dotfiles
+	directory = /home/deadlock/Mio/Configuraciones/dotfiles
+	directory = /home/deadlock/Mio/Configuraciones
 [credential "https://github.com"]
 	helper = 
 	helper = !/usr/bin/gh auth git-credential

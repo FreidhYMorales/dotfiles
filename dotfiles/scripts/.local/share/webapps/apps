@@ -1,0 +1,11 @@
+# Web apps declarative list
+# Format: name | url
+# Icons are auto-fetched from Google's favicon service (128px).
+# To use a custom icon, add a third column: name | url | https://icon-url.png
+# See https://dashboardicons.com for high-quality icons.
+
+Discord        | https://discord.com/channels/@me
+GitHub         | https://github.com/
+Notion         | https://www.notion.so/
+WhatsApp       | https://web.whatsapp.com/
+YouTube        | https://youtube.com/

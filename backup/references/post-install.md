@@ -1,6 +1,6 @@
 # Post-Install Manual Configuration
 
-Steps required after running `bootstrap.sh` + `deploy.sh`. Everything here is manual — bootstrap doesn't cover it.
+Steps required after running `bootstrap.sh` + `deploy.sh` that bootstrap can't safely automate (machine-specific paths, one-time browser extension setup, credentials).
 
 ---
 
@@ -11,26 +11,24 @@ Steps required after running `bootstrap.sh` + `deploy.sh`. Everything here is ma
 nano ~/.config/zsh/secrets.zsh
 # Add: export GEMINI_API_KEY="..."
 
-# Restore SSH keys
-cp backup/backups/ssh/* ~/.ssh/
-chmod 600 ~/.ssh/id_* && chmod 644 ~/.ssh/*.pub
-
-# Restore GPG keys
-gpg --import backup/backups/gnupg/private.gpg
-
 # Verify GitHub CLI auth
 gh auth status
 ```
+
+> No hay backup de SSH/GPG keys vigente — si hace falta, generar/importar desde donde corresponda en cada máquina nueva.
 
 ---
 
 ## 2. Machine-specific boot setup
 
-```bash
-# GRUB install — adjust device to your disk (e.g. /dev/nvme0n1, /dev/sda)
-sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB /dev/sdX
-sudo grub-mkconfig -o /boot/grub/grub.cfg
+`bootstrap.sh` (paso 30) ya instala los paquetes de GRUB, aplica el tema, escribe `/etc/default/grub` y corre `grub-mkconfig`. Lo único que queda genuinamente manual es `grub-install` — depende del disco de cada máquina y no es seguro automatizarlo a ciegas:
 
+```bash
+# Adjust device to your disk (e.g. /dev/nvme0n1, /dev/sda)
+sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB /dev/sdX
+```
+
+```bash
 # If safe.directory is wrong (external disk mounted at a different path):
 git config --global --add safe.directory /new/path/to/Configuraciones
 ```
@@ -49,18 +47,7 @@ spicetify backup apply
 
 ---
 
-## 4. AUR packages not in bootstrap
-
-Some packages require manual AUR install post-bootstrap:
-
-```bash
-# Screen recording widget in the bar (gpu-screen-recorder service)
-yay -S gpu-screen-recorder
-```
-
----
-
-## 5. matugen server (Stylus auto-update for Chromium)
+## 4. matugen server (Stylus auto-update for Chromium)
 
 The systemd user service is deployed by Stow with the matugen package, but needs to be enabled once:
 
@@ -73,7 +60,7 @@ Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for Styl
 
 ---
 
-## 6. Zen Browser — Stylus setup
+## 5. Zen Browser — Stylus setup
 
 1. Install the **Stylus** extension from Firefox Add-ons.
 2. In `about:config`: set `toolkit.legacyUserProfileCustomizations.stylesheets = true`
@@ -100,7 +87,7 @@ Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for Styl
 
 ---
 
-## 7. Chromium — extension + Stylus setup for web apps
+## 6. Chromium — extension + Stylus setup for web apps
 
 Web apps launched via `webapp-launch` (`chromium --app=<url>`) use Chromium's extension ecosystem. Stylus applies there, but `--mat-*` vars are now injected by a dedicated Chrome extension instead of a Stylus global style — this gives ~1s live updates instead of 30+ minutes.
 
@@ -126,13 +113,13 @@ Web apps launched via `webapp-launch` (`chromium --app=<url>`) use Chromium's ex
 - Extension's offscreen document polls `/version` every 1s → detects the change
 - Background service worker fetches the new CSS → saves to `chrome.storage.local`
 - `content.js` in every active tab receives `storage.onChanged` → updates `<style>` in the DOM live — no page reload needed
-- `matugen-server.service` (step 5 above) must be running
+- `matugen-server.service` (step 4 above) must be running
 
 See `dotfiles/chromium-extension/matugen-vars/README.md` for full architecture details.
 
 ---
 
-## 8. Web app launcher (`>webapp`)
+## 7. Web app launcher (`>webapp`)
 
 The `>webapp` command in the launcher installs a site as a Chromium app. Chromium must be installed (bootstrap step 16 covers this). On first use it will download the favicon and create a `.desktop` entry automatically.
 
@@ -140,7 +127,7 @@ The `>webapp` command in the launcher installs a site as a Chromium app. Chromiu
 
 ---
 
-## 9. First matugen run
+## 8. First matugen run
 
 After everything is set up, trigger a full theme sync by changing the wallpaper in the launcher (`>wallpaper`), or run the post-hook directly:
 

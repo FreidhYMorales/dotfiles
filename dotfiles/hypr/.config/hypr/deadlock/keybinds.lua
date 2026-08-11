@@ -60,7 +60,7 @@ local qsIpc = "qs ipc call"
 -- Keybinds
 -- Applications
 keybind(mainMod .. " + RETURN", exec(terminal), descrip("Open Terminal"))
-keybind(mainMod .. " + B", exec(browser), descrip("Open Browser"))
+keybind(mainMod .. " + B", exec("launch-or-focus " .. browser .. " " .. browser), descrip("Open or focus Browser"))
 keybind(mainMod .. " + E", exec(fileManager), descrip("Open File Manager"))
 
 -- Window
@@ -159,10 +159,12 @@ keybind("XF86AudioPause", exec(play), { locked = true })
 keybind("XF86AudioPlay", exec(play), { locked = true })
 keybind("XF86AudioPrev", exec(audioPrev), { locked = true })
 
--- Screenshots (grim + slurp)
+-- Screenshots (screenshot script — smart snap, satty editor, notification)
+keybind("PRINT", exec("screenshot fullscreen"), descrip("Screenshot fullscreen"))
+keybind(mainMod .. " + PRINT", exec("screenshot region"), descrip("Screenshot region"))
+-- Active-window capture kept as raw grim/jq — the screenshot script has no
+-- zero-interaction "grab focused window" mode (all its modes require a slurp click)
 local screenshotDir = "~/Pictures/Screenshots/$(date +%Y%m%d_%H%M%S).png"
-keybind("PRINT", exec("grim " .. screenshotDir), descrip("Screenshot fullscreen"))
-keybind(mainMod .. " + PRINT", exec("slurp | grim -g - " .. screenshotDir), descrip("Screenshot region"))
 keybind(
 	mainMod .. " + SHIFT + PRINT",
 	exec(
@@ -178,6 +180,9 @@ local clipHistory = "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"
 
 keybind(mainMod .. " + P", exec(colorPicker), descrip("Pick color to clipboard"))
 keybind(mainMod .. " + V", exec(clipHistory), descrip("Clipboard history"))
+keybind(mainMod .. " + SHIFT + V", exec("clipboard --delete"), descrip("Delete clipboard history entries"))
+keybind(mainMod .. " + O", exec("ocr"), descrip("OCR: extract text from screen region"))
+keybind(mainMod .. " + R", exec("reminder show"), descrip("Show active reminders"))
 
 -- Power button → lock screen (logind HandlePowerKey=ignore lets this through)
 keybind("XF86PowerOff", exec("qs ipc call lock lock"), { description = "Power button: lock screen" })

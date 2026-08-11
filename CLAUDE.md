@@ -15,23 +15,23 @@ como fuente de verdad para dotfiles, referencias y memoria de proyecto.
 Configuraciones/
 ├── CLAUDE.md          ← este archivo
 ├── install.sh         ← entry point curl-able (detecta repo / clona si falta)
-├── .gitignore         ← excluye backups/, secrets, runtime SDDM, fg.yazi, etc.
+├── .gitignore         ← excluye secrets, runtime SDDM, fg.yazi, caché de fontconfig, etc.
 ├── dotfiles/          ← paquetes Stow — deploy.sh los symlinks a $HOME
-│   ├── bootstrap.sh   ← instalación completa (25 pasos), llama deploy.sh al final
+│   ├── bootstrap.sh   ← instalación completa, llama deploy.sh al final
 │   ├── deploy.sh      ← ./deploy.sh [pkg] [--dry-run]
+│   ├── README.md      ← lista de paquetes real + destinos
 │   └── nvim/ yazi/ zsh/ kitty/ hypr/ quickshell/ git/ scripts/
 │       fonts/ vesktop/ betterdiscord/ mimeapps/ termfilechooser/ xdg-portal/
-│       matugen/ ...
+│       matugen/ ... (25 paquetes — stylus y chromium-extension en PENDING,
+│       no se deployan por Stow, ver dotfiles/README.md)
 ├── system/            ← configs sudo-level (no van a $HOME, no son Stow)
 │   └── sddm/
+│       ├── README.md               ← guía de instalación/troubleshooting manual
 │       ├── themes/silent/          ← tema SDDM completo (copiado a /usr/share/sddm/themes/)
-│       └── sddm.conf.d/the_hyde_project.conf
-└── backup/            ← backups, referencias, configs anteriores
-    ├── references/    ← documentación de referencia (LEER PRIMERO)
-    ├── backups/       ← ⚠️ SENSIBLE — gnupg, ssh, gh (gitignoreado)
-    ├── quickshell/    ← symlink → ../dotfiles/quickshell/.config/quickshell
-    ├── archive/       ← configs obsoletas (hypr pre-Omarchy, etc.)
-    └── ...configs/    ← nvim, yazi, zsh, kitty, etc.
+│       └── sddm.conf.d/deadlock.conf
+├── backup/            ← solo documentación de referencia hoy (ver auditoria de optimización abajo)
+│   └── references/    ← documentación de referencia (LEER PRIMERO)
+└── auditorias/        ← auditorías cerradas: paquetes/, autenticacion/, optimizacion/
 ```
 
 ---
@@ -39,10 +39,10 @@ Configuraciones/
 ## Qué leer primero en una sesión nueva
 
 1. `backup/references/README.md` — índice de toda la documentación
-2. `backup/references/packages-reference.md` — lista completa de paquetes + orden de instalación
+2. `dotfiles/README.md` — lista completa de paquetes Stow + destinos
 3. `backup/references/quickshell-vision.md` — visión del Quickshell propio
-4. `backup/references/deploy-strategy.md` — cómo deployar los dotfiles con Stow
-5. `backup/references/matugen-pipeline-reference.md` — pipeline de colores
+4. `backup/references/deploy-strategy.md` — por qué GNU Stow y cómo funciona
+5. `backup/references/matugen-pipeline-reference.md` — pipeline de colores real, verificado
 6. `backup/references/caelestia/` — arquitectura y patterns de Caelestia (referencia QML)
 7. `backup/references/end-4/` — arquitectura y patterns de ii/illogical-impulse (referencia QML)
 
@@ -53,7 +53,7 @@ Configuraciones/
 ### Dotfiles / Bootstrap
 - **Git repo inicializado** en la raíz de `Configuraciones/` (rama `main`) — ver `git log` para el historial, no hardcodear el conteo de commits acá (queda desactualizado de inmediato)
 - **`install.sh`** — entry point curl-able. Detecta si el repo ya existe en disco o clona desde `$REPO_URL`. Luego llama a `bootstrap.sh`. Flags: `--no-gpu`, `--dir=<path>`
-- **`dotfiles/bootstrap.sh`** — 32 pasos, cubre todo el sistema desde cero:
+- **`dotfiles/bootstrap.sh`** — cubre todo el sistema desde cero (no hardcodear el conteo de pasos acá, queda desactualizado de inmediato — ver el propio script para la cuenta real):
   - Flags: `--no-gpu` (salta drivers de GPU de **cualquier** fabricante detectado — NVIDIA/AMD/Intel juntos, no solo NVIDIA; usar en ThinkPad), `--no-grub` (salta GRUB theme), `--grub-res=WxH`
   - Sin flags, el paso de GPU se auto-detecta por `lspci` (commit `91104b4`) e instala drivers para cada fabricante presente — soporta setups híbridos (ej. Intel+AMD) instalando ambos
   - **Step 4b — NPU Intel (2026-08-05, automatizado, antes manual)**: gateado por `lspci` (independiente de `--no-gpu` — un NPU no es una GPU), instala `intel-npu-driver-bin` (AUR) si detecta el dispositivo "Processing accelerators...NPU" (Lunar Lake / Core Ultra 2xxV+ en adelante, ej. ThinkPad X1 Carbon Gen 13 — "Intel AI Boost"). Investigado a fondo antes de automatizar, incluyendo bajar el PKGBUILD real y el `.deb` oficial más nuevo para comparar contenido (no solo comentarios de AUR): Intel solo publica releases oficiales como `.deb` (repo `intel/linux-npu-driver`, sin build nativo de Arch) — el paquete AUR repackea esos mismos 3 `.deb` (driver-compiler, firmware, level-zero-npu) y **agrega su propio udev rule** (los `.deb` de Intel no traen ninguno) dando acceso al grupo `render` sobre `/dev/accel*`. La supuesta corrección de un bug de permisos del udev rule que se había agregado en un primer intento resultó estar mal — apuntaba a un path (`/etc/udev/rules.d/10-intel-npu.rules`) que no existe; el real es `/usr/lib/udev/rules.d/99-intel-npu.rules` y el PKGBUILD actual lo escribe limpio (sin bit ejecutable) — se sacó ese workaround por no aplicar a la versión actual del paquete. Gap real que sí queda: el AUR está pineado ~3 versiones atrás del upstream (`1.32.1` vs `1.35.0` al momento de este chequeo) — funcional igual, no bloqueante. Install envuelto en `|| true` (no aborta el resto del bootstrap si el AUR package falla)
@@ -66,7 +66,10 @@ Configuraciones/
   - `GRUB_DEFAULT=0` (siempre arranca la primera entrada del menú = Arch, `10_linux` corre antes que `30_os-prober` así que Arch siempre queda primero) — antes era `GRUB_DEFAULT=saved` + `GRUB_SAVEDEFAULT=true`, que recordaba para siempre la última entrada elegida a mano: elegir otro SO una vez (apagados/reinicios en dual boot) lo dejaba como default hasta volver a elegir Arch a mano. Con `=0`, elegir otro SO en el menú lo arranca esa vez nada más, sin quedar pegado
   - Termina con `deploy.sh`, `xdg-user-dirs-update`, `fc-cache`, `luarocks magick`, `ya pack -i`, MPD, sddm-theme-sync helper. **El bloque final de "Manual steps remaining" (2026-08-05, sacado del script)** — duplicaba la lista de "Pasos manuales DESPUÉS del bootstrap" de más abajo en este mismo archivo; queda solo ahí para no mantener la misma info en dos lugares. El ítem de NPU se sacó de la lista por completo (dejó de ser manual, ver Step 4b arriba)
   - **Post-install — wallpaper por defecto + theming real desde el primer boot (2026-08-05)**: `Wallpapers.qml` escanea `~/Pictures/Wallpaper` con un `FolderListModel` de Qt — si la carpeta no existe cuando Quickshell arranca por primera vez, el watcher nunca se engancha, y crearla después no se detecta sin reiniciar sesión/Quickshell. El bootstrap ya seedeaba `wallpaper.txt` con la ruta de `arch.png` (`~/.config/hypr/assets/arch.png`, deployado por stow), pero nunca corría `matugen` de verdad — dejaba el `custom.conf` de SDDM y el resto del theming en el stock del tema hasta que el usuario elegía un wallpaper a mano una vez. Fix: crea `~/Pictures/Wallpaper` y copia `arch.png` ahí (para que exista desde el arranque y aparezca en el picker), apunta `wallpaper.txt` a esa copia, y corre `matugen image ... --type scheme-content --mode dark --source-color-index 0 --quiet` + `post-hook.sh dark` al final del bootstrap — mismo comando exacto que usa `ColoursEngine.qml` al elegir un wallpaper desde el launcher, así el primer boot queda themeado igual que una elección manual
-- **Paquetes Stow activos** (todos en `PENDING=()`): nvim, yazi, zsh, kitty, hypr, quickshell, git, scripts, matugen, fonts, vesktop, betterdiscord, mimeapps, termfilechooser, xdg-portal + otros
+- **Auditoría de optimización — cerrada (2026-08-11, `auditorias/optimizacion/README.md`)**: scripts de instalación + estructura del repo. Bugs corregidos en `bootstrap.sh`: plugin `zsh-syntax-highlighting` mal nombrado (clave con espacios, nunca cargaba); `noatime` en fstab sin guard (se duplicaba en cada re-run); paso de `custom.conf` de SDDM podía abortar todo el script si el paso anterior fallaba en silencio; wallpaper/tema se reseteaban a default en cada re-run sobre un sistema ya instalado (nuevo flag `FRESH_WALLPAPER_STATE`, solo corre en fresh install real); AI tools (Claude Code/OpenCode/Antigravity) sin guard de idempotencia, se reinstalaban en cada corrida. `deploy.sh`: `chromium-extension` faltaba en `PENDING`, se symlinkeaba `~/matugen-vars` sin querer. `dotfiles/git/.gitconfig`: rutas `safe.directory` viejas (`~/Files/...`) corregidas a la ruta real. `.gitignore`: 7 reglas muertas removidas, agregada regla para caché de fontconfig. **`backup/` limpiado casi por completo** (621 archivos borrados) — quedó solo `references/`, todo lo demás eran duplicados congelados pre-Stow, configs de hardware/máquinas que ya no existen, o docs de planificación superadas por el sistema real ya construido. Antes de borrar se rescató: config de Hyprland real nunca portada (`general.lua`/`gestures.lua`/`execs.lua` — ver abajo), inventario de webapps (→ `webapp-restore`, nuevo paso post-install), guía de SDDM (→ `system/sddm/README.md`), preset alternativo de Starship (→ `backup/references/`). Queda 1 pendiente diferido a propósito: API key vieja revocada en el historial de git (plan armado, no urgente — ver el archivo de la auditoría)
+- **Nuevos keybinds en `keybinds.lua`** (misma sesión): `SUPER+SHIFT+V` → `clipboard --delete`, `SUPER+O` → `ocr`, `SUPER+R` → `reminder show`, `PRINT`/`SUPER+PRINT` migrados de grim/slurp crudo al script `screenshot` (gana notificación + editor satty), `SUPER+B` → `launch-or-focus` para el browser (enfoca si ya está abierto). `record`/`wsaction` quedan sin keybind a propósito (redundante con `RecorderWidget` nativo / no adoptado como flujo de trabajo). Nuevas opciones en `general.lua` (`middle_click_paste`, `session_lock_xray`, `allow_session_lock_restore`, `on_focus_under_fullscreen`, `mouse/key_press_enables_dpms`), `gestures.lua` (tuning `workspace_swipe_*`) y `execs.lua` (`trash-empty 30`, `mpris-proxy`) — rescatadas de `backup/hyprland-options/`, nunca portadas antes. `vrr=1` y 2 gestos extra (special workspace, suspend) quedaron **sin aplicar** — sin verificar en vivo, riesgo de romper el layout `altgr-intl` o el bridge Lua
+- **`dotfiles/xcompose/` — removido completo**: se probó `kb_options = "compose:caps"` en vivo (funcionaba), pero el usuario decidió no usarlo — pierde el toggle normal de Caps Lock y no usa emojis
+- **Paquetes Stow**: 25 paquetes, ver `dotfiles/README.md` para la lista completa + destinos. `stylus` y `chromium-extension` están en `PENDING` (no se deployan por Stow — se importan/cargan manualmente, ver `dotfiles/README.md` y `backup/references/post-install.md`)
 - **Botón de power → Hyprland; tapa (lid) → logind nativo + hook systemd-sleep**: `system/logind/logind.conf.d/deadlock.conf` pone `HandlePowerKey=ignore` (así `hypr/.config/hypr/deadlock/keybinds.lua` puede agarrar `XF86PowerOff` y bloquear él mismo) pero `HandleLidSwitch=suspend` / `HandleLidSwitchExternalPower=suspend` explícitos — logind suspende nativamente al cerrar la tapa. **Se intentó primero el mismo patrón que el botón de power** (bind `switch:on:Lid Switch` en Hyprland + `HandleLidSwitch=ignore`), pero nunca se disparó en este fork del bridge Lua — confirmado en vivo: sin rastro en `hyprland.log` en dos ciclos reales de cerrar/abrir tapa + 2 reinicios. Se descartó y removió (no dejar binds "silenciosamente muertos" en el repo). De paso se encontró que `HandleLidSwitchExternalPower` vivía en `""` (vacío/inválido) estando enchufada — no coincide con ninguna acción de logind, por eso a veces "no hacía nada" al cerrar la tapa
   - **Bug encontrado y corregido (2026-08-05)**: el paso escribía el conf.d y después hacía `sudo systemctl restart systemd-logind` en caliente sin condición — en un re-run del bootstrap sobre un sistema ya instalado y logueado (no una instalación limpia desde una TTY sin sesión), eso mata la sesión gráfica activa (logind trackea seat/sesión del compositor que levantó SDDM) y corta el resto del script a mitad de camino bajo `set -euo pipefail`. Confirmado en vivo reproduciendo el síntoma exacto que reportó el usuario (pantalla pide contraseña, instalación se corta). Fix: detecta con `loginctl` si hay una sesión wayland/x11 activa antes de restartear — si la hay, salta el restart (el conf.d ya quedó escrito, aplica solo en el próximo reinicio, mismo patrón que GRUB/SDDM); si no hay sesión gráfica (instalación limpia real), restartea como antes
   - **`system/systemd/system-sleep/lock-before-sleep`**: hook nativo de systemd-logind (`/usr/lib/systemd/system-sleep/`, root, 755) — corre en el `pre` de CUALQUIER suspensión (tapa, auto-suspensión por idle, botón manual del dashboard, `systemctl suspend` a mano), no solo la de la tapa. logind espera a que termine antes de suspender de verdad, así que un `sleep 1` síncrono ahí adentro ordena bloqueo-antes-de-dormir sin carreras — de paso tapa el hueco ya documentado de que el botón manual de Suspend no bloqueaba antes. Corre como root; usa `runuser -u deadlock` (NO `sudo -u` — ver gotcha abajo) + `XDG_RUNTIME_DIR`/`WAYLAND_DISPLAY` detectados dinámicamente para llegar al `qs ipc call lock lock` de la sesión real, envuelto en `timeout 3` como segunda red de contención
@@ -74,14 +77,13 @@ Configuraciones/
   - **`LockSurface.qml` — reintentos de fondo tras resumir de suspensión**: `onBgSourceChanged` ya reseteaba `bgFailed` cuando cambia la ruta, pero no cubría un error de decodificación transitorio del `Image` con la MISMA ruta (típico justo al volver de suspender, GPU/compositor todavía re-inicializando) — ahí `bgSource` nunca cambia, así que nunca se auto-corregía y quedaba pegado en `default.jpg`. Fix: hasta 3 reintentos (400ms c/u, forzando `source = ""` y de vuelta) antes de recién ahí caer al default
 - `secrets.zsh` vive en `dotfiles/zsh/.config/zsh/secrets.zsh` (gitignoreado) — restaurar GEMINI_API_KEY manualmente
 - `git config --global safe.directory` ya está en `.gitconfig` para rutas del disco externo; también incluye credential helper de gh CLI
-- **`backup/quickshell/`** es un symlink → `../dotfiles/quickshell/.config/quickshell` — un solo source of truth, sin sync manual
-- **`system/sddm/`** — tema silent completo + conf. Bootstrap lo copia a `/usr/share/sddm/themes/` y `/etc/sddm.conf.d/`. Runtime files (custom.conf, qs-current.*) gitignoreados
+- **`system/sddm/`** — tema silent completo + conf + `README.md` propio (guía de instalación/troubleshooting manual, verificada contra el `bootstrap.sh` real). Bootstrap lo copia a `/usr/share/sddm/themes/` y `/etc/sddm.conf.d/`. Runtime files (custom.conf, qs-current.*) gitignoreados
 - `sddm-theme-sync` helper instalado en `/usr/local/bin/` con sudoers entry — llamado desde el post-hook de matugen para actualizar colores SDDM dinámicamente
 
 ### Quickshell propio
 - Visión definida en `backup/references/quickshell-vision.md`
 - **EN DESARROLLO ACTIVO** — shell funcional con bar, launcher, dashboard
-- Proyecto en `backup/quickshell/` — estructura:
+- Proyecto en `dotfiles/quickshell/.config/quickshell/` — estructura:
   - `modules/lock/` — lockscreen completo, port visual del theme SDDM "silent" (ver `lockscreen.md` en el proyecto, fases 0-6 terminadas)
   - `modules/bar/`, `dashboard/`, `launcher/`, `notifications/` — en progreso
   - `components/` — StyledText, StyledRect, StateLayer, Capsule, MonitorOsdWindow, Anim, CAnim + submódulo `controls/` (IconButton, SegmentedMeter, Slider, Toggle). `containers/`, `effects/`, `images/`, `misc/`, `widgets/` y varios componentes sueltos (MaterialIcon, AnimLoader, Logo) se borraron en la auditoría de arquitectura — código muerto sin ningún call site
@@ -216,11 +218,10 @@ Sesión dedicada a auditar todo el shell y aplicar mejoras, en dos tandas (ver `
 
 ## Secrets / Sensibles
 
-- `backup/backups/gnupg/` — claves GPG
-- `backup/backups/ssh/` — llaves SSH
-- `backup/backups/gh/` — GitHub CLI token
 - `~/.config/zsh/secrets.zsh` — API keys (GEMINI_API_KEY) — NO en repo
 - `dotfiles/zsh/.config/zsh/secrets.zsh` — template gitignoreado (sin valores)
+- No hay backup de SSH/GPG keys vigente hoy — generar/importar desde donde corresponda en cada máquina nueva
+- **Pendiente diferido**: una copia vieja de `GEMINI_API_KEY` quedó filtrada en el historial de git (revocada, repo es público) — plan de limpieza en `auditorias/optimizacion/README.md` §P1, no urgente
 
 ---
 
@@ -236,12 +237,11 @@ curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/instal
 curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/install.sh | bash -s -- --no-gpu
 
 # Pasos manuales DESPUÉS del bootstrap (2026-08-05 — bootstrap.sh ya no imprime
-# esta lista al final, queda documentada acá):
+# esta lista al final, queda documentada acá; detalle completo en
+# backup/references/post-install.md):
 #   1. Restaurar GEMINI_API_KEY en ~/.config/zsh/secrets.zsh
-#   2. Restaurar SSH keys desde backup/backups/ssh/
-#   3. Restaurar GPG keys desde backup/backups/gnupg/
-#   4. Verificar gh auth status (credential helper en .gitconfig)
-#   5. Configurar Spicetify con paths correctos de Spotify
-#   6. Revisar safe.directory en .gitconfig si cambió la ruta del disco
-#   7. grub-install (machine-specific — ver instrucciones en bootstrap.sh step 25)
+#   2. Verificar gh auth status (credential helper en .gitconfig)
+#   3. Configurar Spicetify con paths correctos de Spotify
+#   4. Revisar safe.directory en .gitconfig si cambió la ruta del disco
+#   5. grub-install (machine-specific — ver instrucciones en bootstrap.sh step 30)
 ```

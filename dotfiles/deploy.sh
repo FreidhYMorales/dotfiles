@@ -13,7 +13,9 @@ DRY_RUN=false
 
 # Packages that are not ready yet (skipped by default)
 # stylus — userstyle backups for Stylus extension (not deployed via Stow; import manually)
-PENDING=(stylus)
+# chromium-extension — loaded directly from the repo path via Chrome's "Load
+# unpacked" (see post-install.md); not meant to be symlinked into $HOME
+PENDING=(stylus chromium-extension)
 
 args=()
 packages=()
