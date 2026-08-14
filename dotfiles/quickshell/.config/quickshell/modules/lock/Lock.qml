@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import "../../services"
 
 Scope {
     id: root
@@ -29,7 +30,10 @@ Scope {
 
     WlSessionLock {
         id: sessionLock
-        onLockedChanged: if (!locked) root.lockedViaIdle = false
+        onLockedChanged: {
+            Visibilities.locked = locked
+            if (!locked) root.lockedViaIdle = false
+        }
 
         LockSurface {
             lock: sessionLock

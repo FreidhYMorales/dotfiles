@@ -5,7 +5,12 @@ import Quickshell.Io
 
 // Keyboard layout list + switcher for the lockscreen, replacing SDDM's
 // `keyboard.layouts`/`keyboard.currentLayout` (no Quickshell equivalent)
-// with Hyprland IPC via a Process+python3-json shell-out.
+// with Hyprland IPC via two native `hyprctl -j` Process calls (same pattern
+// as services/Keybinds.qml — no shell/python3 subshell in between).
+//
+// Polling only runs while Visibilities.locked is true (mirrored from
+// modules/lock/Lock.qml's WlSessionLock) — this data is meaningless outside
+// the lockscreen, so there's no reason to poll while unlocked.
 Singleton {
     id: root
 
@@ -13,26 +18,58 @@ Singleton {
     property int currentLayout: 0
     property string device: ""
 
+    property string _optionStr: ""
+    property int _kbIndex: 0
+    property string _kbName: ""
+
     function switchTo(index) {
         if (!root.device || index < 0 || index >= root.layouts.length) return
         Quickshell.execDetached(["hyprctl", "switchxkblayout", root.device, String(index)])
         root.currentLayout = index
     }
 
+    function refresh() {
+        optionProc.running = true
+        devicesProc.running = true
+    }
+
+    function _apply() {
+        root.layouts = root._optionStr.split(",").map(l => l.trim()).filter(l => l.length > 0)
+        root.currentLayout = root._kbIndex
+        root.device = root._kbName
+    }
+
     Process {
-        id: queryProc
-        command: ["bash", "-c", "python3 -c \"import json,subprocess; opt=json.loads(subprocess.run(['hyprctl','getoption','input:kb_layout','-j'],capture_output=True,text=True).stdout); devs=json.loads(subprocess.run(['hyprctl','devices','-j'],capture_output=True,text=True).stdout); kbs=[k for k in devs.get('keyboards',[]) if k.get('main',False)]; kb=kbs[0] if kbs else {}; print(json.dumps({'layouts':[l.strip() for l in opt.get('str','').split(',') if l.strip()],'index':kb.get('active_layout_index',0),'device':kb.get('name','')}))\" 2>/dev/null"]
-        stdout: SplitParser {
-            onRead: line => {
-                const text = line.trim()
-                if (!text) return
+        id: optionProc
+        command: ["hyprctl", "getoption", "input:kb_layout", "-j"]
+        stdout: StdioCollector {
+            id: optionStdout
+            onStreamFinished: {
                 try {
-                    const data = JSON.parse(text)
-                    root.layouts = data.layouts || []
-                    root.currentLayout = data.index || 0
-                    root.device = data.device || ""
+                    root._optionStr = JSON.parse(optionStdout.text).str || ""
+                    root._apply()
                 } catch (e) {
-                    console.warn("LockLayouts: failed to parse hyprctl output:", e)
+                    console.warn("LockLayouts: failed to parse kb_layout option:", e)
+                }
+            }
+        }
+    }
+
+    Process {
+        id: devicesProc
+        command: ["hyprctl", "devices", "-j"]
+        stdout: StdioCollector {
+            id: devicesStdout
+            onStreamFinished: {
+                try {
+                    const devs = JSON.parse(devicesStdout.text)
+                    const kbs  = (devs.keyboards || []).filter(k => k.main)
+                    const kb   = kbs[0] || {}
+                    root._kbIndex = kb.active_layout_index || 0
+                    root._kbName  = kb.name || ""
+                    root._apply()
+                } catch (e) {
+                    console.warn("LockLayouts: failed to parse hyprctl devices output:", e)
                 }
             }
         }
@@ -40,12 +77,9 @@ Singleton {
 
     Timer {
         interval: 3000
-        running: true
+        running: Visibilities.locked
         repeat: true
         triggeredOnStart: true
-        onTriggered: {
-            queryProc.running = false
-            queryProc.running = true
-        }
+        onTriggered: root.refresh()
     }
 }

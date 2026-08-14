@@ -22,6 +22,10 @@ Singleton {
     // shows it ON TOP of the still-open launcher), so it's set directly by
     // callers instead of going through toggle().
     property bool screensaverPreview: false
+    // Mirrors modules/lock/Lock.qml's WlSessionLock.locked — exposed here so
+    // services/ singletons (e.g. LockLayouts) can gate lock-only polling
+    // without needing a reference to the non-singleton Lock scope.
+    property bool locked: false
 
     property real volumeBarCenterX:  0
     property real batteryBarCenterX: 0
