@@ -18,7 +18,18 @@ Item {
 
     function _rearmWallpaperGuard() {
         root._wallpaperRealMove = false
-        wallpaperMoveTracker.armed = false
+        wallpaperMoveGuard.reset()
+    }
+
+    // Mirrors ">wallpaper"'s own arrow-key handling (LauncherContent.qml) —
+    // exposed here since screensaverWallCarousel is private to this
+    // component and the key events themselves are captured by the
+    // launcher's shared searchField, not by anything inside this form.
+    function incrementWallpaper() {
+        if (root.showWallpaperPicker) screensaverWallCarousel.incrementCurrentIndex()
+    }
+    function decrementWallpaper() {
+        if (root.showWallpaperPicker) screensaverWallCarousel.decrementCurrentIndex()
     }
 
     Connections {
@@ -251,6 +262,20 @@ Item {
             height:  140
             visible: root.showWallpaperPicker
 
+            // Shared rounded-rect mask for every WallpaperCard in this mini
+            // carousel — all cards are the same fixed 100×110 size, so a
+            // single layered texture reused via maskSource replaces up to
+            // `pathItemCount` redundant identical mask renders.
+            Item {
+                id: screensaverCardMask
+                width:   100
+                height:  110
+                visible: false
+                layer.enabled: true
+                layer.smooth:  true
+                Rectangle { anchors.fill: parent; radius: Style.cornerRadius }
+            }
+
             PathView {
                 id: screensaverWallCarousel
                 anchors.fill: parent
@@ -281,6 +306,7 @@ Item {
                     width:    100
                     height:   110
                     scale:    PathView.itemScale
+                    maskSource: screensaverCardMask
                     z:        PathView.isCurrentItem ? 1 : 0
                     opacity:  modelData ? PathView.itemOpacity : 0
                     wallName: modelData?.name ?? ""
@@ -301,23 +327,12 @@ Item {
                 anchors.fill:    screensaverWallCarousel
                 hoverEnabled:    true
                 acceptedButtons: Qt.NoButton
+                onPositionChanged: wallpaperMoveGuard.check(mouseX, mouseY)
+            }
 
-                property bool armed: false
-                property real baseX: 0
-                property real baseY: 0
-                readonly property real moveThreshold: 4
-
-                onPositionChanged: {
-                    if (!armed) {
-                        armed = true
-                        baseX = mouseX
-                        baseY = mouseY
-                        return
-                    }
-                    if (!root._wallpaperRealMove &&
-                        (Math.abs(mouseX - baseX) > moveThreshold || Math.abs(mouseY - baseY) > moveThreshold))
-                        root._wallpaperRealMove = true
-                }
+            MoveGuard {
+                id: wallpaperMoveGuard
+                onRealMove: root._wallpaperRealMove = true
             }
         }
 

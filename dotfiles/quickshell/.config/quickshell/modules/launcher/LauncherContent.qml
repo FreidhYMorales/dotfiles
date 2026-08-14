@@ -123,7 +123,7 @@ Item {
             // Re-arm the position baseline too — otherwise a stale one from
             // a previous visit to this mode gets compared against next time,
             // which could immediately (and wrongly) look like real movement.
-            wallpaperMoveTracker.armed = false
+            wallpaperMoveGuard.reset()
         }
     }
 
@@ -240,7 +240,7 @@ Item {
             // can already be "wallpapers" from before the launcher was last
             // closed, in which case onModeChanged wouldn't refire here.
             root._wallpaperRealMove = false
-            wallpaperMoveTracker.armed = false
+            wallpaperMoveGuard.reset()
             root.activeScreen = ""
         }
     }
@@ -469,6 +469,20 @@ Item {
         // itemScale/itemOpacity attributes make it bigger/fully opaque there
         // and smaller/dimmer toward the edges (lightweight coverflow look).
 
+        // Shared rounded-rect mask for every WallpaperCard in this carousel —
+        // all cards are the same fixed 130×(carouselH-20) size, so a single
+        // layered texture reused via maskSource replaces up to `pathItemCount`
+        // redundant identical mask renders (see WallpaperCard.qml).
+        Item {
+            id: wallpaperCardMask
+            width:   130
+            height:  root.carouselH - 20
+            visible: false
+            layer.enabled: true
+            layer.smooth:  true
+            Rectangle { anchors.fill: parent; radius: Style.cornerRadius }
+        }
+
         PathView {
             id: wallpaperCarousel
             anchors {
@@ -512,6 +526,7 @@ Item {
                 width:  130
                 height: root.carouselH - 20
                 scale:  PathView.itemScale
+                maskSource: wallpaperCardMask
                 // PathView doesn't stack the current/centered item above its
                 // neighbors by default — without this, the active card's
                 // right edge could render underneath the next card's left
@@ -542,23 +557,12 @@ Item {
             visible:          root.mode === "wallpapers"
             hoverEnabled:     true
             acceptedButtons:  Qt.NoButton
+            onPositionChanged: wallpaperMoveGuard.check(mouseX, mouseY)
+        }
 
-            property bool armed: false
-            property real baseX: 0
-            property real baseY: 0
-            readonly property real moveThreshold: 4
-
-            onPositionChanged: {
-                if (!armed) {
-                    armed = true
-                    baseX = mouseX
-                    baseY = mouseY
-                    return
-                }
-                if (!root._wallpaperRealMove &&
-                    (Math.abs(mouseX - baseX) > moveThreshold || Math.abs(mouseY - baseY) > moveThreshold))
-                    root._wallpaperRealMove = true
-            }
+        MoveGuard {
+            id: wallpaperMoveGuard
+            onRealMove: root._wallpaperRealMove = true
         }
 
         // ── Theme mode list (">theme" mode) ─────────────────────────────────
@@ -843,20 +847,25 @@ Item {
                 }
                 Keys.onDownPressed: event => {
                     if (root.mode === "wallpapers") wallpaperCarousel.incrementCurrentIndex()
+                    else if (root.mode === "screensaver") screensaverForm.incrementWallpaper()
                     else root.selectedIndex = Math.min(root.selectedIndex + 1, root.filtered.length - 1)
                     event.accepted = true
                 }
                 Keys.onUpPressed: event => {
                     if (root.mode === "wallpapers") wallpaperCarousel.decrementCurrentIndex()
+                    else if (root.mode === "screensaver") screensaverForm.decrementWallpaper()
                     else root.selectedIndex = Math.max(root.selectedIndex - 1, 0)
                     event.accepted = true
                 }
-                // Left/Right only drive the carousel in wallpapers mode —
-                // otherwise they need to fall through to TextInput's own
-                // cursor movement while typing a query.
+                // Left/Right only drive a carousel in wallpapers/screensaver
+                // mode — otherwise they need to fall through to TextInput's
+                // own cursor movement while typing a query.
                 Keys.onLeftPressed: event => {
                     if (root.mode === "wallpapers") {
                         wallpaperCarousel.decrementCurrentIndex()
+                        event.accepted = true
+                    } else if (root.mode === "screensaver") {
+                        screensaverForm.decrementWallpaper()
                         event.accepted = true
                     } else {
                         event.accepted = false
@@ -865,6 +874,9 @@ Item {
                 Keys.onRightPressed: event => {
                     if (root.mode === "wallpapers") {
                         wallpaperCarousel.incrementCurrentIndex()
+                        event.accepted = true
+                    } else if (root.mode === "screensaver") {
+                        screensaverForm.incrementWallpaper()
                         event.accepted = true
                     } else {
                         event.accepted = false

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 import QtQuick.Window
 import "../../services"
+import "../../components"
 
 // Idle screen shown before the password field is revealed — port of the
 // SDDM "silent" theme's components/LockScreen.qml.
@@ -227,26 +228,18 @@ Item {
         // fraction of a second of locking, unlocking the session again
         // almost instantly and making it look like the grace period never
         // elapsed (it did — the "free dismiss" branch just kept re-firing).
-        readonly property real moveThreshold: 4
-        property bool armed: false
-        property real baseX: 0
-        property real baseY: 0
-        onPositionChanged: {
-            if (!armed) {
-                armed = true
-                baseX = mouseX
-                baseY = mouseY
-                return
-            }
-            if (Math.abs(mouseX - baseX) > moveThreshold || Math.abs(mouseY - baseY) > moveThreshold)
-                root.loginRequested()
-        }
+        onPositionChanged: idleMoveGuard.check(mouseX, mouseY)
+    }
+
+    MoveGuard {
+        id: idleMoveGuard
+        onRealMove: root.loginRequested()
     }
 
     // Re-arm the movement baseline every time the screensaver-only state
     // (re)starts, so a stale position from a previous lock cycle can't
     // falsely count as "already moved" next time.
-    onContentVisibleChanged: if (!contentVisible) idleMouseArea.armed = false
+    onContentVisibleChanged: if (!contentVisible) idleMoveGuard.reset()
 
     Keys.onPressed: function (event) {
         if (event.key === Qt.Key_Escape) {

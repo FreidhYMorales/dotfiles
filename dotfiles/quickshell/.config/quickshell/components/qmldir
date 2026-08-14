@@ -5,3 +5,4 @@ StyledRect       1.0 StyledRect.qml
 StyledText       1.0 StyledText.qml
 StateLayer       1.0 StateLayer.qml
 MonitorOsdWindow 1.0 MonitorOsdWindow.qml
+MoveGuard        1.0 MoveGuard.qml

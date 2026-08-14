@@ -15,6 +15,13 @@ Item {
     property bool   isVideo:  false
     property bool   isActive: false
 
+    // All cards in a given carousel share the same width/height, so the
+    // rounded-rect mask shape is identical across every visible delegate —
+    // rendering it once per carousel (owner passes the same layered Item
+    // into every instance) instead of once per card avoids up to
+    // `pathItemCount` redundant identical mask textures.
+    required property Item maskSource
+
     signal clicked()
     signal hovered()
 
@@ -102,20 +109,11 @@ Item {
             }
         }
 
-        Item {
-            id: cardMask
-            anchors.fill: parent
-            visible: false
-            layer.enabled: true
-            layer.smooth:  true
-            Rectangle { anchors.fill: parent; radius: Style.cornerRadius }
-        }
-
         MultiEffect {
             anchors.fill: parent
             source:      cardContent
             maskEnabled: true
-            maskSource:  cardMask
+            maskSource:  root.maskSource
             maskSpreadAtMin:  1.0
             maskThresholdMax: 1.0
             maskThresholdMin: 0.5
