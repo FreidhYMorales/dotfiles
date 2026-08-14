@@ -93,13 +93,7 @@ Item {
             spacing: 4
 
             LauncherButton   { standalone: false; colors: root.colors }
-            Rectangle {
-                width:  2
-                height: leftPill.height - 4
-                anchors.verticalCenter: parent.verticalCenter
-                antialiasing: false
-                color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-            }
+            PillDivider { pillHeight: leftPill.height; colors: root.colors }
             WorkspacesWidget { colors: root.colors }
             SpecialWorkspacesWidget { colors: root.colors }
         }
@@ -141,29 +135,11 @@ Item {
                 spacing: 4
 
                 BgAppsWidget { colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: midPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: midPill.height; colors: root.colors }
                 CpuWidget { colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: midPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: midPill.height; colors: root.colors }
                 RamWidget { colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: midPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: midPill.height; colors: root.colors }
                 RecorderWidget { colors: root.colors }
             }
         }
@@ -184,46 +160,15 @@ Item {
                 spacing: 4
 
                 VolumeWidget       { id: volWidget; standalone: false; colors: root.colors }
-                Rectangle {
-                    id:     volBatDivider
-                    width:  2
-                    height: rightPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { id: volBatDivider; pillHeight: rightPill.height; colors: root.colors }
                 BatteryWidget      { id: batWidget; standalone: false; colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: rightPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: rightPill.height; colors: root.colors }
                 BluetoothWidget    { standalone: false; colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: rightPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: rightPill.height; colors: root.colors }
                 WifiWidget         { standalone: false; colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: rightPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: rightPill.height; colors: root.colors }
                 NotificationButton { standalone: false; colors: root.colors }
-                Rectangle {
-                    width:  2
-                    height: rightPill.height - 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    antialiasing: false
-                    color:  Colours.mid(root.colors.m3surfaceContainer, root.colors.m3surfaceContainerHigh)
-                }
+                PillDivider { pillHeight: rightPill.height; colors: root.colors }
                 DashboardButton    { standalone: false; colors: root.colors }
             }
         }

@@ -7,3 +7,4 @@ StateLayer       1.0 StateLayer.qml
 MonitorOsdWindow 1.0 MonitorOsdWindow.qml
 MoveGuard        1.0 MoveGuard.qml
 HoverIconText    1.0 HoverIconText.qml
+PillDivider      1.0 PillDivider.qml
