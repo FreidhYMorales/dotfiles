@@ -1,0 +1,6 @@
+# Auto-switch power-profiles-daemon profile on AC plug/unplug.
+# ATTR{online}=="1" fires on both the initial boot coldplug (ACTION=="add")
+# and a live plug event (ACTION=="change") — no ACTION filter needed, "0"
+# and "1" are mutually exclusive so each rule only ever matches its own case.
+SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="1", RUN+="/usr/bin/powerprofilesctl set performance"
+SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="/usr/bin/powerprofilesctl set balanced"

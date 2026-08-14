@@ -388,6 +388,12 @@ sudo cp "$REPO_ROOT/system/systemd/system-sleep/lock-before-sleep" /usr/lib/syst
 sudo chown root:root /usr/lib/systemd/system-sleep/lock-before-sleep
 sudo chmod 755 /usr/lib/systemd/system-sleep/lock-before-sleep
 
+step "power-profiles-daemon: auto-switch profile on AC plug/unplug"
+sudo mkdir -p /etc/udev/rules.d
+sudo cp "$REPO_ROOT/system/udev/rules.d/90-power-profile-ac.rules" /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger --subsystem-match=power_supply
+
 # ── 26. XDG portal — term file chooser ───────────────────────────────────────
 step "xdg-desktop-portal-termfilechooser"
 yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git
