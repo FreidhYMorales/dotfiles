@@ -29,6 +29,13 @@ Variants {
 
             visible: isFocused && toastNotif !== null
 
+            // The window itself spans the full screen width (needed to anchor
+            // the card to the right edge), but only `card` should ever accept
+            // mouse input — without this mask, the invisible rest of the strip
+            // would swallow clicks/hover meant for whatever is underneath it
+            // for as long as the toast is showing.
+            mask: Region { item: card }
+
             WlrLayershell.layer:         WlrLayer.Top
             WlrLayershell.namespace:     "deadlock-notif-toast"
             WlrLayershell.exclusiveZone: -1
