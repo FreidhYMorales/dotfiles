@@ -21,10 +21,7 @@ ShellRoot {
     NotificationServer {
         keepOnReload:     true
         actionsSupported: true
-        onNotification: notif => {
-            NotifStore.receive(notif)
-            Notifs.receive(notif)
-        }
+        onNotification: notif => Notifs.receive(notif)
     }
 
     // Global keybinds via IPC — hyprland keybinds.lua:

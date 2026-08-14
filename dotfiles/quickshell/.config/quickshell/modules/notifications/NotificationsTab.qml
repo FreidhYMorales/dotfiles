@@ -11,7 +11,7 @@ Item {
     // Empty state
     Item {
         anchors.fill: parent
-        visible:      NotifStore.notifications.count === 0
+        visible:      Notifs.list.length === 0
 
         Column {
             anchors.centerIn: parent
@@ -40,7 +40,7 @@ Item {
     // List state
     Item {
         anchors.fill: parent
-        visible:      NotifStore.notifications.count > 0
+        visible:      Notifs.list.length > 0
 
         // Clear all button
         Text {
@@ -64,7 +64,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 cursorShape:  Qt.PointingHandCursor
-                onClicked:    NotifStore.clear()
+                onClicked:    Notifs.dismissAll()
             }
         }
 
@@ -84,21 +84,21 @@ Item {
             ListView {
                 id:      notifList
                 width:   parent.width
-                model:   NotifStore.notifications
+                model:   Notifs.list
                 spacing: 0
                 clip:    true
 
                 delegate: NotificationItem {
-                    required property var model
+                    required property var modelData
                     required property int index
 
                     width:    notifList.width
-                    appName:  model.app
-                    summary:  model.summary
-                    body:     model.body
-                    icon:     model.icon
-                    urgency:  model.urgency
-                    itemIndex: index
+                    appName:  modelData.appName
+                    summary:  modelData.summary
+                    body:     modelData.body
+                    icon:     modelData.appIcon
+                    urgency:  modelData.urgency
+                    notifRef: modelData
                     isLast:   index === notifList.count - 1
                 }
             }

@@ -16,10 +16,6 @@ Item {
 
     readonly property real _profileH: profileSec.implicitHeight
 
-    property var    _activeNotif: null
-    property bool   _notifActive: false
-    property string _lastNotifId: ""
-
     HoverHandler {
         onHoveredChanged: hovered ? dashCloseTimer.stop() : dashCloseTimer.restart()
     }
@@ -34,25 +30,11 @@ Item {
                 root.open      = true
                 root.panelOpen = false
                 root._stage    = 0
-                const list = Notifs.list
-                if (list.length > 0) {
-                    const n = list[0]
-                    if (n && !n.closed && n.popup && n.notificationId !== root._lastNotifId) {
-                        root._lastNotifId = n.notificationId
-                        root._activeNotif = n
-                        root._notifActive = true
-                        notifDismissTimer.interval = n.expireTimeout > 0 ? n.expireTimeout : 5000
-                        notifDismissTimer.restart()
-                    }
-                }
                 openTimer.restart()
             } else {
                 dashCloseTimer.stop()
                 openTimer.stop()
                 s1.stop(); s2.stop(); s3.stop()
-                notifDismissTimer.stop()
-                root._notifActive = false
-                root._activeNotif = null
                 cs1.restart(); cs2.restart(); cs3.restart(); cs4.restart()
                 closeTimer.restart()
             }
@@ -71,25 +53,6 @@ Item {
     Timer { id: cs2; interval: 120; onTriggered: { if (root._stage > 1) root._stage = 1 } }
     Timer { id: cs3; interval: 230; onTriggered: { if (root._stage > 0) root._stage = 0 } }
     Timer { id: cs4; interval: 340; onTriggered: root.panelOpen = false }
-
-    Timer { id: notifDismissTimer; onTriggered: { root._notifActive = false; root._activeNotif = null } }
-
-    Connections {
-        target: Notifs
-        function onListChanged() {
-            if (!Visibilities.dashboard) return
-            const list = Notifs.list
-            if (list.length === 0) return
-            const n = list[0]
-            if (!n || n.closed || !n.popup) return
-            if (n.notificationId === root._lastNotifId) return
-            root._lastNotifId = n.notificationId
-            root._activeNotif = n
-            root._notifActive = true
-            notifDismissTimer.interval = n.expireTimeout > 0 ? n.expireTimeout : 5000
-            notifDismissTimer.restart()
-        }
-    }
 
     // ── Profile panel — connected to bar, drops from top ──
     Capsule {
@@ -140,140 +103,6 @@ Item {
             width:         parent.width
             spacing:       8
             bottomPadding: 10
-
-            // Capsule 0: Active notification
-            Item {
-                id: notifWrapper
-                width: parent.width
-                height: root._notifActive ? 82 : 0
-                clip: true
-                Behavior on height {
-                    NumberAnimation {
-                        duration: 150; easing.type: Easing.BezierSpline
-                        easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
-                    }
-                }
-
-                Capsule {
-                    id:     capNotif
-                    width:  parent.width
-                    height: 82
-
-                    Column {
-                        id: notifContent
-                        anchors {
-                            top:    parent.top;   topMargin:  12
-                            left:   parent.left;  leftMargin: 14
-                            right:  parent.right; rightMargin: 14
-                        }
-                        spacing: 4
-
-                        Item {
-                            width: parent.width
-                            height: 20
-
-                            Item {
-                                id: notifIcon
-                                width: 20; height: 20
-                                anchors { left: parent.left; verticalCenter: parent.verticalCenter }
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    radius: Style.cornerRadius
-                                    color: Colours.m3primaryContainer
-                                    Behavior on color { CAnim {} }
-                                }
-
-                                Image {
-                                    id: notifIconImg
-                                    anchors { fill: parent; margins: 2 }
-                                    source:   root._activeNotif?.appIcon ? ("file://" + root._activeNotif.appIcon) : ""
-                                    fillMode: Image.PreserveAspectFit
-                                    smooth: true; mipmap: true
-                                    visible: status === Image.Ready
-                                }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    visible:        !notifIconImg.visible
-                                    text:           (root._activeNotif?.appName ?? "?").charAt(0).toUpperCase()
-                                    color:          Colours.m3onPrimaryContainer
-                                    font.family:    Style.fontFamily
-                                    font.pixelSize: 10
-                                    font.weight:    Font.Medium
-                                    Behavior on color { CAnim {} }
-                                }
-                            }
-
-                            Text {
-                                anchors {
-                                    left:           notifIcon.right; leftMargin:  8
-                                    right:          notifDismiss.left; rightMargin: 8
-                                    verticalCenter: parent.verticalCenter
-                                }
-                                text:           root._activeNotif?.appName ?? ""
-                                color:          Colours.m3onSurfaceVariant
-                                font.family:    Style.fontFamily
-                                font.pixelSize: 11
-                                elide:          Text.ElideRight
-                                Behavior on color { CAnim {} }
-                            }
-
-                            Item {
-                                id: notifDismiss
-                                width: 20; height: 20
-                                anchors { right: parent.right; verticalCenter: parent.verticalCenter }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text:           "󰅖"
-                                    color:          notifDismissHov.hovered ? Colours.m3onSurface : Colours.m3onSurfaceVariant
-                                    font.family:    Style.fontFamily
-                                    font.pixelSize: 13
-                                    Behavior on color { CAnim {} }
-                                }
-                                HoverHandler { id: notifDismissHov }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape:  Qt.PointingHandCursor
-                                    onClicked: {
-                                        notifDismissTimer.stop()
-                                        root._notifActive = false
-                                        root._activeNotif = null
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            width:    parent.width
-                            text:     root._activeNotif?.summary ?? ""
-                            visible:  text.length > 0
-                            color:    Colours.m3onSurface
-                            font.family:    Style.fontFamily
-                            font.pixelSize: 13
-                            font.weight:    Font.Medium
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                            elide:    Text.ElideRight
-                            Behavior on color { CAnim {} }
-                        }
-
-                        Text {
-                            width:    parent.width
-                            text:     root._activeNotif?.body ?? ""
-                            visible:  text.length > 0
-                            color:    Colours.m3onSurfaceVariant
-                            font.family:    Style.fontFamily
-                            font.pixelSize: 11
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                            elide:    Text.ElideRight
-                            Behavior on color { CAnim {} }
-                        }
-                    }
-                }
-            }
 
             // Capsule 1: Weather
             Item {

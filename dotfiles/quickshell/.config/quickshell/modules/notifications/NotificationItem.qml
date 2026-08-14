@@ -10,7 +10,7 @@ Item {
     property string body:      ""
     property string icon:      ""
     property int    urgency:   1
-    property int    itemIndex: 0
+    property var    notifRef:  null
     property bool   isLast:    false
 
     implicitHeight: 72
@@ -122,7 +122,7 @@ Item {
                 tintColor:    Colours.m3onSurface
                 hoverOpacity: 0.1
                 cursorShape:  Qt.PointingHandCursor
-                onClicked:    NotifStore.dismiss(root.itemIndex)
+                onClicked:    Notifs.dismiss(root.notifRef)
             }
 
             Text {

@@ -34,10 +34,11 @@ Singleton {
 
     function dismiss(notif) {
         notif.close()
+        root.list = root.list.filter(n => n !== notif)
     }
 
     function dismissAll() {
-        for (const n of root.list.slice()) {
+        for (const n of root.list) {
             n.close()
         }
         root.list = []

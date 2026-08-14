@@ -6,7 +6,6 @@ singleton SysInfo      1.0 SysInfo.qml
 singleton Audio        1.0 Audio.qml
 singleton Visibilities 1.0 Visibilities.qml
 singleton Mpris        1.0 Mpris.qml
-singleton NotifStore   1.0 NotifStore.qml
 singleton Brightness   1.0 Brightness.qml
 singleton BatteryProfile 1.0 BatteryProfile.qml
 singleton Bluetooth    1.0 Bluetooth.qml
