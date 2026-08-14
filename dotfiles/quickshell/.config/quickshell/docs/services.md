@@ -45,10 +45,8 @@ Centraliza tipografía y radio de esquinas para el estilo "terminal alike" (bord
 **Propiedades:**
 ```qml
 Style.fontFamily       // "DepartureMono Nerd Font"
-Style.fontFamilyMono   // "DepartureMono Nerd Font Mono" — declarada, sin uso todavía
 Style.cornerRadius     // int, 0 — usar en todo Rectangle que antes tenía radius fijo o height/2
 Style.isSquare         // bool, true — toggle maestro cuadrado vs. redondeado
-Style.radius(roundedValue)  // función helper, sin uso todavía (equivalente a leer cornerRadius directo)
 ```
 
 **Uso:**
