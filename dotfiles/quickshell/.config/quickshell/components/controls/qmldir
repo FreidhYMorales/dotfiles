@@ -1,5 +1,3 @@
 module qs.components.controls
-IconButton       1.0 IconButton.qml
 SegmentedMeter   1.0 SegmentedMeter.qml
-Slider           1.0 Slider.qml
 Toggle           1.0 Toggle.qml
