@@ -21,16 +21,12 @@ Item {
         Behavior on color { CAnim {} }
     }
 
-    Text {
+    HoverIconText {
         anchors.centerIn: parent
         text:           "󰣇"
         color:          hov.hovered ? root.colors.m3primary : root.colors.m3onSurface
-        font.family:    Style.fontFamily
         font.pixelSize: 14
-        scale: hov.hovered ? 1.35 : 1.0
-        transformOrigin: Item.Center
-        Behavior on color { CAnim {} }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        active:         hov.hovered
     }
 
     HoverHandler { id: hov }

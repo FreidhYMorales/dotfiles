@@ -21,21 +21,17 @@ Item {
         Behavior on color { CAnim {} }
     }
 
-    Text {
+    HoverIconText {
         anchors.centerIn: parent
-        text:           Visibilities.silentMode ? "󰂛" : NotifStore.unread > 0 ? "󰂚" : "󰂜"
+        text:           Visibilities.silentMode ? "󰂛" : Notifs.list.length > 0 ? "󰂚" : "󰂜"
         color:          hov.hovered ? root.colors.m3primary : root.colors.m3onSurface
-        font.family:    Style.fontFamily
         font.pixelSize: 13
-        scale: hov.hovered ? 1.35 : 1.0
-        transformOrigin: Item.Center
-        Behavior on color { CAnim {} }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        active:         hov.hovered
     }
 
     // Unread badge
     Rectangle {
-        visible: NotifStore.unread > 0
+        visible: Notifs.list.length > 0
         width:   8
         height:  8
         radius:  Style.cornerRadius

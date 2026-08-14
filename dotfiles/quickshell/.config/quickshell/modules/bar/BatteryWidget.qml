@@ -66,19 +66,15 @@ Item {
         anchors.centerIn: parent
         spacing: 0
 
-        Text {
+        HoverIconText {
             anchors.verticalCenter: parent.verticalCenter
             text: Battery.charging        ? "󰂄" :
                   Battery.percentage > 80 ? "󰁹" :
                   Battery.percentage > 50 ? "󰂀" :
                   Battery.percentage > 20 ? "󰁾" : "󰁺"
             color:          Battery.percentage < 20 && !Battery.charging ? root.colors.m3error : (root.active ? root.colors.m3primary : root.colors.m3onSurface)
-            font.family:    Style.fontFamily
             font.pixelSize: 13
-            scale: root.active ? 1.35 : 1.0
-            transformOrigin: Item.Center
-            Behavior on color { CAnim {} }
-            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+            active:         root.active
         }
 
         Item {

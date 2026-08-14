@@ -41,16 +41,12 @@ Item {
         anchors.centerIn: parent
         spacing: 4
 
-        Text {
+        HoverIconText {
             anchors.verticalCenter: parent.verticalCenter
             text:           "󰻃"
             color:          Recorder.recording ? root.colors.m3error : (root.active ? root.colors.m3primary : root.colors.m3onSurface)
-            font.family:    Style.fontFamily
             font.pixelSize: 13
-            scale: root.active ? 1.35 : 1.0
-            transformOrigin: Item.Center
-            Behavior on color { CAnim {} }
-            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+            active:         root.active
         }
 
         Text {

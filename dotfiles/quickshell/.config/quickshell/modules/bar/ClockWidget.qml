@@ -25,18 +25,15 @@ Item {
         Behavior on color { CAnim {} }
     }
 
-    Text {
+    HoverIconText {
         id: clockText
         anchors.centerIn: parent
         text:           Time.date + "  |  " + Time.time24
         color:          root.active ? root.colors.m3primary : root.colors.m3onSurface
-        font.family:    Style.fontFamily
         font.pixelSize: 12
         font.weight:    Font.Medium
-        scale: root.active ? 1.08 : 1.0
-        transformOrigin: Item.Center
-        Behavior on color { CAnim {} }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        active:         root.active
+        scaleFactor:    1.08
     }
 
     HoverHandler { id: hov; cursorShape: Qt.PointingHandCursor }

@@ -26,19 +26,15 @@ Item {
         Behavior on color { CAnim {} }
     }
 
-    Text {
+    HoverIconText {
         anchors.centerIn: parent
         text:           !Bluetooth.powered   ? "󰂲" :
                         !Bluetooth.connected ? "󰂯" : "󰂱"
         color:          root.active ? root.colors.m3primary :
                         !Bluetooth.powered   ? root.colors.m3onSurfaceVariant :
                         !Bluetooth.connected ? root.colors.m3onSurface : root.colors.m3primary
-        font.family:    Style.fontFamily
         font.pixelSize: 13
-        scale: root.active ? 1.35 : 1.0
-        transformOrigin: Item.Center
-        Behavior on color { CAnim {} }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        active:         root.active
     }
 
     Process {

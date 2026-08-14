@@ -44,16 +44,12 @@ Item {
         spacing: 8
         layoutDirection: Qt.RightToLeft
 
-        Text {
+        HoverIconText {
             anchors.verticalCenter: parent.verticalCenter
             text:           "‹"
             color:          root.active ? root.colors.m3primary : root.colors.m3onSurface
-            font.family:    Style.fontFamily
             font.pixelSize: 16
-            scale: root.active ? 1.35 : 1.0
-            transformOrigin: Item.Center
-            Behavior on color { CAnim {} }
-            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+            active:         root.active
         }
 
         Repeater {
