@@ -23,4 +23,5 @@ singleton Recorder     1.0 Recorder.qml
 singleton Keybinds     1.0 Keybinds.qml
 singleton Style        1.0 Style.qml
 NotifData              1.0 NotifData.qml
+singleton PowerActions  1.0 PowerActions.qml
 

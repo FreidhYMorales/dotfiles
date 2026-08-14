@@ -1,8 +1,8 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
 import "../../services"
 import "../../components"
+import "../../utils" as Utils
 
 Item {
     id: root
@@ -10,45 +10,7 @@ Item {
     implicitHeight: rightCol.implicitHeight + 10
     implicitWidth:  parent?.width ?? 300
 
-    property string _uptime: ""
     property string _user:   Quickshell.env("USER")
-
-    readonly property var _powerButtons: [
-        { icon: "󰐥", cmd: ["systemctl", "poweroff"]           },
-        { icon: "󰜉", cmd: ["systemctl", "reboot"]             },
-        { icon: "󰤄", cmd: ["systemctl", "suspend"]            },
-        { icon: "󰌾", cmd: ["qs", "ipc", "-p", Quickshell.shellDir, "call", "lock", "lock"] },
-        // This Hyprland build routes `dispatch` through a Lua bridge (hl.dispatch) —
-        // bare dispatcher names like "exit" are no longer valid, only hl.dsp.* calls.
-        { icon: "󰍃", cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"] }
-    ]
-
-    function _parseUptime(line) {
-        const secs = Math.floor(parseFloat(line.trim().split(" ")[0]))
-        if (isNaN(secs) || secs <= 0) return ""
-        const days  = Math.floor(secs / 86400)
-        const hours = Math.floor((secs % 86400) / 3600)
-        const mins  = Math.floor((secs % 3600) / 60)
-        if (days > 0)  return days  + "d " + hours + "h"
-        if (hours > 0) return hours + "h " + mins  + "m"
-        return mins + "m"
-    }
-
-    Process {
-        id: uptimeProc
-        command: ["cat", "/proc/uptime"]
-        stdout: SplitParser {
-            onRead: line => { root._uptime = root._parseUptime(line) }
-        }
-    }
-
-    Timer {
-        interval: 60000
-        running:  true
-        repeat:   true
-        triggeredOnStart: true
-        onTriggered: uptimeProc.running = true
-    }
 
     // Avatar (left, vertically centered to the whole capsule)
     Rectangle {
@@ -101,7 +63,7 @@ Item {
         }
 
         Text {
-            text:           root._uptime.length > 0 ? "up " + root._uptime : "up —"
+            text:           Utils.SysInfo.uptime.length > 0 ? "up " + Utils.SysInfo.uptime : "up —"
             color:          Colours.m3onSurfaceVariant
             font.family:    Style.fontFamily
             font.pixelSize: 11
@@ -133,7 +95,7 @@ Item {
                 spacing: Math.max(0, (width - 5 * 24) / 4)
 
                 Repeater {
-                    model: root._powerButtons
+                    model: PowerActions.actions
 
                     delegate: Item {
                         id: powerBtn
@@ -143,16 +105,12 @@ Item {
                         height: 24
                         anchors.verticalCenter: parent?.verticalCenter
 
-                        Text {
+                        HoverIconText {
                             anchors.centerIn: parent
-                            text:            powerBtn.modelData.icon
-                            color:           btnHov.hovered ? Colours.m3primary : Colours.m3onSurfaceVariant
-                            font.family:     Style.fontFamily
-                            font.pixelSize:  13
-                            scale:           btnHov.hovered ? 1.35 : 1.0
-                            transformOrigin: Item.Center
-                            Behavior on color { CAnim {} }
-                            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                            text:           powerBtn.modelData.icon
+                            color:          btnHov.hovered ? Colours.m3primary : Colours.m3onSurfaceVariant
+                            font.pixelSize: 13
+                            active:         btnHov.hovered
                         }
 
                         HoverHandler { id: btnHov }
