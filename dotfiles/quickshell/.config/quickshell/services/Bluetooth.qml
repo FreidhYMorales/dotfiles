@@ -12,13 +12,32 @@ Singleton {
     property string connectedDevice:  ""
 
     Timer {
-        interval: 3000
+        interval: 15000
         running:  true
         repeat:   true
         triggeredOnStart: true
         onTriggered: {
             poweredProc.running   = true
             connectedProc.running = true
+        }
+    }
+
+    // Watch BlueZ PropertiesChanged (power/connection state) — fires immediately
+    // on toggle/connect/disconnect instead of waiting for the next poll tick.
+    Process {
+        running: true
+        command: [
+            "dbus-monitor", "--system",
+            "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Adapter1'",
+            "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'"
+        ]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.startsWith("signal")) {
+                    poweredProc.running   = true
+                    connectedProc.running = true
+                }
+            }
         }
     }
 

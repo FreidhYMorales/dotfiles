@@ -27,11 +27,27 @@ Singleton {
     }
 
     Timer {
-        interval: 3000
+        interval: 15000
         running:  true
         repeat:   true
         triggeredOnStart: true
         onTriggered: networkProc.running = true
+    }
+
+    // Watch iwd PropertiesChanged (connection state) — fires immediately on
+    // connect/disconnect instead of waiting for the next poll tick.
+    Process {
+        running: true
+        command: [
+            "dbus-monitor", "--system",
+            "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='net.connman.iwd.Station'"
+        ]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.startsWith("signal"))
+                    networkProc.running = true
+            }
+        }
     }
 
     Process {
