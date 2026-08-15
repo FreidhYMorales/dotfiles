@@ -267,6 +267,20 @@ EOF
     sudo systemd-tmpfiles --create /etc/tmpfiles.d/battery-thresholds.conf
 fi
 
+# ── 18c. PCIe ASPM policy (laptops only) ─────────────────────────────────────
+# Default policy leaves ASPM to BIOS/firmware, which often means no link power
+# savings on idle PCIe devices (NVMe, WiFi). "powersave" is low-risk and
+# measurable on battery. auditorias/optimizacion energy audit 2026-08-14 —
+# thermald evaluated and discarded (DYTC already covers that role on this
+# ThinkPad), auto-switch profile already covered by the udev rule above.
+if [[ -d /sys/class/power_supply/BAT0 ]]; then
+    step "PCIe ASPM policy (powersave)"
+    sudo tee /etc/tmpfiles.d/pcie-aspm.conf >/dev/null <<'EOF'
+w /sys/module/pcie_aspm/parameters/policy - - - - powersave
+EOF
+    sudo systemd-tmpfiles --create /etc/tmpfiles.d/pcie-aspm.conf
+fi
+
 # ── 19. Firewall ──────────────────────────────────────────────────────────────
 step "Firewall (ufw)"
 sudo pacman -S --needed --noconfirm ufw
