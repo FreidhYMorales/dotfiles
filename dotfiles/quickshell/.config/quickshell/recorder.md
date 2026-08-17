@@ -4,11 +4,23 @@ Grabación de pantalla nativa vía `gpu-screen-recorder`, con tres modos
 (screen/region/window) elegibles desde un OSD de la bar. Widget con
 indicador de tiempo transcurrido mientras graba, notificación al terminar.
 
-**Estado: funcional de punta a punta para el modo screen** (region/window
-comparten el mismo pipeline y el mismo código de arranque, sin
-verificación empírica dedicada todavía — ver Pendientes). `gpu-screen-recorder`
-no está instalado en este sistema todavía (AUR); el resto del pipeline
-(widget, OSD, servicio) está completo y espera al binario.
+**Estado (2026-08-17): funcional de punta a punta para el modo screen**,
+verificado en vivo en la ThinkPad (mp4 real, 3.74s, VAAPI h264 + audio,
+muxeo correcto vía SIGINT) — region/window comparten el mismo pipeline y
+el mismo código de arranque, sin verificación empírica dedicada todavía
+(ver Pendientes). Mode selection y el toggle de audio se movieron del
+right-click OSD de la barra a una sección nueva del dashboard
+(`RecorderSection.qml`) — ver Arquitectura.
+
+**Gotcha encontrado y resuelto esta sesión**: `gpu-screen-recorder-git`
+(AUR, instalado 27 jul) estaba roto — `libavcodec.so.62`/`.60`/`.6`/`.11`
+no encontradas — porque un `pacman -Syu` el 13 ago subió `ffmpeg` a 9.0.1
+(sonames `.63`), y el binario AUR seguía linkeado contra las libs viejas.
+Fix: `yay -S gpu-screen-recorder-git --rebuild` (bump a
+`6.0.0.r6.g20dbed9`) + `sudo pacman -U` de los paquetes generados. Cualquier
+paquete `-git`/AUR que linkee contra ffmpeg puede romperse de la misma
+forma en el próximo `-Syu` que bump ffmpeg — no hay forma de detectarlo
+sin correr el binario.
 
 ## Por qué gpu-screen-recorder y no wf-recorder
 
@@ -24,28 +36,47 @@ qué no hypridle).
 
 - **`services/Recorder.qml`** (singleton) — todo el estado y los `Process`
   que hablan con `gpu-screen-recorder`/`slurp`/`hyprctl`.
-  - `recording` (bool), `mode` (`"screen"|"region"|"window"`, solo display),
-    `elapsedSeconds` (int, un `Timer` de 1s mientras `recording`),
-    `lastOutputPath` (string).
-  - `startScreen()` / `startRegion()` / `startWindow()` / `stop()` — API
-    pública. Los tres `start*` son no-op si ya está grabando
-    (`if (root.recording) return`).
+  - `recording` (bool), `mode` (`"screen"|"region"|"window"` — doble uso:
+    preferencia para el próximo `start()` Y, mientras graba, en qué modo
+    arrancó), `audioEnabled` (bool), `elapsedSeconds` (int, un `Timer` de
+    1s mientras `recording`), `lastOutputPath` (string).
+  - `start()` — dispatcher único: llama a `startScreen()`/`startRegion()`/
+    `startWindow()` según `root.mode`. Es lo único que
+    `RecorderWidget.qml` llama ahora.
+  - `setMode(m)` — cambia la preferencia de modo; no-op mientras
+    `recording` (cambiarlo a mitad de una grabación no afectaría al
+    proceso ya corriendo, sería engañoso mostrarlo como si aplicara).
+  - `startScreen()` / `startRegion()` / `startWindow()` / `stop()` siguen
+    siendo la API interna que `start()` dispatchea — no-op si ya está
+    grabando.
+  - `audioEnabled` controla si `_startRecorder()` agrega
+    `-a default_output` o no pasa `-a` en absoluto (sin audio) —
+    confirmado en el man page que `-a` no tiene default, se omite sin más.
   - Los archivos de salida van a `Paths.recordingsDir`
     (`$QS_RECORDINGS_DIR` o `~/Videos/Recordings` por defecto), nombrados
     `recording-YYYYMMDD-HHMMSS.mp4`. La carpeta se crea con `mkdir -p` en
-    `Component.onCompleted` (mismo patrón bootstrap que `IdleManager.qml`,
-    pero sin archivo de estado — acá no hay nada que persistir).
+    `Component.onCompleted`.
+  - **Persistencia** (2026-08-17, `~/.local/state/quickshell/recorder.json`)
+    — `mode`/`audioEnabled` sobreviven un restart de Quickshell, mismo
+    patrón `_restored`-gate + `FileView`/`onLoaded`/`onLoadFailed` que
+    `IdleManager.qml`.
 - **`modules/bar/RecorderWidget.qml`** — ícono 󰻃 (rojo mientras graba) +
-  `mm:ss` transcurrido. Click izquierdo: toggle start/stop de un screen
-  recording directo (acceso rápido). Click derecho: abre
-  `RecorderModeOsd` — pero solo si no está grabando ya, para que solo haya
-  un camino de "stop" (el click izquierdo), no dos.
-- **`modules/bar/RecorderModeOsd.qml`** — popout "ears + card" (mismo
-  lenguaje visual que `CalendarPopout`/`TrayMenuOsd`/`BatteryProfileOsd`),
-  con una píldora de 3 segmentos (screen/region/window). A diferencia de
-  `BatteryProfileOsd` no hay estado "activo" que sincronizar: cada segmento
-  es una acción one-shot con un flash de feedback (150ms) y el OSD se
-  cierra solo tras el click.
+  `mm:ss` transcurrido. Click izquierdo: `Recorder.start()`/`Recorder.stop()`
+  — su única función ahora. Ya no tiene click derecho ni OSD propio; elegir
+  modo y audio se hace desde el dashboard (ver `RecorderSection.qml` abajo).
+- **`modules/dashboard/RecorderSection.qml`** (2026-08-17, reemplaza a
+  `RecorderModeOsd.qml`, que se borró) — cápsula nueva del dashboard (4ta,
+  después de Weather/Battery+Performance/Music), siempre visible (no
+  condicional como Music). Píldora de 3 segmentos (screen/region/window,
+  mismos íconos que el OSD viejo) que llama `Recorder.setMode()` — a
+  diferencia del OSD viejo, esto es una **preferencia persistida**, no una
+  acción one-shot que arranca a grabar; deshabilitada (opacity 0.5,
+  `MouseArea.enabled: false`) mientras graba. Toggle de audio
+  (`components/controls/Toggle.qml` — primer uso real en el proyecto)
+  ligado a `Recorder.audioEnabled`. Header con estado en vivo
+  ("Idle"/"Recording mm:ss"). `DashboardContent.qml` ganó una 4ta etapa de
+  animación (`s4`/`cs1..cs5` renumerados) para el reveal/close en cascada
+  de esta cápsula.
 
 ## Cómo funciona cada modo
 
@@ -97,18 +128,14 @@ qué no hypridle).
 
 ## Pendientes / no incluido
 
-- `gpu-screen-recorder` no está instalado en el sistema actual — no se
-  pudo verificar empíricamente ninguno de los tres modos corriendo de
-  punta a punta (solo revisión de código + `man slurp` para el formato de
-  `-r`). Primer paso al instalarlo: probar `screen`, después `region` y
-  `window` en ese orden (son los que dependen de `slurp`).
-- Sin selector de audio/fuente — siempre `-a default_output`, no hay UI
-  para elegir un sink/fuente de audio distinto.
+- `region` y `window` todavía no tienen verificación empírica dedicada
+  (solo `screen` se probó de punta a punta) — mismo pipeline y mismo
+  `_startRecorder()`, riesgo bajo, pero no confirmado en vivo todavía.
+- Sin selector de fuente de audio — el toggle nuevo es on/off
+  (`default_output` o nada), no hay UI para elegir un sink/fuente
+  distinto (mic, app-specific, etc.) ni combinar varias con `|`.
 - Sin control de calidad/framerate/codec desde la UI — todo hardcodeado en
   `_startRecorder()` (`-c mp4`, sin flags de bitrate/fps).
 - El modo `window` no sigue la ventana si se mueve o cambia de tamaño
   durante la grabación (ver limitación de Wayland arriba) — aceptado, no
   es un bug a arreglar sino el trade-off elegido.
-- Sin indicador en el propio `RecorderModeOsd` de qué modo quedó activo
-  tras elegir (se cierra solo, no hay "última selección" visible) —
-  consistente con que cada segmento es una acción, no una preferencia.
