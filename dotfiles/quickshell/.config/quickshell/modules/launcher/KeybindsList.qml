@@ -56,9 +56,9 @@ Item {
                 StyledText {
                     id: keyText
                     anchors.centerIn: parent
-                    text: row.modelData.mods
+                    text: row.modelData?.mods
                               ? row.modelData.mods + " + " + row.modelData.key
-                              : row.modelData.key
+                              : (row.modelData?.key ?? "")
                     font.pixelSize: 11
                 }
             }
@@ -71,7 +71,7 @@ Item {
                     rightMargin:     16
                     verticalCenter:  parent.verticalCenter
                 }
-                text:    row.modelData.description
+                text:    row.modelData?.description ?? ""
                 color:   Colours.m3onSurfaceVariant
                 elide:   Text.ElideRight
                 font.pixelSize: 12
