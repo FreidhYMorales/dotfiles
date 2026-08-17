@@ -39,8 +39,9 @@ qué no hypridle).
   que hablan con `gpu-screen-recorder`/`slurp`/`hyprctl`.
   - `recording` (bool), `mode` (`"screen"|"region"|"window"` — doble uso:
     preferencia para el próximo `start()` Y, mientras graba, en qué modo
-    arrancó), `audioEnabled` (bool), `elapsedSeconds` (int, un `Timer` de
-    1s mientras `recording`), `lastOutputPath` (string).
+    arrancó), `systemAudioEnabled`/`micAudioEnabled` (bool, independientes),
+    `elapsedSeconds` (int, un `Timer` de 1s mientras `recording`),
+    `lastOutputPath` (string).
   - `start()` — dispatcher único: llama a `startScreen()`/`startRegion()`/
     `startWindow()` según `root.mode`. Es lo único que
     `RecorderWidget.qml` llama ahora.
@@ -50,17 +51,29 @@ qué no hypridle).
   - `startScreen()` / `startRegion()` / `startWindow()` / `stop()` siguen
     siendo la API interna que `start()` dispatchea — no-op si ya está
     grabando.
-  - `audioEnabled` controla si `_startRecorder()` agrega
-    `-a default_output` o no pasa `-a` en absoluto (sin audio) —
-    confirmado en el man page que `-a` no tiene default, se omite sin más.
+  - **Audio (2026-08-17, soporte de micrófono agregado)**:
+    `systemAudioEnabled`/`micAudioEnabled` se combinan en `_startRecorder()`
+    armando una lista de fuentes (`default_output`, `default_input`) y
+    uniéndolas con `|` — sintaxis documentada en `man gpu-screen-recorder`
+    para mezclar fuentes en una sola pista (`-a "default_output|default_input"`).
+    Si ninguna está activa, se omite `-a` por completo (sin audio). Verificado
+    en vivo con el mismo patrón de debug IPC que el resto del proyecto: cmdline
+    real de `gpu-screen-recorder` inspeccionado vía `/proc/<pid>` mientras
+    corría, confirmando `-a default_input` (solo mic) y
+    `-a default_output|default_input` (ambas) armados correctamente; el
+    archivo resultante siempre tiene una pista `opus` válida (aunque en
+    silencio si nadie habló durante la prueba — mismo comportamiento ya
+    documentado para el audio de sistema).
   - Los archivos de salida van a `Paths.recordingsDir`
     (`$QS_RECORDINGS_DIR` o `~/Videos/Recordings` por defecto), nombrados
     `recording-YYYYMMDD-HHMMSS.mp4`. La carpeta se crea con `mkdir -p` en
     `Component.onCompleted`.
-  - **Persistencia** (2026-08-17, `~/.local/state/quickshell/recorder.json`)
-    — `mode`/`audioEnabled` sobreviven un restart de Quickshell, mismo
-    patrón `_restored`-gate + `FileView`/`onLoaded`/`onLoadFailed` que
-    `IdleManager.qml`.
+  - **Persistencia** (`~/.local/state/quickshell/recorder.json`) —
+    `mode`/`systemAudioEnabled`/`micAudioEnabled` sobreviven un restart de
+    Quickshell, mismo patrón `_restored`-gate + `FileView`/`onLoaded`/
+    `onLoadFailed` que `IdleManager.qml`. La carga acepta la clave vieja
+    `audioEnabled` (pre-micrófono) como fallback de `systemAudioEnabled`
+    para no resetear en silencio un estado ya guardado en disco.
 - **`modules/bar/RecorderWidget.qml`** — ícono 󰻃 (rojo mientras graba) +
   `mm:ss` transcurrido. Click izquierdo: `Recorder.start()`/`Recorder.stop()`
   — su única función ahora. Ya no tiene click derecho ni OSD propio; elegir
@@ -72,12 +85,14 @@ qué no hypridle).
   mismos íconos que el OSD viejo) que llama `Recorder.setMode()` — a
   diferencia del OSD viejo, esto es una **preferencia persistida**, no una
   acción one-shot que arranca a grabar; deshabilitada (opacity 0.5,
-  `MouseArea.enabled: false`) mientras graba. Toggle de audio
-  (`components/controls/Toggle.qml` — primer uso real en el proyecto)
-  ligado a `Recorder.audioEnabled`. Header con estado en vivo
-  ("Idle"/"Recording mm:ss"). `DashboardContent.qml` ganó una 4ta etapa de
-  animación (`s4`/`cs1..cs5` renumerados) para el reveal/close en cascada
-  de esta cápsula.
+  `MouseArea.enabled: false`) mientras graba. Dos toggles de audio
+  independientes (`components/controls/Toggle.qml`) — "System audio" ligado
+  a `Recorder.systemAudioEnabled`, "Microphone" ligado a
+  `Recorder.micAudioEnabled` — se combinan en el pipeline, no son mutuamente
+  excluyentes. Header con estado en vivo ("Idle"/"Recording mm:ss").
+  `DashboardContent.qml` ganó una 4ta etapa de animación
+  (`s4`/`cs1..cs5` renumerados) para el reveal/close en cascada de esta
+  cápsula.
 
 ## Cómo funciona cada modo
 
@@ -150,9 +165,13 @@ qué no hypridle).
   punta con una selección real completada (`screen` y, tras el fix del
   gotcha #6, `region` ya están confirmados de punta a punta con una
   selección real hecha por el usuario).
-- Sin selector de fuente de audio — el toggle nuevo es on/off
-  (`default_output` o nada), no hay UI para elegir un sink/fuente
-  distinto (mic, app-specific, etc.) ni combinar varias con `|`.
+- Micrófono cubre solo el dispositivo de entrada por defecto
+  (`default_input`) — sin UI para elegir un sink/fuente específico
+  (`device:name`, `app:name`/`app-inverse:name` de audio de aplicación)
+  más allá de las dos fuentes por defecto combinables con `|`. Tampoco hay
+  captura real de voz probada de punta a punta (solo el pipeline en sí,
+  vía `/proc/<pid>` — nadie habló durante la prueba) — pendiente de que el
+  usuario confirme un test real hablando al mic.
 - Sin control de calidad/framerate/codec desde la UI — todo hardcodeado en
   `_startRecorder()` (`-c mp4`, sin flags de bitrate/fps).
 - El modo `window` no sigue la ventana si se mueve o cambia de tamaño

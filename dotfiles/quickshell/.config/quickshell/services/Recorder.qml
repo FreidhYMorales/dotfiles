@@ -45,7 +45,8 @@ Singleton {
     // recording (set from the dashboard's RecorderSection) and, once a
     // recording is running, which mode it actually started in.
     property string mode:           "screen"
-    property bool   audioEnabled:   true
+    property bool   systemAudioEnabled: true
+    property bool   micAudioEnabled:    false
     property int    elapsedSeconds: 0
     property string lastOutputPath: ""
     property int    _activeWorkspaceId: -1
@@ -96,7 +97,12 @@ Singleton {
     function _startRecorder(extraArgs, modeName) {
         root.mode           = modeName
         root.lastOutputPath = root._outputPath()
-        const audioArgs = root.audioEnabled ? ["-a", "default_output"] : []
+        // Combined with `|` per gpu-screen-recorder(1): "default_output|default_input"
+        // records desktop audio and mic as a single mixed track.
+        const audioSources = []
+        if (root.systemAudioEnabled) audioSources.push("default_output")
+        if (root.micAudioEnabled)    audioSources.push("default_input")
+        const audioArgs = audioSources.length ? ["-a", audioSources.join("|")] : []
         recorderProc.command = ["gpu-screen-recorder", ...extraArgs, ...audioArgs,
                                  "-c", "mp4", "-o", root.lastOutputPath]
         recorderProc.running = true
@@ -284,13 +290,14 @@ Singleton {
     Component.onCompleted: mkRecordingsDirProc.running = true
 
     // --- persistence (~/.local/state/quickshell/recorder.json) — mode +
-    // audioEnabled only, same restored-gate pattern as IdleManager.qml so a
+    // audio toggles only, same restored-gate pattern as IdleManager.qml so a
     // fresh process doesn't briefly overwrite the saved file with its
     // hardcoded defaults before the FileView finishes loading. ---
     property bool _restored: false
 
-    onModeChanged:         if (_restored) _persist()
-    onAudioEnabledChanged: if (_restored) _persist()
+    onModeChanged:               if (_restored) _persist()
+    onSystemAudioEnabledChanged: if (_restored) _persist()
+    onMicAudioEnabledChanged:    if (_restored) _persist()
 
     Process {
         id: mkRecorderStateDirProc
@@ -304,8 +311,13 @@ Singleton {
         onLoaded: {
             try {
                 const saved = JSON.parse(text())
-                if (saved.mode !== undefined)         root.mode         = saved.mode
-                if (saved.audioEnabled !== undefined) root.audioEnabled = saved.audioEnabled
+                if (saved.mode !== undefined) root.mode = saved.mode
+                // audioEnabled is the pre-microphone-support key name — read
+                // as a fallback so an existing state file on disk doesn't
+                // silently reset system audio back to its default on upgrade.
+                if (saved.systemAudioEnabled !== undefined)      root.systemAudioEnabled = saved.systemAudioEnabled
+                else if (saved.audioEnabled !== undefined)       root.systemAudioEnabled = saved.audioEnabled
+                if (saved.micAudioEnabled !== undefined)         root.micAudioEnabled    = saved.micAudioEnabled
             } catch (e) {
                 console.warn("Recorder: failed to parse recorder state:", e)
             }
@@ -317,8 +329,9 @@ Singleton {
     function _persist() {
         mkRecorderStateDirProc.running = true
         recorderStateFile.setText(JSON.stringify({
-            mode:         root.mode,
-            audioEnabled: root.audioEnabled
+            mode:               root.mode,
+            systemAudioEnabled: root.systemAudioEnabled,
+            micAudioEnabled:    root.micAudioEnabled
         }))
     }
 }

@@ -164,26 +164,49 @@ Item {
             }
         }
 
-        // ── Audio toggle ──
+        // ── Audio toggles — system output and mic combine into one mixed
+        // track (gpu-screen-recorder's `default_output|default_input`) ──
         Item {
             width:  parent.width - 24
-            height: audioToggle.implicitHeight
+            height: systemAudioToggle.implicitHeight
             anchors.horizontalCenter: parent.horizontalCenter
 
             Text {
                 anchors { left: parent.left; verticalCenter: parent.verticalCenter }
-                text:           "Record audio"
+                text:           "System audio"
                 color:          Colours.m3onSurface
                 font.family:    Style.fontFamily
                 font.pixelSize: 12
             }
 
             Toggle {
-                id: audioToggle
+                id: systemAudioToggle
                 anchors { right: parent.right; verticalCenter: parent.verticalCenter }
-                checked:  Recorder.audioEnabled
+                checked:  Recorder.systemAudioEnabled
                 enabled:  !Recorder.recording
-                onToggled: checked => Recorder.audioEnabled = checked
+                onToggled: checked => Recorder.systemAudioEnabled = checked
+            }
+        }
+
+        Item {
+            width:  parent.width - 24
+            height: micAudioToggle.implicitHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Text {
+                anchors { left: parent.left; verticalCenter: parent.verticalCenter }
+                text:           "Microphone"
+                color:          Colours.m3onSurface
+                font.family:    Style.fontFamily
+                font.pixelSize: 12
+            }
+
+            Toggle {
+                id: micAudioToggle
+                anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+                checked:  Recorder.micAudioEnabled
+                enabled:  !Recorder.recording
+                onToggled: checked => Recorder.micAudioEnabled = checked
             }
         }
     }
