@@ -26,7 +26,7 @@ Item {
             if (Visibilities.dashboard) {
                 dashCloseTimer.stop()
                 closeTimer.stop()
-                cs1.stop(); cs2.stop(); cs3.stop(); cs4.stop()
+                cs1.stop(); cs2.stop(); cs3.stop(); cs4.stop(); cs5.stop()
                 root.open      = true
                 root.panelOpen = false
                 root._stage    = 0
@@ -34,25 +34,27 @@ Item {
             } else {
                 dashCloseTimer.stop()
                 openTimer.stop()
-                s1.stop(); s2.stop(); s3.stop()
-                cs1.restart(); cs2.restart(); cs3.restart(); cs4.restart()
+                s1.stop(); s2.stop(); s3.stop(); s4.stop()
+                cs1.restart(); cs2.restart(); cs3.restart(); cs4.restart(); cs5.restart()
                 closeTimer.restart()
             }
         }
     }
 
-    Timer { id: openTimer;  interval: 16;  onTriggered: { root.panelOpen = true; s1.restart(); s2.restart(); s3.restart() } }
-    Timer { id: closeTimer; interval: 540; onTriggered: root.open = false }
+    Timer { id: openTimer;  interval: 16;  onTriggered: { root.panelOpen = true; s1.restart(); s2.restart(); s3.restart(); s4.restart() } }
+    Timer { id: closeTimer; interval: 650; onTriggered: root.open = false }
     Timer { id: dashCloseTimer; interval: 1000; onTriggered: Visibilities.dashboard = false }
 
     Timer { id: s1;  interval: 140; onTriggered: root._stage = 1 }
     Timer { id: s2;  interval: 250; onTriggered: root._stage = 2 }
     Timer { id: s3;  interval: 360; onTriggered: root._stage = 3 }
+    Timer { id: s4;  interval: 470; onTriggered: root._stage = 4 }
 
-    Timer { id: cs1; interval: 10;  onTriggered: { if (root._stage > 2) root._stage = 2 } }
-    Timer { id: cs2; interval: 120; onTriggered: { if (root._stage > 1) root._stage = 1 } }
-    Timer { id: cs3; interval: 230; onTriggered: { if (root._stage > 0) root._stage = 0 } }
-    Timer { id: cs4; interval: 340; onTriggered: root.panelOpen = false }
+    Timer { id: cs1; interval: 10;  onTriggered: { if (root._stage > 3) root._stage = 3 } }
+    Timer { id: cs2; interval: 120; onTriggered: { if (root._stage > 2) root._stage = 2 } }
+    Timer { id: cs3; interval: 230; onTriggered: { if (root._stage > 1) root._stage = 1 } }
+    Timer { id: cs4; interval: 340; onTriggered: { if (root._stage > 0) root._stage = 0 } }
+    Timer { id: cs5; interval: 450; onTriggered: root.panelOpen = false }
 
     // ── Profile panel — connected to bar, drops from top ──
     Capsule {
@@ -183,6 +185,31 @@ Item {
 
                     MediaSection {
                         id:    mediaSec
+                        width: parent.width
+                    }
+                }
+            }
+
+            // Capsule 4: Screen recorder
+            Item {
+                width:  parent.width
+                height: cap4.height
+                clip:   true
+
+                Capsule {
+                    id:     cap4
+                    width:  parent.width
+                    height: recorderSec.implicitHeight
+                    y:      root._stage >= 4 ? 0 : -root.height
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: 100; easing.type: Easing.BezierSpline
+                            easing.bezierCurve: [0.05, 0.7, 0.1, 1.0, 1.0, 1.0]
+                        }
+                    }
+
+                    RecorderSection {
+                        id:    recorderSec
                         width: parent.width
                     }
                 }

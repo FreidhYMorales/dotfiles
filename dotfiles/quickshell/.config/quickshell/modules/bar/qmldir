@@ -19,4 +19,3 @@ Osd                1.0 Osd.qml
 BatteryProfileOsd  1.0 BatteryProfileOsd.qml
 TrayMenuOsd        1.0 TrayMenuOsd.qml
 RecorderWidget     1.0 RecorderWidget.qml
-RecorderModeOsd    1.0 RecorderModeOsd.qml

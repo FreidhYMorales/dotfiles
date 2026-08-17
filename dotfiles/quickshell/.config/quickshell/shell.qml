@@ -59,7 +59,6 @@ ShellRoot {
     Osd {}
     BatteryProfileOsd {}
     TrayMenuOsd {}
-    RecorderModeOsd {}
     PowerMenuOsd {}
     NotifToast {}
     NotificationPanel {}

@@ -6,10 +6,10 @@ import QtQuick
 import "../utils"
 
 // Screen recording via gpu-screen-recorder (AUR) — auto-detects GPU vendor
-// per-machine: NVENC on the NVIDIA desktop, VAAPI on Intel/AMD elsewhere
-// (needs intel-media-driver on this Dell — see project CLAUDE.md). No
-// wf-recorder: gpu-screen-recorder picks the right encoder without
-// per-machine config.
+// per-machine: NVENC on an NVIDIA machine, VAAPI on Intel/AMD elsewhere
+// (confirmed live on this ThinkPad's Arc iGPU, h264 via VAAPI, no extra
+// config). No wf-recorder: gpu-screen-recorder picks the right encoder
+// without per-machine config.
 //
 // "Window mode" is NOT a live follow of a window — Wayland has no portable
 // -w window/-w focused equivalent (those are X11-only in gpu-screen-recorder;
@@ -41,10 +41,31 @@ Singleton {
     id: root
 
     property bool   recording:      false
-    property string mode:           "screen"  // "screen" | "region" | "window" — display only
+    // "screen" | "region" | "window" — both the preferred mode for the next
+    // recording (set from the dashboard's RecorderSection) and, once a
+    // recording is running, which mode it actually started in.
+    property string mode:           "screen"
+    property bool   audioEnabled:   true
     property int    elapsedSeconds: 0
     property string lastOutputPath: ""
     property int    _activeWorkspaceId: -1
+
+    // Changing the mode mid-recording would be misleading (it wouldn't
+    // affect the process already running) — only settable while idle.
+    function setMode(m) {
+        if (root.recording) return
+        if (m === "screen" || m === "region" || m === "window") root.mode = m
+    }
+
+    // Dispatches to whichever start* the current mode calls for — the single
+    // entry point the bar widget's left click uses now that mode selection
+    // lives in the dashboard instead of a right-click OSD.
+    function start() {
+        if (root.recording) return
+        if (root.mode === "region")      root.startRegion()
+        else if (root.mode === "window") root.startWindow()
+        else                              root.startScreen()
+    }
 
     Timer {
         interval: 1000
@@ -75,8 +96,9 @@ Singleton {
     function _startRecorder(extraArgs, modeName) {
         root.mode           = modeName
         root.lastOutputPath = root._outputPath()
-        recorderProc.command = ["gpu-screen-recorder", ...extraArgs,
-                                 "-a", "default_output", "-c", "mp4", "-o", root.lastOutputPath]
+        const audioArgs = root.audioEnabled ? ["-a", "default_output"] : []
+        recorderProc.command = ["gpu-screen-recorder", ...extraArgs, ...audioArgs,
+                                 "-c", "mp4", "-o", root.lastOutputPath]
         recorderProc.running = true
         root.recording        = true
     }
@@ -242,12 +264,50 @@ Singleton {
         }
     }
 
-    // --- ensure the output folder exists (no persistence otherwise — same
-    // mkdir-bootstrap pattern as IdleManager.qml, just without a state file) ---
+    // --- ensure the output folder exists ---
     Process {
         id: mkRecordingsDirProc
         command: ["mkdir", "-p", Paths.recordingsDir]
     }
 
     Component.onCompleted: mkRecordingsDirProc.running = true
+
+    // --- persistence (~/.local/state/quickshell/recorder.json) — mode +
+    // audioEnabled only, same restored-gate pattern as IdleManager.qml so a
+    // fresh process doesn't briefly overwrite the saved file with its
+    // hardcoded defaults before the FileView finishes loading. ---
+    property bool _restored: false
+
+    onModeChanged:         if (_restored) _persist()
+    onAudioEnabledChanged: if (_restored) _persist()
+
+    Process {
+        id: mkRecorderStateDirProc
+        command: ["mkdir", "-p", Paths.appState]
+    }
+
+    FileView {
+        id: recorderStateFile
+        path: Paths.recorderStatePath
+        watchChanges: false
+        onLoaded: {
+            try {
+                const saved = JSON.parse(text())
+                if (saved.mode !== undefined)         root.mode         = saved.mode
+                if (saved.audioEnabled !== undefined) root.audioEnabled = saved.audioEnabled
+            } catch (e) {
+                console.warn("Recorder: failed to parse recorder state:", e)
+            }
+            root._restored = true
+        }
+        onLoadFailed: root._restored = true
+    }
+
+    function _persist() {
+        mkRecorderStateDirProc.running = true
+        recorderStateFile.setText(JSON.stringify({
+            mode:         root.mode,
+            audioEnabled: root.audioEnabled
+        }))
+    }
 }

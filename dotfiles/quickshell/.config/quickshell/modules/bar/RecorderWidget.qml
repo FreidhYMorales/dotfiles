@@ -2,12 +2,10 @@ import QtQuick
 import "../../services"
 import "../../components"
 
-// Left click starts/stops a recording in whatever mode was used last
-// (Recorder.mode — screen/region/window, remembered from the last time a
-// recording actually started, whether via this widget or the OSD picker).
-// Right click opens RecorderModeOsd to pick/change mode — but only while
-// idle; while recording, stopping goes through the left click only, a
-// single path instead of two ways to stop.
+// Left click starts/stops a recording — the only control this widget has.
+// Mode (screen/region/window) and the audio toggle live in the dashboard's
+// RecorderSection now; this just calls Recorder.start()/stop() against
+// whatever mode was picked there.
 Item {
     id: root
 
@@ -62,22 +60,6 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: mouse => {
-            if (mouse.button === Qt.LeftButton) {
-                if (Recorder.recording) {
-                    Recorder.stop()
-                } else if (Recorder.mode === "region") {
-                    Recorder.startRegion()
-                } else if (Recorder.mode === "window") {
-                    Recorder.startWindow()
-                } else {
-                    Recorder.startScreen()
-                }
-            } else if (mouse.button === Qt.RightButton && !Recorder.recording) {
-                Visibilities.recorderOsdCenterX = root.mapToItem(null, root.width / 2, 0).x
-                Visibilities.toggle("recorderModeOsd")
-            }
-        }
+        onClicked: Recorder.recording ? Recorder.stop() : Recorder.start()
     }
 }

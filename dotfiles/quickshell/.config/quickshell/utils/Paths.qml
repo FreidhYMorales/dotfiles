@@ -40,9 +40,9 @@ Singleton {
     readonly property string weatherLocPath:  `${appState}/weather-loc.json`
     readonly property string securityStatePath: `${appState}/security.json`
 
-    // Screen recording (services/Recorder.qml) — session-only state, no
-    // persistence file, just an output folder.
+    // Screen recording (services/Recorder.qml)
     readonly property string recordingsDir: Quickshell.env("QS_RECORDINGS_DIR") || `${home}/Videos/Recordings`
+    readonly property string recorderStatePath: `${appState}/recorder.json`
 
     // Resolves a path relative to home, handling ~ and $HOME expansion
     function absolutePath(path) {
