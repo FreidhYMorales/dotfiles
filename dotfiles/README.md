@@ -44,6 +44,7 @@ scripts/.local/bin/ →  ~/.local/bin/
 | `matugen` | `~/.config/matugen/`, `~/.config/systemd/user/matugen-server.service` |
 | `mimeapps` | `~/.config/mimeapps.list` |
 | `mpd` | `~/.config/mpd/` |
+| `mpv` | `~/.config/mpv/` |
 | `ncmpcpp` | `~/.config/ncmpcpp/` |
 | `nvim` | `~/.config/nvim/` |
 | `quickshell` | `~/.config/quickshell/` |
