@@ -125,12 +125,31 @@ qué no hypridle).
    sí (los tres modos terminan llamando `_startRecorder()` con distintos
    argumentos) — está para que el widget/OSD puedan mostrar en qué modo se
    está grabando si hiciera falta más adelante.
+6. **`region` no mostraba el overlay de selección — bug real, corregido
+   (2026-08-17).** `man slurp`: "If the standard input is not a TTY [...]
+   slurp will read a list of predefined rectangles" en vez de mostrar el
+   overlay interactivo de arrastrar-para-seleccionar. El stdin de un
+   `Process` de Quickshell nunca es una TTY real, así que `slurp` sin
+   flags caía en silencio al modo lista-por-stdin, sin overlay y sin nada
+   en stdin que leer — quedaba colgado esperando para siempre. Confirmado
+   empíricamente con `hyprctl layers`: cero capas `namespace: selection`
+   mientras corría sin envolver, aparecía una en cuanto se envolvía.
+   Fix: `command: ["script", "-qec", "slurp", "/dev/null"]` — `script`
+   (util-linux) le da un pseudo-TTY real, `-q` sin banner, `-e` propaga el
+   exit code, `/dev/null` descarta la copia del typescript (el stdout real
+   sigue llegando limpio al `StdioCollector`, confirmado byte a byte:
+   mismo `"X,Y WxH"` de siempre, solo con `\r\n` en vez de `\n`, que
+   `.trim()` ya maneja sin cambios). El modo `window` (`slurp -r`) no
+   necesitó el mismo fix — `-r` fuerza el modo lista-por-stdin a propósito,
+   sin importar la TTY, que es justo lo que `_pickWindowRegion` explota.
 
 ## Pendientes / no incluido
 
-- `region` y `window` todavía no tienen verificación empírica dedicada
-  (solo `screen` se probó de punta a punta) — mismo pipeline y mismo
-  `_startRecorder()`, riesgo bajo, pero no confirmado en vivo todavía.
+- `window` todavía no tiene verificación empírica dedicada de punta a
+  punta con una selección real completada (solo `screen` y, tras el fix
+  del gotcha #6, la aparición del overlay de `region` — ninguno de los
+  dos con un click-arrastre real simulado, sin herramienta de input
+  sintético instalada en este sistema).
 - Sin selector de fuente de audio — el toggle nuevo es on/off
   (`default_output` o nada), no hay UI para elegir un sink/fuente
   distinto (mic, app-specific, etc.) ni combinar varias con `|`.

@@ -154,10 +154,21 @@ Singleton {
     // silently dropping the selection (looked like clicking "region" just
     // did nothing). Same race Colours.qml hit with matugen's larger preview
     // JSON. onStreamFinished only fires once the full stream is captured.
+    //
+    // Wrapped in `script -qec ... /dev/null` to allocate a pseudo-TTY —
+    // confirmed via `man slurp`: "If the standard input is not a TTY [...]
+    // slurp will read a list of predefined rectangles" instead of showing
+    // the interactive drag-to-select overlay. A Quickshell Process's stdin
+    // is never a real TTY, so plain `slurp` here silently fell into
+    // list-mode and sat there with no overlay and no rectangles on stdin —
+    // confirmed empirically: `hyprctl layers` showed no "selection" overlay
+    // layer at all while it was running unwrapped, and did show one once
+    // wrapped. `-r` mode (window, below) is unaffected — it already wants
+    // stdin-list behavior regardless of TTY, that's its whole purpose.
     Process {
         id: slurpRegionProc
         running: false
-        command: ["slurp"]
+        command: ["script", "-qec", "slurp", "/dev/null"]
         stdout: StdioCollector {
             id: slurpRegionStdout
             onStreamFinished: {
