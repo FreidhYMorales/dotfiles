@@ -131,6 +131,15 @@ Item {
         }
 
         BlockMetric {
+            visible:  SysInfo.hasNpu
+            width:    parent.width
+            value:    SysInfo.npu
+            icon:     ""
+            label:    "NPU"
+            arcColor: Colours.m3tertiary
+        }
+
+        BlockMetric {
             width:    parent.width
             value:    SysInfo.disk
             icon:     "󰋊"

@@ -13,6 +13,8 @@ Singleton {
     property int  gpuTemp: 0
     property int  igpu:    0
     property bool hasIgpu: false
+    property int  npu:     0
+    property bool hasNpu:  false
     property int  disk:    0
     property bool hasGpu:  false
 
@@ -20,6 +22,10 @@ Singleton {
     property string _igpuPath: ""
     property real   _lastIgpuIdle: -1
     property real   _lastIgpuTime: 0
+
+    property string _npuPath: ""
+    property real   _lastNpuBusy: -1
+    property real   _lastNpuTime: 0
 
     property string osName:   "Arch Linux"
     property string wmName:   "Hyprland"
@@ -36,6 +42,7 @@ Singleton {
     Component.onCompleted: {
         gpuCheckProc.running  = true
         igpuCheckProc.running = true
+        npuCheckProc.running  = true
         const u = Quickshell.env("USER")
         if (u) root.userName = u
     }
@@ -78,6 +85,27 @@ Singleton {
         }
     }
 
+    // Detect the Intel NPU driver once at startup — exposed as an accel(4)
+    // class device (/sys/class/accel/accelN) when intel-npu-driver-bin is
+    // installed and the hardware is present (Core Ultra 200V "Lunar Lake"+).
+    // npu_busy_time_us is cumulative, like the xe iGPU's idle_residency_ms,
+    // so it needs the same delta-over-wall-time approach in _parseNpu below.
+    Process {
+        id: npuCheckProc
+        command: ["bash", "-c",
+            "for f in /sys/class/accel/accel*/device/npu_busy_time_us; do " +
+            "[ -f \"$f\" ] && echo \"$f\" && exit 0; done; echo none"
+        ]
+        stdout: SplitParser {
+            onRead: line => {
+                const s = line.trim()
+                if (s === "none" || !s) { root.hasNpu = false; return }
+                root._npuPath = s
+                root.hasNpu   = true
+            }
+        }
+    }
+
     // CPU/RAM used to be a `grep /proc/stat`/`grep /proc/meminfo` Process
     // spawned every 2s, forever — a fork+exec just to read two small files
     // Qt can already read in-process. FileView.reload() below does the same
@@ -92,6 +120,7 @@ Singleton {
             memFile.reload()
             if (root.hasGpu)  gpuProc.running = true
             if (root.hasIgpu) igpuFile.reload()
+            if (root.hasNpu)  npuFile.reload()
         }
     }
 
@@ -134,6 +163,13 @@ Singleton {
         path: root._igpuPath
         watchChanges: false
         onTextChanged: root._parseIgpu(text())
+    }
+
+    FileView {
+        id: npuFile
+        path: root._npuPath
+        watchChanges: false
+        onTextChanged: root._parseNpu(text())
     }
 
     function _parseCpu(text) {
@@ -180,6 +216,22 @@ Singleton {
             root._lastIgpuIdle = idle
             root._lastIgpuTime = now
         }
+    }
+
+    // npu_busy_time_us counts up while the NPU is active — the opposite
+    // sense of the xe iGPU's idle_residency_ms — so the ratio isn't inverted.
+    function _parseNpu(text) {
+        const busyUs = parseFloat(text.trim())
+        if (isNaN(busyUs)) return
+        const now = Date.now()
+        if (root._lastNpuBusy >= 0) {
+            const dBusyMs = (busyUs - root._lastNpuBusy) / 1000
+            const dTimeMs = now - root._lastNpuTime
+            if (dTimeMs > 0)
+                root.npu = Math.max(0, Math.min(100, Math.round(dBusyMs / dTimeMs * 100)))
+        }
+        root._lastNpuBusy = busyUs
+        root._lastNpuTime = now
     }
 
     Process {
