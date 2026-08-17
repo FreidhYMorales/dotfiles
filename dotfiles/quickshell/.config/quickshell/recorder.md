@@ -4,13 +4,12 @@ Grabación de pantalla nativa vía `gpu-screen-recorder`, con tres modos
 (screen/region/window) elegibles desde un OSD de la bar. Widget con
 indicador de tiempo transcurrido mientras graba, notificación al terminar.
 
-**Estado (2026-08-17): funcional de punta a punta para screen y region**,
-verificado en vivo en la ThinkPad (mp4 real, VAAPI h264 + audio, muxeo
-correcto vía SIGINT; region con selección real por click-arrastre tras
-el fix del gotcha #6) — `window` comparte el mismo pipeline y el mismo
-código de arranque, sin verificación empírica dedicada todavía (ver
-Pendientes). Mode selection y el toggle de audio se movieron del
-right-click OSD de la barra a una sección nueva del dashboard
+**Estado (2026-08-17): funcional de punta a punta para los tres modos**
+(screen/region/window), verificado en vivo en la ThinkPad (mp4 real,
+VAAPI h264 + audio, muxeo correcto vía SIGINT; region y window con
+selección real por click-arrastre/click, confirmado por el usuario).
+Mode selection y los toggles de audio (sistema + micrófono) se movieron
+del right-click OSD de la barra a una sección nueva del dashboard
 (`RecorderSection.qml`) — ver Arquitectura.
 
 **Gotcha encontrado y resuelto esta sesión**: `gpu-screen-recorder-git`
@@ -161,10 +160,10 @@ qué no hypridle).
 
 ## Pendientes / no incluido
 
-- `window` todavía no tiene verificación empírica dedicada de punta a
-  punta con una selección real completada (`screen` y, tras el fix del
-  gotcha #6, `region` ya están confirmados de punta a punta con una
-  selección real hecha por el usuario).
+- ~~`window` sin verificación empírica de punta a punta~~ — **resuelto
+  (2026-08-17)**: confirmado por el usuario, funciona correctamente. Los
+  tres modos (`screen`/`region`/`window`) están verificados de punta a
+  punta con una selección real.
 - Micrófono cubre solo el dispositivo de entrada por defecto
   (`default_input`) — sin UI para elegir un sink/fuente específico
   (`device:name`, `app:name`/`app-inverse:name` de audio de aplicación)

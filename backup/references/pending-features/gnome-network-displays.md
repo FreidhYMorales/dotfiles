@@ -4,6 +4,81 @@ Sistema: ArchLinux · Hyprland 0.54+ · NVIDIA GTX 1660 Ti + Intel UHD (Optimus)
 
 ---
 
+## Estado en la ThinkPad X1 Carbon Gen 13 (2026-08-17) — EN PAUSA, bloqueado
+
+Se intentó portar esta guía a la máquina actual (Intel-only, `iwd`+`impala` en vez
+de NetworkManager como en la Dell) y **se descartó por ahora** — el bloqueo es
+real, no de configuración. Queda documentado acá para retomar si aparece una
+alternativa viable.
+
+### Lo que sí se resolvió (queda andando, sin usar)
+
+- `xdg-desktop-portal-hyprland` (1.4.1-1, la versión instalada) **sigue sin
+  implementar el portal `RemoteDesktop`** que `gnome-network-displays`
+  necesita — confirmado en vivo con `busctl introspect` (interfaz ausente) y
+  con el issue oficial [hyprwm/xdg-desktop-portal-hyprland#252](https://github.com/hyprwm/xdg-desktop-portal-hyprland/issues/252),
+  abierto, sin PR mergeado al 2026-07-30. Mismo bug que documenta esta guía
+  para la razón de usar `xdg-desktop-portal-wlr` como backend del ScreenCast.
+- Se instaló `gnome-network-displays` + `xdg-desktop-portal-wlr` + `avahi`
+  (`avahi-daemon.service` habilitado y activo).
+- Se creó `dotfiles/xdg-portal/.config/xdg-desktop-portal-wlr/config`
+  (`output_name=eDP-1`, `chooser_type=none`, `max_fps=30` — mismo criterio
+  que esta guía, un solo output físico).
+- Se creó `dotfiles/scripts/.local/bin/network-display` — a diferencia del
+  flujo manual de 2 pasos de esta guía (`nd-select-output` + lanzar la app a
+  mano), alterna `ScreenCast` a `wlr` solo mientras dura la sesión y lo
+  devuelve a `hyprland` al cerrar (`trap ... EXIT`, sobrevive incluso al
+  crash conocido de `nd_pulseaudio_finalize` — confirmado en vivo, el
+  portal quedó bien restaurado a pesar del crash).
+- `.desktop` override en
+  `dotfiles/xdg-portal/.local/share/applications/org.gnome.NetworkDisplays.desktop`
+  (mismo `GDK_BACKEND=wayland` que exige esta guía), apunta al script en vez
+  de al binario directo.
+- Puerto Wi-Fi P2P abierto en `ufw` (`7236/tcp`, `7236/udp` — el firewall de
+  esta máquina es `ufw`, no `firewalld` como en la Dell, así que la regla de
+  polkit de la sección 2 no aplica acá).
+
+### El bloqueo real: NetworkManager vs. iwd
+
+En la Dell, NetworkManager **ya era el manager de red activo** — por eso esta
+guía nunca necesitó mencionarlo. En esta máquina, `iwd`+`impala` manejan la
+conexión real (decisión deliberada del proyecto, ver tabla de decisiones en
+el `CLAUDE.md` raíz), y `gnome-network-displays` necesita NetworkManager
+corriendo de verdad para el descubrimiento Wi-Fi Direct (P2P) — confirmado
+en vivo:
+
+- Con `wlan0` marcado `unmanaged` en NetworkManager (para no pisar a `iwd`,
+  ver `system/networkmanager/conf.d/99-unmanage-wlan0.conf`), NetworkManager
+  **no crea ningún objeto de dispositivo P2P** — cero menciones de P2P en
+  `journalctl -u NetworkManager`, el TV nunca aparece en la lista de
+  `gnome-network-displays`. No es un problema de timing/inicialización
+  (reiniciar la máquina no lo soluciona) — es así como se comporta
+  NetworkManager: sin gestionar la interfaz, no hay P2P, punto.
+- La única forma de que funcione es que NetworkManager gestione `wlan0` de
+  verdad — lo cual rompe: `services/Network.qml` (habla directo con
+  `net.connman.iwd.Station` por D-Bus e invoca `iwctl`), `impala` (TUI
+  atada a `iwd`), y las redes guardadas (viven en el store de `iwd`, no se
+  migran solas al store de NetworkManager).
+- Se evaluó un toggle acotado (NetworkManager gestiona `wlan0` solo durante
+  el cast, se lo devuelve a `iwd` al cerrar, mismo patrón que el toggle de
+  portal) — el usuario decidió no seguir por ahora, prefiere buscar otra
+  alternativa antes de aceptar perder la conexión normal durante cada cast.
+
+### Para retomar
+
+- Revisar si `xdg-desktop-portal-hyprland` mergea soporte de `RemoteDesktop`
+  (PR [#308](https://github.com/hyprwm/xdg-desktop-portal-hyprland/pull/308),
+  en progreso al 2026-07-30) — no resuelve el problema de NetworkManager,
+  pero simplifica la mitad del setup.
+- Evaluar Sunshine+Moonlight (sin conflicto con `iwd`, pero necesita la app
+  Moonlight instalada del lado receptor — no sirve para el TV LG no-smart
+  actual sin sideload, que no soporta).
+- Si en algún momento se acepta migrar a NetworkManager como manager
+  principal (deshaciendo la decisión de `iwd`+`impala`), esta guía + los
+  archivos ya creados en esta sesión quedan listos para usarse tal cual.
+
+---
+
 ## Dependencias a instalar
 
 ```bash

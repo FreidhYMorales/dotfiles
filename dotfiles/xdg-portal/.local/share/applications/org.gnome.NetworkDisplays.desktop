@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Network Display
+Comment=Cast the screen to a TV or projector via Miracast
+Exec=network-display
+Icon=org.gnome.NetworkDisplays
+Terminal=false
+Type=Application
+Categories=AudioVideo;
+StartupNotify=true
