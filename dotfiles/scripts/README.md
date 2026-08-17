@@ -34,6 +34,31 @@ launch-or-focus thunar "uwsm-app -- thunar"   # comando de launch custom
 
 El patrón se matchea (case-insensitive, word boundary) contra la clase y el título de la ventana. Hoy solo aplicado a `SUPER+B` (browser) en `keybinds.lua`.
 
+## mute-toggle
+
+Togglea mute del sink/source default y sincroniza el LED de mute del ThinkPad
+(`thinkpad_acpi`) con el estado real.
+
+**Por qué existe:** PipeWire mutea a nivel de stream en esta tarjeta
+(SOF/SoundWire) — nunca flippea el switch ALSA (`Speaker Playback Switch`)
+que el trigger `audio-mute`/`audio-micmute` del kernel (`snd_ctl_led`) escucha,
+así que el LED nunca prendía aunque el mute funcionara bien. Confirmado en
+vivo con `amixer -c0 sget Speaker` — el switch queda en `[on]` sin importar
+el estado de `wpctl`.
+
+**Deps:** `wpctl`. Requiere la regla udev `system/udev/rules.d/92-mute-leds.rules`
+deployada (`uaccess` sobre los nodos LED — sin ella, el `echo > brightness`
+falla en silencio por permisos).
+
+```bash
+mute-toggle output   # toggle + sync platform::mute
+mute-toggle input    # toggle + sync platform::micmute
+```
+
+Binds: `XF86AudioMute` → `mute-toggle output`, `XF86AudioMicMute` → `mute-toggle input`
+(`keybinds.lua`). También usado por `Audio.qml`'s `toggleMute()` (click en el
+slider de volumen del OSD).
+
 ## ocr
 
 Seleccionás una región de la pantalla, extrae el texto con tesseract y lo copia al clipboard.

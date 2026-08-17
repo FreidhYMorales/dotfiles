@@ -408,6 +408,12 @@ sudo cp "$REPO_ROOT/system/udev/rules.d/90-power-profile-ac.rules" /etc/udev/rul
 sudo udevadm control --reload-rules
 sudo udevadm trigger --subsystem-match=power_supply
 
+step "ThinkPad mute/micmute LEDs: uaccess so mute-toggle can drive them without sudo"
+sudo mkdir -p /etc/udev/rules.d
+sudo cp "$REPO_ROOT/system/udev/rules.d/92-mute-leds.rules" /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger --subsystem-match=leds
+
 # ── 26. XDG portal — term file chooser ───────────────────────────────────────
 step "xdg-desktop-portal-termfilechooser"
 yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git

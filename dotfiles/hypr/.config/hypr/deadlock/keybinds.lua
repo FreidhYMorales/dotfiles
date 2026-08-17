@@ -17,8 +17,8 @@ local fileManager = "kitty -e yazi"
 -- Volume
 local raiseVolume = "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"
 local lowerVolume = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-local mute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-local micMute = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+local mute = "mute-toggle output"
+local micMute = "mute-toggle input"
 
 -- LCD Brightness
 local brightUp = "brightnessctl -e4 -n2 set 5%+"

@@ -1,0 +1,24 @@
+#!/bin/bash
+# Toggle mute on the default sink/source and sync the ThinkPad mute LED to match.
+# PipeWire mutes purely at the stream level on this card (SOF/SoundWire) — it
+# never flips the ALSA hardware switch that snd_ctl_led's audio-mute/audio-micmute
+# trigger listens to, so the LED stays dark even though the mute itself works.
+# Usage: mute-toggle [output|input]
+# Deps: wpctl. Needs system/udev/rules.d/92-mute-leds.rules deployed (uaccess
+# on the LED sysfs nodes) or the brightness write below fails silently.
+
+target="${1:-output}"
+
+case "$target" in
+    output) node="@DEFAULT_AUDIO_SINK@";   led="platform::mute" ;;
+    input)  node="@DEFAULT_AUDIO_SOURCE@"; led="platform::micmute" ;;
+    *) echo "Usage: mute-toggle [output|input]" >&2; exit 1 ;;
+esac
+
+wpctl set-mute "$node" toggle
+
+if wpctl get-volume "$node" | grep -q MUTED; then
+    echo 1 > "/sys/class/leds/$led/brightness" 2>/dev/null
+else
+    echo 0 > "/sys/class/leds/$led/brightness" 2>/dev/null
+fi

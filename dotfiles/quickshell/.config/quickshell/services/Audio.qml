@@ -50,7 +50,7 @@ Singleton {
     Process { id: setVolProc; running: false }
     Process {
         id: muteProc
-        command: ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]
+        command: ["mute-toggle", "output"]
         running: false
     }
 }

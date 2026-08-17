@@ -1,0 +1,15 @@
+# ThinkPad mute/micmute LEDs (thinkpad_acpi) — grant world-write on brightness
+# so mute-toggle can drive them without sudo.
+#
+# The standard uaccess TAG mechanism (what logind uses for input/sound
+# devices) does NOT work here: 73-seat-late.rules only runs the uaccess
+# builtin when ENV{MAJOR}!="" — i.e. for real /dev nodes with a major/minor
+# number. LED brightness is a plain sysfs attribute with no device node, so
+# uaccess is silently skipped (confirmed live: TAG applied, ACL never
+# granted). This is the same reason kbd_backlight also has no uaccess ACL —
+# brightnessctl works around it by calling logind's SetBrightness D-Bus
+# method instead, which is hardcoded to backlight/kbd_backlight only and
+# doesn't cover platform::mute. RUN+="chmod" at device-add is the actual
+# mechanism systemd's own backlight udev rules use for this class of device.
+ACTION=="add", SUBSYSTEM=="leds", KERNEL=="platform::mute", RUN+="/bin/chmod 0666 /sys%p/brightness"
+ACTION=="add", SUBSYSTEM=="leds", KERNEL=="platform::micmute", RUN+="/bin/chmod 0666 /sys%p/brightness"
