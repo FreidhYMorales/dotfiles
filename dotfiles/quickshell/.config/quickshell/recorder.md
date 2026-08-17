@@ -4,11 +4,12 @@ Grabación de pantalla nativa vía `gpu-screen-recorder`, con tres modos
 (screen/region/window) elegibles desde un OSD de la bar. Widget con
 indicador de tiempo transcurrido mientras graba, notificación al terminar.
 
-**Estado (2026-08-17): funcional de punta a punta para el modo screen**,
-verificado en vivo en la ThinkPad (mp4 real, 3.74s, VAAPI h264 + audio,
-muxeo correcto vía SIGINT) — region/window comparten el mismo pipeline y
-el mismo código de arranque, sin verificación empírica dedicada todavía
-(ver Pendientes). Mode selection y el toggle de audio se movieron del
+**Estado (2026-08-17): funcional de punta a punta para screen y region**,
+verificado en vivo en la ThinkPad (mp4 real, VAAPI h264 + audio, muxeo
+correcto vía SIGINT; region con selección real por click-arrastre tras
+el fix del gotcha #6) — `window` comparte el mismo pipeline y el mismo
+código de arranque, sin verificación empírica dedicada todavía (ver
+Pendientes). Mode selection y el toggle de audio se movieron del
 right-click OSD de la barra a una sección nueva del dashboard
 (`RecorderSection.qml`) — ver Arquitectura.
 
@@ -146,10 +147,9 @@ qué no hypridle).
 ## Pendientes / no incluido
 
 - `window` todavía no tiene verificación empírica dedicada de punta a
-  punta con una selección real completada (solo `screen` y, tras el fix
-  del gotcha #6, la aparición del overlay de `region` — ninguno de los
-  dos con un click-arrastre real simulado, sin herramienta de input
-  sintético instalada en este sistema).
+  punta con una selección real completada (`screen` y, tras el fix del
+  gotcha #6, `region` ya están confirmados de punta a punta con una
+  selección real hecha por el usuario).
 - Sin selector de fuente de audio — el toggle nuevo es on/off
   (`default_output` o nada), no hay UI para elegir un sink/fuente
   distinto (mic, app-specific, etc.) ni combinar varias con `|`.
