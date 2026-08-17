@@ -63,7 +63,7 @@ Item {
         if (root.mode === "themes")       return t.slice(">theme ".length).trim().toLowerCase()
         if (root.mode === "screensaver")  return ""
         if (root.mode === "security")     return ""
-        if (root.mode === "keybinds")     return ""
+        if (root.mode === "keybinds")     return t.slice(">keybinds ".length).trim().toLowerCase()
         if (root.mode === "webapp")       return ""
         if (root.mode === "commands")     return t.slice(1).trim().toLowerCase()
         return t.toLowerCase()
@@ -151,13 +151,19 @@ Item {
             return q ? Wallpapers.entries.filter(e => e.name.toLowerCase().includes(q)) : Wallpapers.entries
         if (root.mode === "themes")
             return q ? Colours.modes.filter(m => m.name.toLowerCase().includes(q)) : Colours.modes
-        // Doesn't filter anything — ScreensaverForm/KeybindsList aren't
-        // lists driven by this property, so there's nothing here worth
-        // computing (would just be pure apps.filter() waste on every
+        // Doesn't filter anything — ScreensaverForm/SecurityForm/WebAppForm
+        // aren't lists driven by this property, so there's nothing here
+        // worth computing (would just be pure apps.filter() waste on every
         // keystroke while either mode is active).
         if (root.mode === "polkit" || root.mode === "screensaver" || root.mode === "security" ||
-            root.mode === "keybinds" || root.mode === "webapp")
+            root.mode === "webapp")
             return []
+        if (root.mode === "keybinds")
+            return q ? Keybinds.entries.filter(e =>
+                e.description.toLowerCase().includes(q) ||
+                e.key.toLowerCase().includes(q) ||
+                e.mods.toLowerCase().includes(q)
+            ) : Keybinds.entries
         if (root.mode === "commands")
             return q ? root.commands.filter(c => c.name.toLowerCase().includes(q) || c.id.includes(q)) : root.commands
         return q ? appLoader.apps.filter(a => a.name.toLowerCase().includes(q)) : appLoader.apps
@@ -700,6 +706,7 @@ Item {
                 right:       parent.right
                 topMargin:   8
             }
+            entries: root.mode === "keybinds" ? root.filtered : Keybinds.entries
             visible: root.mode === "keybinds"
             opacity: stage === "open" ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: 180 } }
@@ -728,17 +735,20 @@ Item {
                 top:              parent.top
                 topMargin:        (root.listH - font.pixelSize) / 2 + 8
             }
-            // root.mode === "polkit"/"screensaver"/"security"/"keybinds" also
-            // have filtered.length === 0 (see the `filtered` computed
-            // property above) — without this, the placeholder would overlap
-            // their own content any time the search text is non-empty there.
+            // root.mode === "polkit"/"screensaver"/"security"/"webapp" also
+            // have filtered.length === 0 unconditionally (see the `filtered`
+            // computed property above) — without this, the placeholder would
+            // overlap their own content any time the search text is
+            // non-empty there. "keybinds" is a real, genuinely-filterable
+            // list now, so it's allowed to show this like apps/commands/etc.
             visible:        stage === "open" && root.filtered.length === 0 &&
                              searchField.text.length > 0 &&
                              root.mode !== "polkit" && root.mode !== "screensaver" && root.mode !== "security" &&
-                             root.mode !== "keybinds" && root.mode !== "webapp"
+                             root.mode !== "webapp"
             text:           root.mode === "wallpapers" ? "No wallpapers found"
                             : root.mode === "themes"    ? "No themes found"
                             : root.mode === "commands"  ? "No commands found"
+                            : root.mode === "keybinds"  ? "No keybinds found"
                             : "No apps found"
             color:          Colours.m3onSurfaceVariant
             font.family:    Style.fontFamily

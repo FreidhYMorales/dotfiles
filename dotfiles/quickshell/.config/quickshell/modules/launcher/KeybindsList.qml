@@ -11,16 +11,21 @@ import "../../components"
 Item {
     id: root
 
+    // Defaults to the unfiltered list so this still works standalone; the
+    // launcher passes its own search-filtered subset in via this prop once
+    // the user starts typing after ">keybinds ".
+    property var entries: Keybinds.entries
+
     readonly property int rowH:       40
     readonly property int visibleRows: 8
     // Fixed-constant sizing (same criterion as LauncherContent.qml's
     // carouselH/ScreensaverForm.formH) so the parent's listH stays a simple
     // lookup instead of depending on this item's own layout.
-    readonly property int formH: Math.min(Math.max(Keybinds.entries.length, 1), root.visibleRows) * root.rowH
+    readonly property int formH: Math.min(Math.max(root.entries.length, 1), root.visibleRows) * root.rowH
 
     ListView {
         anchors.fill: parent
-        model:        Keybinds.entries
+        model:        root.entries
         clip:         true
         spacing:      0
         boundsBehavior: Flickable.StopAtBounds
