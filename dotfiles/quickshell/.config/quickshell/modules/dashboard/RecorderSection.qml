@@ -17,6 +17,7 @@ Item {
     implicitWidth:  parent?.width ?? 300
 
     readonly property var modes:  ["screen", "region", "window"]
+    readonly property var titles: ["Screen", "Region", "Window"]
     readonly property var labels: ["", "󱣵", "󱣴"]
     readonly property int selectedIndex: {
         const i = modes.indexOf(Recorder.mode)
@@ -78,30 +79,52 @@ Item {
         }
 
         // ── Mode pill (screen/region/window) — sets the preference only ──
-        Item {
-            width:  parent.width - 24
-            height: pill.height
+        Column {
+            id:      modeCol
+            width:   parent.width - 24
             anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 4
             opacity: Recorder.recording ? 0.5 : 1.0
             Behavior on opacity { NumberAnimation { duration: 120 } }
 
+            readonly property real segW: width / 3
+
+            // Titles row — one label centered above each segment, so the
+            // icons alone (which look similar at a glance) aren't the only
+            // way to tell screen/region/window apart.
+            Row {
+                width: modeCol.width
+
+                Repeater {
+                    model: root.titles
+
+                    delegate: Text {
+                        required property string modelData
+                        width:               modeCol.segW
+                        horizontalAlignment: Text.AlignHCenter
+                        text:           modelData
+                        color:          Colours.m3onSurfaceVariant
+                        font.family:    Style.fontFamily
+                        font.pixelSize: 10
+                    }
+                }
+            }
+
             Rectangle {
                 id:     pill
-                width:  parent.width
+                width:  modeCol.width
                 height: 32
                 radius: Style.cornerRadius
                 color:  Colours.m3surfaceContainerHigh
                 Behavior on color { CAnim {} }
 
-                readonly property real segW: width / 3
-
                 Rectangle {
-                    width:  pill.segW - 4
+                    width:  modeCol.segW - 4
                     height: pill.height - 4
                     radius: Style.cornerRadius
                     color:  Colours.m3primary
                     anchors.verticalCenter: parent.verticalCenter
-                    x: root.selectedIndex * pill.segW + 2
+                    x: root.selectedIndex * modeCol.segW + 2
                     Behavior on x     { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
                     Behavior on color { CAnim {} }
                 }
@@ -115,7 +138,7 @@ Item {
                         delegate: Item {
                             required property string modelData
                             required property int    index
-                            width:  pill.segW
+                            width:  modeCol.segW
                             height: pill.height
 
                             Text {
