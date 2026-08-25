@@ -79,10 +79,6 @@ Completar este listado cuando explore otros dotfiles. Usar el template para cada
   Rellenar una copia por dotfiles, guardar en `references/<autor>/`.
 - **[`starship-powerline-preset.toml`](starship-powerline-preset.toml)** — preset alternativo de Starship, sin usar hoy, guardado como referencia para probar en el futuro.
 
-## Features pendientes
-
-- **[`pending-features/gnome-network-displays.md`](pending-features/gnome-network-displays.md)** — guía de Miracast/screen-mirroring, nunca implementada. Interesa a futuro.
-
 ---
 
 ## Qué buscar en cualquier dotfiles nuevo
