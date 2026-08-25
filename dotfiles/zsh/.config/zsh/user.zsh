@@ -25,10 +25,6 @@ function y() {
     rm -f -- "$tmp"
 }
 
-if [[ $- == *i* ]] && [ -f "$HOME/.config/zsh/terminal.zsh" ]; then
-    . "$HOME/.config/zsh/terminal.zsh" || echo "Error: Could not source $HOME/terminal.zsh"
-fi
-
 export aurhelper="yay"
 
 export SUDO_EDITOR="nvim -u /home/$USER/.config/nvim/init.lua"
