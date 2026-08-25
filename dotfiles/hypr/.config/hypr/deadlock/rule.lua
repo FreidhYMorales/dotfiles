@@ -23,28 +23,12 @@ rule({
 	center = true,
 })
 
--- Float + center: audio mixer
-rule({
-	name = "float-pavucontrol",
-	match = { class = "org.pulseaudio.pavucontrol" },
-	float = true,
-	center = true,
-	size = "60% 70%",
-})
-
--- Float + center: bluetooth
-rule({
-	name = "float-blueman",
-	match = { class = "blueman-manager" },
-	float = true,
-	center = true,
-	size = "50% 60%",
-})
-
--- Float + center: nwg-look / nwg-displays
+-- Float + center: nwg-displays (nwg-look was never installed — bootstrap.sh
+-- only pulls nwg-displays; pavucontrol/blueman-manager rules removed for the
+-- same reason, wiremix/bluetui are the actual CLI tools this repo installs)
 rule({
 	name = "float-nwg",
-	match = { class = "nwg-look|nwg-displays" },
+	match = { class = "nwg-displays" },
 	float = true,
 	center = true,
 })
