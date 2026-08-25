@@ -324,6 +324,28 @@ sudo pacman -S --needed --noconfirm \
 # it out while the pixel-font patch project is still in progress.
 yay -S --needed --noconfirm redhat-fonts otf-departure-mono-nerd
 
+# ── 22b. Icon theme (monochrome, for the Quickshell launcher) ────────────────
+step "Icon theme: yet-another-monochrome-icon-set"
+YAMIS_SRC="$HOME/.local/share/icons/yamis-src"
+YAMIS_LIVE="$HOME/.local/share/icons/yamis-mono"
+if [[ ! -d "$YAMIS_SRC" ]]; then
+    git clone --depth 1 https://bitbucket.org/dirn-typo/yet-another-monochrome-icon-set.git "$YAMIS_SRC"
+fi
+if [[ -d "$YAMIS_SRC" ]]; then
+    # Re-bake on every run (cheap, no network) in case the source was updated.
+    rm -rf "$YAMIS_LIVE"
+    cp -r "$YAMIS_SRC" "$YAMIS_LIVE"
+    rm -rf "$YAMIS_LIVE/.git"
+    # SVGs ship with fill:currentColor (a KDE Plasma-only auto light/dark
+    # mechanism, FollowsColorScheme=true in index.theme) — outside Plasma that
+    # resolves to CSS-default black. Bake a fixed opaque placeholder so the
+    # shape renders at all; AppItem.qml recolors it live via MultiEffect.
+    # Must be WHITE, not black: MultiEffect.colorization multiplies
+    # colorizationColor by the source pixel's luminance, so a black (0
+    # luminance) source always comes out black regardless of that color.
+    find "$YAMIS_LIVE" -name '*.svg' -exec sed -i 's/currentColor/#FFFFFF/g' {} +
+fi
+
 # ── 23. System info ───────────────────────────────────────────────────────────
 step "System info"
 sudo pacman -S --needed --noconfirm btop fastfetch htop

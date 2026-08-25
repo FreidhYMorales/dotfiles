@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "../../services"
 import "../../components"
 
@@ -8,6 +9,7 @@ Item {
     property string appName:        ""
     property string appExec:        ""
     property string appIcon:        ""
+    property bool   appIconMono:    false
     property string appDescription: ""
     property bool   showDivider:    true
     property bool   isSelected:     false
@@ -66,12 +68,32 @@ Item {
             fillMode: Image.PreserveAspectFit
             smooth:   true
             mipmap:   true
-            visible:  status === Image.Ready
+            // Monochrome-theme icons are recolored live below instead —
+            // this raw copy must never be drawn directly, same technique as
+            // WallpaperCard.qml's masked source.
+            visible:  status === Image.Ready && !root.appIconMono
+        }
+
+        // yamis-mono icons carry no color of their own (baked placeholder
+        // hex, see bootstrap.sh) — recolor here so they track isSelected the
+        // same way the fallback glyph below does, instead of a fixed hue.
+        MultiEffect {
+            anchors.fill: iconImg
+            source:  iconImg
+            visible: root.appIconMono && iconImg.status === Image.Ready
+            colorization:      1.0
+            colorizationColor: root.isSelected ? Colours.m3onPrimary : Colours.m3onPrimaryContainer
+            Behavior on colorizationColor { CAnim {} }
         }
 
         Text {
             anchors.centerIn: parent
-            visible:        !iconImg.visible
+            // iconImg.status reflects load success regardless of its own
+            // visible flag (it stays hidden-but-loaded for mono icons, whose
+            // MultiEffect copy is what actually gets shown) — checking
+            // status directly instead of !iconImg.visible keeps this from
+            // showing on top of a successfully loaded mono icon.
+            visible:        iconImg.status !== Image.Ready
             text:           root.appName.charAt(0).toUpperCase()
             color:          root.isSelected ? Colours.m3onPrimary : Colours.m3onPrimaryContainer
             font.family:    Style.fontFamily

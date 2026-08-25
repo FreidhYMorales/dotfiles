@@ -396,6 +396,7 @@ Item {
                 appName:        modelData?.name        ?? ""
                 appExec:        modelData?.exec         ?? ""
                 appIcon:        modelData?.icon         ?? ""
+                appIconMono:    modelData?.iconMono     ?? false
                 appDescription: modelData?.description  ?? ""
                 showDivider:    index < appList.count - 1
                 isSelected:     index === root.selectedIndex
