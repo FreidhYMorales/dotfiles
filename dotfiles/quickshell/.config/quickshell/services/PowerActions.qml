@@ -8,7 +8,7 @@ Singleton {
     readonly property var actions: [
         { icon: "󰐥", cmd: ["systemctl", "poweroff"] },
         { icon: "󰜉", cmd: ["systemctl", "reboot"] },
-        { icon: "󰤄", cmd: ["systemctl", "suspend"] },
+        { icon: "󰤄", cmd: ["systemctl", "suspend-then-hibernate"] },
         { icon: "󰌾", cmd: ["qs", "ipc", "-p", Quickshell.shellDir, "call", "lock", "lock"] },
         // This Hyprland build routes `dispatch` through a Lua bridge (hl.dispatch) —
         // bare dispatcher names like "exit" are no longer valid, only hl.dsp.* calls.

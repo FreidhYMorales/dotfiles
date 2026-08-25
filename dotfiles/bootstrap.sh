@@ -402,6 +402,10 @@ sudo cp "$REPO_ROOT/system/systemd/system-sleep/lock-before-sleep" /usr/lib/syst
 sudo chown root:root /usr/lib/systemd/system-sleep/lock-before-sleep
 sudo chmod 755 /usr/lib/systemd/system-sleep/lock-before-sleep
 
+step "systemd-sleep: suspend-then-hibernate delay"
+sudo mkdir -p /etc/systemd/sleep.conf.d
+sudo cp "$REPO_ROOT/system/systemd/sleep.conf.d/deadlock.conf" /etc/systemd/sleep.conf.d/
+
 step "power-profiles-daemon: auto-switch profile on AC plug/unplug"
 sudo mkdir -p /etc/udev/rules.d
 sudo cp "$REPO_ROOT/system/udev/rules.d/90-power-profile-ac.rules" /etc/udev/rules.d/
@@ -530,6 +534,36 @@ if [[ "$SKIP_GRUB" == false ]]; then
     sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' "$GRUB_DEFAULTS"
     # Quiet boot + disable NMI watchdog (saves ~200ms, reduces kernel log spam)
     sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog"/' "$GRUB_DEFAULTS"
+
+    step "Hibernation: resume= kernel param + mkinitcpio hook"
+    # Swap partition detected at run time (not hardcoded) — a real reinstall
+    # repartitions the disk, so any UUID baked in today would be stale on the
+    # next fresh install. Excludes zram (never a valid hibernation target —
+    # RAM-backed, gone on power loss) by only looking at "partition" swaps.
+    SWAP_PART="$(swapon --show=NAME,TYPE --noheadings | awk '$2 == "partition" {print $1; exit}')"
+    if [[ -n "$SWAP_PART" ]]; then
+        SWAP_UUID="$(blkid -s UUID -o value "$SWAP_PART")"
+        # mkinitcpio resume hook — must run after udev/block, before
+        # filesystems, so the resume device is available when checked.
+        if ! grep -qE '^HOOKS=.*\bresume\b' /etc/mkinitcpio.conf; then
+            sudo sed -i 's/^\(HOOKS=.*\)\bblock\b/\1block resume/' /etc/mkinitcpio.conf
+        fi
+        # GRUB path (what actually boots this machine — confirmed via
+        # `efibootmgr`, BootCurrent points at the "arch" grubx64.efi entry,
+        # not the leftover UKI mkinitcpio also builds).
+        if ! grep -q "resume=UUID=$SWAP_UUID" "$GRUB_DEFAULTS"; then
+            sudo sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"|GRUB_CMDLINE_LINUX_DEFAULT=\"\1 resume=UUID=$SWAP_UUID\"|" "$GRUB_DEFAULTS"
+        fi
+        # /etc/kernel/cmdline feeds the unused UKI at /boot/efi/EFI/Linux —
+        # not the active boot path, but kept in sync in case that ever
+        # changes (e.g. a future switch to systemd-boot).
+        if [[ -f /etc/kernel/cmdline ]] && ! grep -q "resume=UUID=$SWAP_UUID" /etc/kernel/cmdline; then
+            sudo sed -i "s/\$/ resume=UUID=$SWAP_UUID/" /etc/kernel/cmdline
+        fi
+        sudo mkinitcpio -P
+    else
+        echo "  → no se encontró una partición de swap real (solo zram) — se salta la config de hibernación"
+    fi
 
     step "GRUB: regenerate config"
     sudo grub-mkconfig -o /boot/grub/grub.cfg

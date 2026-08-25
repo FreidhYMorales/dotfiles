@@ -40,7 +40,7 @@ ColumnLayout {
         label: "Suspend"
         onClicked: {
             selector.closeRequested()
-            Quickshell.execDetached(["systemctl", "suspend"])
+            Quickshell.execDetached(["systemctl", "suspend-then-hibernate"])
         }
 
         KeyNavigation.up: shutdownButton

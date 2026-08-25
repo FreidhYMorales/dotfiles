@@ -112,7 +112,7 @@ Singleton {
         timeout: (root.screensaverTimeoutMin + root.lockTimeoutMin + root.suspendTimeoutMin) * 60
         respectInhibitors: true
         onIsIdleChanged: {
-            if (isIdle) Quickshell.execDetached(["systemctl", "suspend"])
+            if (isIdle) Quickshell.execDetached(["systemctl", "suspend-then-hibernate"])
         }
     }
 
