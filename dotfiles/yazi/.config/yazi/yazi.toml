@@ -116,7 +116,7 @@ prepend_previewers = [
   { mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}", run = "ouch" },
 ]
 
-# append_previewers = [
-#   # [hexyl via piper] — Hex dump como fallback final para binarios sin previewer
-#   { url = "*",       run = 'piper -- hexyl --border=none --terminal-width=$w --length 4096 "$1"' },
-# ]
+append_previewers = [
+  # [hexyl via piper] — Hex dump como fallback final para binarios sin previewer
+  { url = "*",       run = 'piper -- hexyl --border=none --terminal-width=$w --length 4096 "$1"' },
+]
