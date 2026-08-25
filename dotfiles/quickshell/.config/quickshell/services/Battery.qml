@@ -19,11 +19,7 @@ Singleton {
         interval: 30000
         running:  true
         repeat:   true
-        onTriggered: {
-            capProc.running    = true
-            statusProc.running = true
-            timeProc.running   = true
-        }
+        onTriggered: readProc.running = true
     }
 
     Component.onCompleted: batDiscoveryProc.running = true
@@ -40,9 +36,7 @@ Singleton {
         }
         onRunningChanged: {
             if (running) return
-            capProc.running    = true
-            statusProc.running = true
-            timeProc.running   = true
+            readProc.running   = true
             healthProc.running = true
         }
     }
@@ -52,80 +46,41 @@ Singleton {
         running: true
         command: ["udevadm", "monitor", "--subsystem-match=power_supply", "--udev"]
         stdout: SplitParser {
-            onRead: _ => {
-                capProc.running    = true
-                statusProc.running = true
-                timeProc.running   = true
-            }
+            onRead: _ => readProc.running = true
         }
     }
 
-    Process {
-        id: capProc
-        command: ["cat", root._batPath + "/capacity"]
-        stdout: SplitParser {
-            onRead: line => {
-                const val = parseInt(line.trim())
-                if (!isNaN(val)) root.percentage = val
-            }
-        }
-    }
-
-    Process {
-        id: statusProc
-        command: ["cat", root._batPath + "/status"]
-        stdout: SplitParser {
-            onRead: line => {
-                const s = line.trim()
-                root.charging = (s === "Charging" || s === "Full")
-            }
-        }
-    }
-
-    // Reads energy_full/energy_full_design; falls back to charge_full/charge_full_design.
-    Process {
-        id: healthProc
-        command: [
-            "bash", "-c",
-            "d=" + root._batPath + ";" +
-            "a=$(cat $d/energy_full 2>/dev/null || cat $d/charge_full 2>/dev/null || echo 0);" +
-            "b=$(cat $d/energy_full_design 2>/dev/null || cat $d/charge_full_design 2>/dev/null || echo 0);" +
-            "echo $a $b"
-        ]
-        stdout: SplitParser {
-            onRead: line => {
-                const parts = line.trim().split(/\s+/)
-                if (parts.length < 2) return
-                const full   = parseFloat(parts[0])
-                const design = parseFloat(parts[1])
-                if (full > 0 && design > 0)
-                    root.health = Math.round((full / design) * 100)
-            }
-        }
-    }
-
-    // Outputs: "<status> <energy_now> <energy_full> <power_now>" for time estimation.
+    // Single read covering capacity/status/time-estimate — capProc/statusProc/
+    // timeProc used to run as 3 separate forks on every tick/event even though
+    // timeProc already read status internally; one bash -c does the same job
+    // with one fork.
+    // Outputs: "<status> <capacity> <energy_now> <energy_full> <power_now>".
     // Falls back to charge_now/charge_full/current_now when energy_* are unavailable.
     Process {
-        id: timeProc
+        id: readProc
         command: [
             "bash", "-c",
             "d=" + root._batPath + ";" +
             "s=$(cat $d/status 2>/dev/null || echo Unknown);" +
+            "c=$(cat $d/capacity 2>/dev/null || echo 0);" +
             "p=$(cat $d/power_now 2>/dev/null || cat $d/current_now 2>/dev/null || echo 0);" +
             "n=$(cat $d/energy_now 2>/dev/null || cat $d/charge_now 2>/dev/null || echo 0);" +
             "f=$(cat $d/energy_full 2>/dev/null || cat $d/charge_full 2>/dev/null || echo 0);" +
-            "echo $s $n $f $p"
+            "echo $s $c $n $f $p"
         ]
         stdout: SplitParser {
             onRead: line => {
                 const parts = line.trim().split(/\s+/)
-                if (parts.length < 4) { root.timeStr = "—"; return }
+                if (parts.length < 5) { root.timeStr = "—"; return }
 
                 const status = parts[0]
-                const now    = parseFloat(parts[1])
-                const full   = parseFloat(parts[2])
-                const pow    = parseFloat(parts[3])
+                const cap    = parseInt(parts[1])
+                const now    = parseFloat(parts[2])
+                const full   = parseFloat(parts[3])
+                const pow    = parseFloat(parts[4])
+
+                if (!isNaN(cap)) root.percentage = cap
+                root.charging = (status === "Charging" || status === "Full")
 
                 if (status === "Full")  { root.timeStr = "Full";   return }
                 if (status === "Unknown" || pow <= 0) { root.timeStr = "—"; return }
@@ -145,6 +100,29 @@ Singleton {
                 const m = Math.round((hours - h) * 60)
                 const mClamped = m >= 60 ? 59 : m
                 root.timeStr = (h > 0 ? h + "h " : "") + mClamped + "m " + suffix
+            }
+        }
+    }
+
+    // Reads energy_full/energy_full_design; falls back to charge_full/charge_full_design.
+    // Slow-changing (battery wear), not part of the tick/event refresh above.
+    Process {
+        id: healthProc
+        command: [
+            "bash", "-c",
+            "d=" + root._batPath + ";" +
+            "a=$(cat $d/energy_full 2>/dev/null || cat $d/charge_full 2>/dev/null || echo 0);" +
+            "b=$(cat $d/energy_full_design 2>/dev/null || cat $d/charge_full_design 2>/dev/null || echo 0);" +
+            "echo $a $b"
+        ]
+        stdout: SplitParser {
+            onRead: line => {
+                const parts = line.trim().split(/\s+/)
+                if (parts.length < 2) return
+                const full   = parseFloat(parts[0])
+                const design = parseFloat(parts[1])
+                if (full > 0 && design > 0)
+                    root.health = Math.round((full / design) * 100)
             }
         }
     }
