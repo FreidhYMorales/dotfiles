@@ -238,7 +238,7 @@ yay -S --needed --noconfirm matugen spicetify-cli spotify
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
 yay -S --needed --noconfirm vesktop zen-browser-bin chromium obsidian nordzy-cursors nordzy-hyprcursors nwg-displays
-sudo pacman -S --needed --noconfirm mpv yt-dlp swayimg libreoffice-fresh gnome-keyring libsecret steam
+sudo pacman -S --needed --noconfirm mpv yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh gnome-keyring libsecret steam
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
