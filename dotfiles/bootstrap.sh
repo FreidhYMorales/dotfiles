@@ -345,7 +345,12 @@ sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
 
 step "SDDM: bootstrap default custom config (replaced on first matugen run)"
-if [[ -f "$SDDM_THEME_SRC/configs/default.conf" ]]; then
+# Skip on a re-run over an already-configured system — otherwise this
+# regresses the login theme back to stock colors until the next wallpaper
+# change (same persistence-loss pattern as FRESH_WALLPAPER_STATE below).
+if [[ -f /usr/share/sddm/themes/silent/configs/custom.conf ]]; then
+    echo "custom.conf already exists — leaving current SDDM theme in place"
+elif [[ -f "$SDDM_THEME_SRC/configs/default.conf" ]]; then
     sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/configs/custom.conf
 else
     echo "Warning: $SDDM_THEME_SRC/configs/default.conf not found — theme wasn't installed above, skipping custom.conf bootstrap"
