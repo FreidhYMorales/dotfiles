@@ -11,6 +11,8 @@ Singleton {
     property int max:     100
     property int percent: max > 0 ? Math.round(current / max * 100) : 0
 
+    Component.onCompleted: pollProc.running = true
+
     // Read max brightness once at startup
     Process {
         running: true
@@ -23,14 +25,19 @@ Singleton {
         }
     }
 
-    // Poll current brightness — inotify does not fire on sysfs virtual files,
-    // so FileView watchChanges would never detect external changes (keyboard keys).
-    // 500ms, not 250 — still feels instant for the OSD, half the forks/sec.
-    Timer {
-        interval: 500
-        running:  true
-        repeat:   true
-        onTriggered: pollProc.running = true
+    // Watch udev backlight events instead of polling — the kernel emits a
+    // CHANGE uevent on every brightness write (hotkeys, brightnessctl, any
+    // other writer), same pattern as Battery.qml/Network.qml. inotify
+    // doesn't fire on sysfs virtual files, but udev does; this replaces a
+    // brightnessctl fork every 500ms forever with one long-lived
+    // `udevadm monitor` process plus a fork only when brightness actually
+    // changes.
+    Process {
+        running: true
+        command: ["udevadm", "monitor", "--subsystem-match=backlight", "--udev"]
+        stdout: SplitParser {
+            onRead: _ => pollProc.running = true
+        }
     }
 
     Process {
