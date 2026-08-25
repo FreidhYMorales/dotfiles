@@ -63,6 +63,13 @@ ls ~/.config/yazi/plugins/
 | Binarios sin preview | hexyl no instalado | `sudo pacman -S hexyl` |
 | `rich` falla en preview | rich-cli no en PATH | `pipx install rich-cli` o `yay -S rich-cli` |
 
+### Openers no reciben el archivo
+
+| Síntoma | Causa probable | Solución |
+|---------|---------------|----------|
+| `xdg-open` imprime su propio `--help`/usage y sale con status 1 | `run = 'cmd "$@"'` o `'cmd "$1"'` en `[opener]` — sintaxis de shell real, que Yazi 26.x no sustituye y deja como texto muerto | Usar los placeholders propios de Yazi: `%s` (todos los archivos seleccionados), `%s1` (solo el primero), `%d1` (dirname del primero) — ver [docs oficiales](https://yazi-rs.github.io/docs/configuration/yazi/#opener) |
+| nvim (u otro opener sin validación de argv) abre pero con buffer/ventana vacía, sin abrir el archivo esperado | Mismo problema — a diferencia de xdg-open, estos programas no fallan visiblemente con 0 argumentos, así que pasa desapercibido | Igual que arriba — revisar TODOS los openers de `[opener]`, no solo el que falló visible |
+
 ### Yazi no arranca
 
 | Síntoma | Causa probable | Solución |
@@ -150,6 +157,7 @@ Comparar el MIME type real con los patrones en `prepend_previewers`. Si no coinc
 | `"bright-black"` en init.lua | Color no aplica (sin error) |
 | `"brightblack"` en theme.toml | Color no aplica (sin error) |
 | `default_action = "nvim"` en fg | Viola separación CLI/editor |
+| `"$@"`/`"$1"` (sintaxis shell) en `run =` de `[opener]` | Yazi 26.x no lo sustituye — el opener corre sin archivo. Usar `%s`/`%s1`/`%d1` |
 
 ---
 

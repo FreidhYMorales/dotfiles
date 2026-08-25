@@ -95,8 +95,8 @@ Usuario pulsa Enter/l sobre un archivo
               │
               ▼
         Primer mime que coincide:
-        ├── archives    → ouch decompress "$@"  (block=true)
-        ├── text/*      → nvim "$@"  (block=true)
+        ├── archives    → ouch decompress %s  (block=true)
+        ├── text/*      → nvim %s  (block=true)
         ├── image/*     → xdg-open
         ├── video/*     → xdg-open
         ├── audio/*     → xdg-open
@@ -134,9 +134,12 @@ Ningún plugin de Yazi invoca Neovim directamente. Neovim solo entra en escena c
 
 ```toml
 # yazi.toml — Neovim como opener, nunca como dependencia de plugin
+# %s es un placeholder propio de Yazi (sustituido por Yazi antes de correr
+# el comando) — no "$@" de shell, que esta versión de Yazi no reconoce y
+# deja como texto muerto (ver 05_TROUBLESHOOTING.md).
 [opener]
 edit = [
-  { run = 'nvim "$@"', block = true, desc = "Neovim" },
+  { run = 'nvim %s', block = true, desc = "Neovim" },
 ]
 ```
 

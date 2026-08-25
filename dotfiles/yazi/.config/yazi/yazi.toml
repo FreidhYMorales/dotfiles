@@ -27,17 +27,24 @@ ueberzug_scale = 1
 ueberzug_offset = [0, 0, 0, 0]
 
 [opener]
+# %s/%d(N) are Yazi's own placeholders, substituted by Yazi itself before
+# the command runs — NOT real shell positional args. The previous "$@"/"$1"
+# syntax is unrecognized by this Yazi version and is left as literal dead
+# text, so every one of these ran with an effectively empty target (nvim
+# silently opened a blank buffer instead of erroring, which is why this
+# went unnoticed until xdg-open's own "missing argument" usage dump surfaced
+# it for images/PDFs).
 edit = [
-  { run = 'nvim "$@"', block = true, desc = "Neovim" },
+  { run = 'nvim %s', block = true, desc = "Neovim" },
 ]
 open = [
-  { run = 'xdg-open "$@"', desc = "xdg-open" },
+  { run = 'xdg-open %s', desc = "xdg-open" },
 ]
 extract = [
-  { run = 'ouch decompress -y "$@"', desc = "Extract with ouch" },
+  { run = 'ouch decompress -y %s', desc = "Extract with ouch" },
 ]
 reveal = [
-  { run = 'xdg-open "$(dirname "$1")"', desc = "Reveal in file manager" },
+  { run = 'xdg-open %d1', desc = "Reveal in file manager" },
 ]
 
 [open]
