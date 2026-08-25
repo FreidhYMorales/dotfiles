@@ -208,7 +208,7 @@ step "Audio (PipeWire + MPD)"
 sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
     pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
-    mpd ncmpcpp wiremix sof-firmware
+    mpd ncmpcpp wiremix sof-firmware playerctl
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
 step "Screenshot tools"
