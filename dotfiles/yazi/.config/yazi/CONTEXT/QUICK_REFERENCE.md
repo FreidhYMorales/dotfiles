@@ -11,7 +11,7 @@
 
 | Archivo       | Estado     | Notas                                              |
 |---------------|------------|----------------------------------------------------|
-| `yazi.toml`   | ✅ Base    | ratio 1:3:4, Kitty image proto, openers nvim+xdg; previewers usan `url=` (26.x) |
+| `yazi.toml`   | ✅ Base    | ratio 1:3:4, Kitty image proto, openers por tipo (nvim, swayimg, mpv, zathura/LibreOffice vía xdg, kfontview, Dolphin); previewers usan `url=` (26.x) |
 | `theme.toml`  | ✅ Base    | Flavor "deadlock" (dark+light), highlight cuadrado |
 | `keymap.toml` | ✅ Base    | Vim nav + sorting + tabs; secciones por plugin     |
 | `init.lua`    | ✅ Base    | full-border PLAIN + 15 plugins configurados        |

@@ -25,7 +25,7 @@ Formato de cada entrada:
 - **Estado:** ⬜ pendiente
 - **Keybind:** automático (intercepta `l` / `Enter` / `→`)
 - **Bugs:** —
-- **Notas:** Abre directamente si hay un solo opener para el mime type. Si hay varios, deja pasar al picker. No interviene en directorios. Init: `require("bypass")` — sin `:setup()`.
+- **Notas:** En archivos emite `open --hovered` (no interactivo): ejecuta siempre el PRIMER opener de la regla que coincide; el menú con todos los openers es `O`. No interviene en directorios. Init: `require("bypass")` — sin `:setup()`.
 
 ---
 

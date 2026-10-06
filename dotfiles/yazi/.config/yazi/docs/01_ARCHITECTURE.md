@@ -96,15 +96,20 @@ Usuario pulsa Enter/l sobre un archivo
                los reemplazaría todos: folder/*, trash/**, vfs/*, inode/empty)
               │
               ▼
-        Primer mime que coincide:
-        ├── archives    → ya emit plugin ouch-extract  (plugin local: pide contraseña si hace falta)
-        ├── text/*      → nvim %s  (block=true)
-        ├── image/*     → xdg-open
-        ├── video/*     → xdg-open
-        ├── audio/*     → xdg-open
-        ├── pdf         → xdg-open
-        └── url = "*"   → fallback solo para archivos (nvim o xdg-open %s1)
+        Primera regla que coincide (mime normalizado: Yazi quita `x-` y `vnd.`):
+        ├── archives    → ouch-extract (plugin local, pide contraseña si hace falta)
+        ├── text/html   → nvim | zen (xdg-open)
+        ├── text/*, json/toml/yaml/js/shellscript → nvim (block=true)
+        ├── image/*     → swayimg %s (selección = galería) | GIMP
+        ├── video/audio → mpv %s (selección = playlist) | mediainfo
+        ├── pdf         → xdg-open → zathura
+        ├── office (msword, openxmlformats-*, oasis.opendocument.*, rtf…) → xdg-open → LibreOffice
+        ├── fuentes (*.ttf/otf/woff…, font/*) → kfontview
+        └── url = "*"   → fallback solo para archivos: nvim | xdg-open
             (directorios caen en las reglas default de Yazi)
+        Todas suman `reveal` → `dolphin --select` como última opción.
+        Enter/l (bypass) ejecuta el PRIMER opener; `O` abre el menú con todos.
+        Las apps gráficas usan `orphan = true`: sobreviven a cerrar Yazi.
 ```
 
 ### Invocación de plugins via keybind

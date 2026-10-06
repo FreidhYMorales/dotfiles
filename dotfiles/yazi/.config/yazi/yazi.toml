@@ -36,10 +36,27 @@ ueberzug_offset = [0, 0, 0, 0]
 edit = [
   { run = 'nvim %s', block = true, desc = "Neovim" },
 ]
-# xdg-open only accepts a single target, so %s1 (first selected) instead of
-# %s — with several files selected, %s made xdg-open print its usage error.
+# GUI openers use orphan = true so the app survives closing Yazi / the terminal.
+# xdg-open only accepts a single target, hence %s1 — it resolves through
+# mimeapps.list (LibreOffice for office docs, zathura for PDF, zen for HTML...).
 open = [
-  { run = 'xdg-open %s1', desc = "xdg-open" },
+  { run = 'xdg-open %s1', orphan = true, desc = "Default app (xdg-open)" },
+]
+# swayimg/mpv accept several files: the whole selection opens as a gallery /
+# playlist instead of only the first file.
+image = [
+  { run = 'swayimg %s', orphan = true, desc = "swayimg" },
+  { run = 'gimp %s',    orphan = true, desc = "GIMP" },
+]
+play = [
+  { run = 'mpv --player-operation-mode=pseudo-gui -- %s', orphan = true, desc = "mpv" },
+  { run = 'mediainfo %s1; echo "Press enter to exit"; read _', block = true, desc = "Show media info" },
+]
+browser = [
+  { run = 'xdg-open %s1', orphan = true, desc = "Browser (zen)" },
+]
+font = [
+  { run = 'kfontview %s1', orphan = true, desc = "Font viewer" },
 ]
 # Local plugin (plugins/ouch-extract.yazi): runs ouch, prompts for a password
 # (hidden input) when the archive is encrypted, and only moves the result into
@@ -48,31 +65,44 @@ extract = [
   { run = 'ya emit plugin ouch-extract', desc = "Extract with ouch" },
 ]
 reveal = [
-  { run = 'xdg-open %d1', desc = "Reveal in file manager" },
+  { run = 'dolphin --select %s1', orphan = true, desc = "Reveal in Dolphin" },
 ]
 
 # prepend_rules (not `rules`): `rules` replaced Yazi's whole default list,
 # dropping the built-in folder/*, trash/**, vfs/* and inode/empty rules that
 # newer Yazi releases rely on. Prepending keeps those as fallbacks.
+#
+# Yazi normalizes mimes before matching: it strips a leading `x-` and `vnd.`
+# from the subtype (application/vnd.oasis.opendocument.text →
+# application/oasis.opendocument.text, application/x-shellscript →
+# application/shellscript). Patterns below are written in that form.
+# First matching rule wins; its first opener runs on Enter, `O` lists them all.
 [open]
 prepend_rules = [
-  # Archives → descomprimir con ouch
-  { mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}", use = ["extract"] },
-  # Text & code → Neovim
-  { mime = "text/*",                   use = ["edit", "open"] },
-  { mime = "application/json",         use = ["edit", "open"] },
-  { mime = "application/toml",         use = ["edit", "open"] },
-  { mime = "application/x-shellscript", use = ["edit", "open"] },
-  # Images → xdg-open
-  { mime = "image/*",                  use = ["open"] },
-  # Video/Audio → xdg-open
-  { mime = "video/*",                  use = ["open"] },
-  { mime = "audio/*",                  use = ["open"] },
-  # PDF → xdg-open
-  { mime = "application/pdf",          use = ["open"] },
+  # Archives → ouch (password prompt when needed)
+  { mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}", use = ["extract", "reveal"] },
+  # HTML → Neovim, or the browser
+  { mime = "text/html",                use = ["edit", "browser", "reveal"] },
+  # Text & code → Neovim. No xdg-open here: text/plain's system default is
+  # LibreOffice Writer, which is never what you want for code.
+  { mime = "text/*",                   use = ["edit", "reveal"] },
+  { mime = "application/{json,ndjson,toml,yaml,javascript,shellscript}", use = ["edit", "reveal"] },
+  # Images → swayimg (whole selection), GIMP
+  { mime = "image/*",                  use = ["image", "reveal"] },
+  # Video / audio → mpv (selection as playlist), media info
+  { mime = "{video,audio}/*",          use = ["play", "reveal"] },
+  # PDF → zathura (via xdg-open)
+  { mime = "application/pdf",          use = ["open", "reveal"] },
+  # Office documents → LibreOffice (via xdg-open)
+  { mime = "application/{msword,rtf,ms-excel,ms-powerpoint,openxmlformats-officedocument.*,oasis.opendocument.*}", use = ["open", "reveal"] },
+  # Fonts → KDE font viewer. By extension too: `file` reports most .ttf
+  # files as application/octet-stream, so a mime-only rule misses them.
+  { url = "*.{ttf,otf,ttc,woff,woff2}", use = ["font", "reveal"] },
+  { mime = "font/*",                   use = ["font", "reveal"] },
+  { mime = "application/ms-opentype",  use = ["font", "reveal"] },
   # Fallback for files only — `url = "*"` (no trailing slash) never matches
   # directories, unlike `mime = "*"`, so folders keep Yazi's folder/* rule.
-  { url = "*",                         use = ["edit", "open"] },
+  { url = "*",                         use = ["edit", "open", "reveal"] },
 ]
 
 [tasks]
