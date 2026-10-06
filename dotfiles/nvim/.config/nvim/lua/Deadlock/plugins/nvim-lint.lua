@@ -21,9 +21,7 @@ return {
 			bash = { "shellcheck" },
 			-- zsh: shellcheck does not support it (SC1071)
 
-			-- C/C++
-			c = { "cpplint" },
-			cpp = { "cpplint" },
+			-- C/C++: no linter here, clangd already runs clang-tidy
 		}
 
 		vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {

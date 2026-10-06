@@ -59,7 +59,6 @@ return {
 				"pylint", -- Python linter
 				"shellcheck", -- Shell script linter
 				"biome", -- JS/TS linter and formatter
-				"cpplint", -- C/C++ linter
 
 				-- Rust
 				"codelldb", -- Rust/C++ DAP adapter

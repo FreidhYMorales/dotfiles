@@ -18,7 +18,7 @@ return {
 			notifier = { enabled = true },
 			scope = { enabled = false }, -- Disabled in favor of indent-blankline.nvim scope
 			scroll = { enabled = false }, -- Using smear-cursor instead
-			words = { enabled = false }, -- Disabled in favor of vim-illuminate
+			words = { enabled = true }, -- LSP reference highlight + ]]/[[ jumps (replaced vim-illuminate)
 			explorer = {
 				enabled = true,
 				layout = {
@@ -190,6 +190,20 @@ return {
 		},
 		-- NOTE: Keymaps
 		keys = {
+			{
+				"]]",
+				function()
+					require("snacks").words.jump(vim.v.count1)
+				end,
+				desc = "Next Reference",
+			},
+			{
+				"[[",
+				function()
+					require("snacks").words.jump(-vim.v.count1)
+				end,
+				desc = "Prev Reference",
+			},
 			{
 				"<leader>n",
 				function()

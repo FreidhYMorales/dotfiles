@@ -127,7 +127,6 @@ Inlay hints deshabilitados (no añadir — lazydev.nvim los gestiona cuando apli
 | `pylint` | Python |
 | `shellcheck` | Shell |
 | `biome` | JS/TS |
-| `cpplint` | C/C++ |
 
 ## Diagnósticos — configuración global
 

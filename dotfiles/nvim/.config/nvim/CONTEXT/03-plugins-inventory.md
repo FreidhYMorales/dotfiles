@@ -78,7 +78,6 @@ convenciones, anti-patrones y estructura del proyecto.
 | `b0o/incline.nvim` | `incline.lua` | Nombre de archivo en float |
 | `folke/which-key.nvim` | `which-key.lua` | Guía de keymaps (preset: helix) |
 | `lukas-reineke/indent-blankline.nvim` | `indent-blankline.lua` | Guías de indentación |
-| `RRethy/vim-illuminate` | `vim-illuminate.lua` | Highlight referencias bajo cursor |
 | `sphamba/smear-cursor.nvim` | `smear.lua` | Animación de cursor (`event=VeryLazy`) |
 | `brenoprata10/nvim-highlight-colors` | `nvim-highlight-colors.lua` | Preview inline de hex/rgb/hsl/tailwind; `render="foreground"`; integrado con blink.cmp `kind_icon` para swatches en el dropdown |
 | `folke/twilight.nvim` | `twilight.lua` | Dim de secciones inactivas |
@@ -149,6 +148,6 @@ snacks = {
     indent    = false,   -- → indent-blankline.nvim
     scope     = false,   -- → indent-blankline.nvim scope
     scroll    = false,   -- → smear-cursor.nvim
-    words     = false,   -- → vim-illuminate
+    words     = true,    -- referencias LSP + ]]/[[ (reemplazó vim-illuminate; fidget removido: noice ya muestra el progreso LSP)
 }
 ```
