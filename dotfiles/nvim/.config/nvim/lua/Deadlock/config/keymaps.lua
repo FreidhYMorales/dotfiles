@@ -250,6 +250,12 @@ key("n", "<leader>uv", function()
 	require("Deadlock.config.theme-picker").open()
 end, { desc = "Theme variant" })
 
+-- Undo tree (built-in since Nvim 0.12; :Undotree toggles the window)
+key("n", "<leader>uu", function()
+	vim.cmd.packadd("nvim.undotree")
+	vim.cmd.Undotree()
+end, { desc = "Toggle undo tree" })
+
 -- ============================================================================
 -- COMMAND LINE — edición estilo shell (Home Row en cmdline)
 -- ============================================================================

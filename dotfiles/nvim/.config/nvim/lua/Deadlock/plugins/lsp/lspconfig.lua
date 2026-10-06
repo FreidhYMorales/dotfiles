@@ -44,9 +44,7 @@ return {
 				vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
 
 				opts.desc = "Show documentation for what is under cursor"
-				vim.keymap.set("n", "K", function()
-					vim.lsp.buf.hover({ border = "rounded" })
-				end, opts)
+				vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 
 				opts.desc = "Toggle inlay hints"
 				vim.keymap.set("n", "<leader>uh", function()
@@ -56,9 +54,8 @@ return {
 				-- Restart LSP: <leader>lr (global en keymaps.lua)
 				-- Se omite aquí para evitar registrarlo en cada buffer individualmente
 
-				vim.keymap.set("i", "<C-h>", function()
-					vim.lsp.buf.signature_help({ border = "rounded" })
-				end, opts)
+				opts.desc = "Signature help"
+				vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 			end,
 		})
 
@@ -79,7 +76,6 @@ return {
 			underline = true,
 			update_in_insert = false,
 			float = {
-				border = "rounded",
 				source = true,
 			},
 		})

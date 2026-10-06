@@ -248,7 +248,7 @@
 | `<leader>uh` | Toggle inlay hints (buffer-local, LspAttach) |
 | `<leader>ut` | Toggle treesitter context |
 | `<leader>uv` | **Theme variant picker** (flotante, preview live, persiste) |
-| `<leader>u` | Undo tree |
+| `<leader>uu` | Undo tree (nativo, `:Undotree`) |
 
 ---
 

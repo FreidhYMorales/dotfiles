@@ -69,6 +69,7 @@ opt.sidescrolloff = 8 -- Columns of context
 opt.signcolumn = "yes" -- Always show the signcolumn
 opt.hlsearch = true -- Highlight search results
 opt.confirm = true -- Confirm to save changes before exiting modified buffer
+opt.winborder = "rounded" -- Default border for floating windows (LSP hover, signature, diagnostics)
 opt.laststatus = 3 -- Global statusline
 opt.pumblend = 10 -- Popup blend (transparency for completion menu)
 opt.pumheight = 10 -- Maximum number of entries in a popup

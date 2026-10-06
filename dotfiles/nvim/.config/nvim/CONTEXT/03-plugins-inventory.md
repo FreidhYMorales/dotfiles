@@ -104,7 +104,7 @@ incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.l
 | `mfussenegger/nvim-dap` | `nvim-dap.lua` | `<leader>d*` debug |
 | `folke/todo-comments.nvim` | `snacks.lua` | `<leader>pt/pT` via snacks picker |
 | `kevinhwang91/nvim-ufo` | `nvim-ufo.lua` | Folding avanzado (TS + indent) — `event=BufReadPost`, `zR/zM` en spec |
-| `mbbill/undotree` | `undo-tree.lua` | `<leader>uu` undo tree (antes `<leader>u`, chocaba con el grupo `<leader>u*`) |
+| `:Undotree` (nativo 0.12) | `keymaps.lua` | `<leader>uu` — `packadd nvim.undotree`; reemplazó a `mbbill/undotree` |
 | `MagicDuck/grug-far.nvim` | `grug-far.lua` | `<leader>sr` search & replace interactivo |
 
 ## Text Objects & Surround
