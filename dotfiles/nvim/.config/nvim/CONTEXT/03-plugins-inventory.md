@@ -14,8 +14,7 @@
 | `saghen/blink.cmp` | `blink-cmp.lua` | Motor de completion principal |
 | `L3MON4D3/LuaSnip` | dep de blink-cmp | Snippet engine (`v2.*`) |
 | `rafamadriz/friendly-snippets` | dep de LuaSnip | Snippets predefinidos |
-| `saghen/blink.compat` | dep de blink-cmp | Bridge para sources de nvim-cmp |
-| `f3fora/cmp-spell` | dep de blink-cmp | Source de spell (markdown/text only) |
+| `ribru17/blink-cmp-spell` | dep de blink-cmp | Source nativo de spell (markdown/text only) — reemplazó blink.compat + cmp-spell |
 
 **Completion file:** `blink-cmp.lua` (renombrado de `nvim-cmp.lua` en 2026-03-12).
 
@@ -28,7 +27,6 @@
 | `WhoIsSethDaniel/mason-tool-installer.nvim` | dep de mason | Instala formatters/linters |
 | `neovim/nvim-lspconfig` | `lsp/lspconfig.lua` | Defaults de servidores |
 | `folke/lazydev.nvim` | `lazydev.lua` | Tipos Lua para nvim API en lua_ls |
-| `antosha417/nvim-lsp-file-operations` | dep de lspconfig | Rename de archivos via LSP |
 | `b0o/SchemaStore.nvim` | dep de lspconfig | Catálogo de schemas para `jsonls`/`yamlls` |
 
 ## AI Tools
@@ -68,7 +66,6 @@ convenciones, anti-patrones y estructura del proyecto.
 | `ThePrimeagen/harpoon` | `harpoon.lua` | `<leader>ha` add, `<leader>hh` menu, `<leader>1-5` |
 | `stevearc/oil.nvim` | `oil.lua` | `\\`, `<leader>ee` — editar el FS como buffer |
 | `mikavilpas/yazi.nvim` | `yazi.lua` | `<leader>ey/eY/er` — Yazi flotante con tu config (no toma directorios: eso es de oil) |
-| `vim-maximizer` | `vim-maximizer.lua` | `<leader>sm` maximizar split |
 
 ## UI / Visual
 
@@ -93,7 +90,7 @@ incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.l
 | Plugin | Archivo | Keymaps |
 |--------|---------|---------|
 | `lewis6991/gitsigns.nvim` | `gitsigns.lua` | `<leader>gh*` — hunks, blame, stage |
-| `sindrets/diffview.nvim` | `diffview.lua` | `<leader>gd`, `<leader>gf/gF` |
+| `dlyongemallo/diffview-plus.nvim` | `diffview.lua` | `<leader>gd` (toggle), `<leader>gf/gF` — fork mantenido de sindrets/diffview |
 | Lazygit (via snacks) | `snacks.lua` | `<leader>lg`, `<leader>gl` |
 
 ## Code Tools
@@ -112,8 +109,8 @@ incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.l
 
 | Plugin | Archivo | Keymaps |
 |--------|---------|---------|
-| `echasnovski/mini.ai` | `mini-ai.lua` | Text objects: `o`=block, `f`=fn, `c`=class |
-| `echasnovski/mini.surround` | `mini-surround.lua` | `gs[a/d/f/h/r]` surround |
+| `nvim-mini/mini.ai` | `mini-ai.lua` | Text objects: `o`=block, `f`=fn, `c`=class |
+| `nvim-mini/mini.surround` | `mini-surround.lua` | `gs[a/d/f/h/r]` surround |
 
 ## Snippets / Editing
 
@@ -129,10 +126,8 @@ incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.l
 | Plugin | Archivo | Notas |
 |--------|---------|-------|
 | `folke/persistence.nvim` | `persistence.lua` | Sesiones (`<leader>qs/qS/ql/qd`) |
-| `luckasRanarison/tailwind-tools.nvim` | `tailwind.lua` | Preview Tailwind en editor + completion |
 | `MeanderingProgrammer/render-markdown.nvim` | `render-markdown.lua` | Render de markdown en buffer |
-| `antosha417/nvim-lsp-file-operations` | dep lspconfig | Rename archivos via LSP |
-| `amrbashir/nvim-docs-view` | `nvim-docs-view.lua` | Panel LSP docs (`cmd=DocsViewToggle`) |
+| `amrbashir/nvim-docs-view` | `nvim-docs-view.lua` | Panel LSP docs (`<leader>uD`) |
 
 ## Snacks — módulos activos
 

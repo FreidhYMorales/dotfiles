@@ -30,7 +30,7 @@ require("lazy").setup({
 	},
 	-- Configure any other settings here. See the documentation for more details.
 	-- colorscheme that will be used when installing plugins.
-	install = { colorscheme = { "tokyonight", "habamax" } },
+	install = { colorscheme = { "habamax" } },
 	-- automatically check for plugin updates
 	checker = {
 		enabled = true,
@@ -40,5 +40,11 @@ require("lazy").setup({
 	change_detection = {
 		enabled = true,
 		notify = false,   -- recarga silenciosa al editar configs
+	},
+	performance = {
+		rtp = {
+			-- netrw: oil owns directory buffers. gzip/tar/zip kept (open archives).
+			disabled_plugins = { "netrwPlugin", "tohtml", "tutor" },
+		},
 	},
 })

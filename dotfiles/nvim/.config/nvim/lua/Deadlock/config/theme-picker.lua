@@ -17,7 +17,7 @@ local STATE_FILE = vim.fn.stdpath("data") .. "/my-theme-variant"
 
 -- ─── Debounce ──────────────────────────────────────────────────────────────
 local function debounce(fn, ms)
-	local timer = vim.loop.new_timer()
+	local timer = vim.uv.new_timer()
 	return function(...)
 		local args = { ... }
 		timer:stop()
@@ -259,7 +259,7 @@ function M.open()
 				if original_kind == "nw" then
 					apply_nw(original_name)
 				else
-					vim.cmd.colorscheme(original_name)
+					pcall(vim.cmd.colorscheme, original_name)
 				end
 			end
 		end,

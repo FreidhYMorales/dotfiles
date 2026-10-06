@@ -31,10 +31,7 @@ return {
 			input = {
 				enabled = true,
 			},
-			quickfile = {
-				enabled = true,
-				exclude = { "latex" },
-			},
+			quickfile = { enabled = true },
 			picker = {
 				enabled = true,
 				matchers = {
@@ -126,36 +123,20 @@ return {
 					},
 				},
 			},
+			-- Images: opening an image file renders it; in markdown, the image
+			-- under the cursor shows in a float (enabled only accepts a boolean —
+			-- a function was always truthy, and inline+float off rendered nothing)
 			image = {
-				enabled = function()
-					return vim.bo.filetype == "markdown"
-				end,
+				enabled = true,
 				doc = {
-					float = false, -- show image on cursor hover
-					inline = false, -- show image inline
+					inline = false,
+					float = true,
 					max_width = 50,
 					max_height = 30,
-					wo = {
-						wrap = false,
-					},
-				},
-				convert = {
-					notify = true,
-					command = "magick",
-				},
-				img_dirs = {
-					"img",
-					"images",
-					"assets",
-					"static",
-					"public",
-					"media",
-					"attachments",
-					"Archives/All-Vault-Images/",
-					"~/Library",
-					"~/Downloads",
 				},
 			},
+			-- Big files: skip treesitter/LSP/heavy UI so they open instantly
+			bigfile = { enabled = true },
 			dashboard = {
 				preset = {
 					header = {
@@ -302,8 +283,7 @@ return {
 	-- NOTE: todo comments w/ snacks
 	{
 		"folke/todo-comments.nvim",
-		event = { "BufReadPre", "BufNewFile" },
-		optional = true,
+		optional = true, -- main spec (and its event) lives in todo-comments.lua
 		keys = {
 			{
 				"<leader>pt",

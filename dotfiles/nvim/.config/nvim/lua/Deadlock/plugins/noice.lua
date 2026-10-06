@@ -6,7 +6,7 @@ return {
 			-- override markdown rendering so that LSP and other plugins use Treesitter
 			override = {
 				["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-				["vim.lsp.util.stylize_markdown"] = true,
+				-- stylize_markdown: deprecated in 0.12 and no longer called by core.
 				-- "cmp.entry.get_documentation" omitido: requiere nvim-cmp, stack es blink.cmp
 			},
 		},
@@ -28,14 +28,13 @@ return {
 			command_palette = true,      -- cmdline + popupmenu juntos
 			long_message_to_split = true,
 			inc_rename = false,
-			lsp_doc_border = false,
+			lsp_doc_border = true, -- nui ignores winborder; match the other rounded floats
 		},
 	},
 	dependencies = {
 		"MunifTanjim/nui.nvim",
 	},
 	keys = {
-		{ "<leader>sn", "", desc = "+noice" },
 		{
 			"<S-Enter>",
 			function()

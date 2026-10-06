@@ -21,10 +21,8 @@ return {
 			desc = "Toggle , at eol",
 		},
 	},
-	-- all modules handle lazy loading internally
-	lazy = false,
+	-- Loaded on its keys (chartoggle only needs setup before the first press)
 	opts = {
 		chartoggle = { enabled = true },
-		tree = { enabled = false },
 	},
 }

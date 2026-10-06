@@ -20,7 +20,7 @@ my-theme/
     ├── bufferline.lua    # nvim-bufferline (recibe config como argumento)
     ├── blink.lua         # blink.cmp + Pmenu base
     ├── render_markdown.lua # headings en degradé derivado de la paleta
-    ├── lsp.lua           # LspInfo, LspSignature, LspReferences, LspInlayHint
+    ├── lsp.lua           # LspSignature, LspReferences, LspInlayHint
     └── noice.lua         # noice.nvim borders
 ```
 

@@ -1,9 +1,9 @@
 return {
 	"folke/persistence.nvim",
 	event = "BufReadPre",
-	opts = {
-		options = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp" },
-	},
+	-- persistence v3 has no `options`: what gets saved is 'sessionoptions'
+	-- (options.lua)
+	opts = {},
 	keys = {
 		{
 			"<leader>qs",

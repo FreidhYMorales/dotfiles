@@ -10,18 +10,14 @@ acmd("TextYankPost", {
 	end,
 })
 
--- Oil cursorline
-acmd("FileType", {
-	pattern = "oil",
-	callback = function()
-		vim.opt_local.cursorline = true
-	end,
-})
-
 -- Restore cursor position when reopening files
 acmd("BufReadPost", {
 	group = augroup("restore-cursor", { clear = true }),
 	callback = function(ev)
+		-- Commit/rebase messages are new each time: an old position is wrong
+		if vim.tbl_contains({ "gitcommit", "gitrebase" }, vim.bo[ev.buf].filetype) then
+			return
+		end
 		local mark = vim.api.nvim_buf_get_mark(ev.buf, '"')
 		local lcount = vim.api.nvim_buf_line_count(ev.buf)
 		if mark[1] > 0 and mark[1] <= lcount then
@@ -43,7 +39,8 @@ acmd("VimResized", {
 -- Close certain buffer types with q
 acmd("FileType", {
 	group = augroup("close-with-q", { clear = true }),
-	pattern = { "help", "man", "notify", "qf", "checkhealth", "dap-float" },
+	-- man and checkhealth already map q natively
+	pattern = { "help", "qf", "dap-float" },
 	callback = function(ev)
 		vim.bo[ev.buf].buflisted = false
 		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = ev.buf, silent = true })

@@ -4,15 +4,22 @@ return {
 	event = "VeryLazy",
 	dependencies = "nvim-tree/nvim-web-devicons",
 	opts = {
+		-- my-theme's bufferline integration (integrations/bufferline.lua).
+		-- A function, so bufferline re-reads it on every ColorScheme and picks
+		-- up the active Night Wolf variant; other colorschemes get defaults.
+		highlights = function()
+			if vim.g.colors_name == "my-theme" then
+				return require("Deadlock.my-theme.init").bufferline.highlights
+			end
+			return {}
+		end,
 		options = {
-          -- stylua: ignore
-          close_command = function(n)
-			  require("snacks").bufdelete(n)
-		  end,
-          -- stylua: ignore
-          right_mouse_command = function(n)
-			  require("snacks").bufdelete(n)
-		  end,
+			close_command = function(n)
+				require("snacks").bufdelete(n)
+			end,
+			right_mouse_command = function(n)
+				require("snacks").bufdelete(n)
+			end,
 			diagnostics = "nvim_lsp",
 			always_show_bufferline = false,
 			diagnostics_indicator = function(_, _, diag)
@@ -33,7 +40,4 @@ return {
 			},
 		},
 	},
-	config = function(_, opts)
-		require("bufferline").setup(opts)
-	end,
 }

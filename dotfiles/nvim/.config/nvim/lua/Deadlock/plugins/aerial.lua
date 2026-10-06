@@ -49,7 +49,7 @@ return {
 		lsp = {
 			diagnostics_trigger_update = true,
 			update_when_errors = true,
-			update_delay = 300,
+			-- (update_delay is ignored when diagnostics_trigger_update = true)
 		},
 		treesitter = {
 			update_delay = 300,

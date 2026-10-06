@@ -47,6 +47,16 @@ return {
 					{ "filename", path = 1, symbols = { modified = " ", readonly = " " } },
 				},
 				lualine_x = {
+					-- "recording @q": showmode=false and noice skips msg_showmode,
+					-- so without this macro recording is invisible
+					{
+						function()
+							return require("noice").api.status.mode.get()
+						end,
+						cond = function()
+							return package.loaded["noice"] and require("noice").api.status.mode.has()
+						end,
+					},
 					{
 						"diagnostics",
 						symbols = { error = " ", warn = " ", hint = "󰠠 ", info = " " },

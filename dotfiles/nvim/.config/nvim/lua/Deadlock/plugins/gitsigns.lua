@@ -34,21 +34,9 @@ return {
 			row = 0,
 			col = 1,
 		},
-		-- Word diff
-		word_diff = false,
-		-- Diff options
-		diff_opts = {
-			internal = true, -- Use internal diff library
-		},
-		-- Update debounce
+		-- diff_opts left unset on purpose: when set, gitsigns stops following
+		-- changes to 'diffopt' (internal diff is already the default)
 		update_debounce = 100,
-		-- Highlight options
-		watch_gitdir = {
-			enable = true,
-			follow_files = true,
-		},
-		-- Status line integration
-		status_formatter = nil,
 		on_attach = function(buffer)
 			local gs = package.loaded.gitsigns
 
@@ -93,7 +81,7 @@ return {
 			end, "Reset Hunk")
 
 			map("n", "<leader>ghS", gs.stage_buffer, "Stage Buffer")
-			map("n", "<leader>ghu", gs.undo_stage_hunk, "Undo Stage Hunk")
+			-- (undo_stage_hunk is deprecated: <leader>ghs on a staged hunk unstages it)
 			map("n", "<leader>ghR", gs.reset_buffer, "Reset Buffer")
 
 			-- Preview
@@ -117,11 +105,11 @@ return {
 				gs.diffthis("~")
 			end, "Diff This ~")
 
-			map("n", "<leader>gtd", gs.toggle_deleted, "Toggle Deleted")
+			-- (toggle_deleted is deprecated: use <leader>ghP, preview_hunk_inline)
 			map("n", "<leader>gtw", gs.toggle_word_diff, "Toggle Word Diff")
 
 			-- Text objects
-			map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
+			map({ "o", "x" }, "ih", gs.select_hunk, "GitSigns Select Hunk")
 		end,
 	},
 	keys = {

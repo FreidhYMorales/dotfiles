@@ -1,5 +1,6 @@
 return {
-	"echasnovski/mini.surround",
+	"nvim-mini/mini.surround",
+	event = "VeryLazy", -- was loading at startup (no lazy trigger)
 	opts = {
 		mappings = {
 			add = "gsa", -- Add surrounding in Normal and Visual modes

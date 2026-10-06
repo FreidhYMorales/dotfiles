@@ -1,15 +1,16 @@
 return {
-  "chrisgrieser/nvim-rip-substitute",
-  cmd = "RipSubstitute", -- Command to trigger the plugin
-  keys = {
-    {
-      -- Keybinding to perform a ripgrep substitution
-      "<leader>fs",
-      function()
-        require("rip-substitute").sub() -- Call the substitution function from the plugin
-      end,
-      mode = { "n", "x" }, -- Enable the keybinding in normal and visual modes
-      desc = " rip substitute", -- Description for the keybinding
-    },
-  },
+	"chrisgrieser/nvim-rip-substitute",
+	cmd = "RipSubstitute",
+	-- setup() must run (README spec): enables setup-only behavior and warnings
+	opts = {},
+	keys = {
+		{
+			"<leader>fs",
+			function()
+				require("rip-substitute").sub()
+			end,
+			mode = { "n", "x" },
+			desc = " rip substitute",
+		},
+	},
 }
