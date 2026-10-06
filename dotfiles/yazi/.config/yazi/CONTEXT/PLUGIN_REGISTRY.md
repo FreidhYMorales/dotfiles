@@ -91,12 +91,12 @@ Formato de cada entrada:
 - **Instalar:** `ya pkg add lpnh/fr` (fijado en `package.toml`, sin clone manual)
 - **setup():** opcional — esta config no lo invoca (sin `require("fr"):setup()`)
 - **Tipo:** plugin (búsqueda de contenido con rg/rga + fzf + preview con bat)
-- **Dependencias:** `fzf`, `ripgrep`, `bat`; `ripgrep-all` (rga) para `f,G`
+- **Dependencias:** `fzf`, `ripgrep`, `bat`; `ripgrep-all` (rga) para `g,R`
 - **Estado:** ✅ instalado y funcionando
-- **Keybind:** `f,g` (`plugin fr rg`) · `f,G` (`plugin fr rga`, incluye PDFs/documentos)
+- **Keybind:** `g,r` (`plugin fr rg`) · `g,R` (`plugin fr rga`, incluye PDFs/documentos)
 - **Bugs corregidos:**
   - Reemplaza a `DreamMaoMao/fg.yazi` (clone manual, archivado 2026-09, usaba `ya.mgr_emit` — ver I-10)
-- **Notas:** Hace `reveal` del resultado en Yazi — navega, nunca abre el editor (I-04). Dentro de fzf: `<C-s>` alterna match rg/fzf, `<C-r>` recarga, `<C-\>` cambia la posición del preview, `<C-]>` cambia el tamaño del preview. La búsqueda por nombre (`f,f`) usa el plugin `fzf` built-in de Yazi, no `fr`.
+- **Notas:** Hace `reveal` del resultado en Yazi — navega, nunca abre el editor (I-04). Dentro de fzf: `<C-s>` alterna match rg/fzf, `<C-r>` recarga, `<C-\>` cambia la posición del preview, `<C-]>` cambia el tamaño del preview. La búsqueda por nombre (`z`) usa el plugin `fzf` built-in de Yazi, no `fr`.
 
 ---
 
@@ -248,3 +248,42 @@ Formato de cada entrada:
 - **Keybind:** automático (UI permanente)
 - **Bugs:** —
 - **Notas:** INVARIANTE: cargar DESPUÉS de yatline. Usa `Header:children_remove` + `Header:children_add` para tomar el header. Requiere starship instalado y configurado en el sistema.
+
+---
+
+## [16] git
+
+- **Repo:** yazi-rs/plugins:git (oficial)
+- **setup():** SÍ — `require("git"):setup({ order = 1500 })`
+- **Tipo:** fetcher + linemode (estado git por archivo/carpeta)
+- **Dependencias:** `git`
+- **Estado:** ✅ instalado y verificado en vivo (Yazi 26.9.1)
+- **Keybind:** automático (signo en el linemode de la derecha)
+- **Bugs:** —
+- **Notas:** Requiere registrar los fetchers en `yazi.toml` `[plugin] prepend_fetchers` (`url = "*"` y `url = "*/"`, `run = "git"`, `group = "git"`). Sin los fetchers, el setup no muestra nada.
+
+---
+
+## [17] toggle-pane
+
+- **Repo:** yazi-rs/plugins:toggle-pane (oficial)
+- **setup():** NO
+- **Tipo:** plugin on-demand
+- **Dependencias:** —
+- **Estado:** ✅ instalado y verificado en vivo (Yazi 26.9.1)
+- **Keybind:** `<A-p>` max-preview · `<A-P>` min-preview (`T` del README choca con tab_create)
+- **Bugs:** —
+- **Notas:** Maximizar/ocultar el panel de preview (`max-preview` / `min-preview`).
+
+---
+
+## [18] chmod
+
+- **Repo:** yazi-rs/plugins:chmod (oficial)
+- **setup():** NO
+- **Tipo:** plugin on-demand
+- **Dependencias:** —
+- **Estado:** ✅ instalado y verificado en vivo (Yazi 26.9.1)
+- **Keybind:** `c,m`
+- **Bugs:** —
+- **Notas:** Pide el modo en un input y aplica `chmod` a la selección.

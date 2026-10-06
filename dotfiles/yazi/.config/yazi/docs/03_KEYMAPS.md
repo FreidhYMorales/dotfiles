@@ -42,10 +42,10 @@ Capas válidas en 26.x: `mgr`, `tasks`, `spot`, `pick`, `input`, `confirm`, `hel
 
 | Tecla(s) | Comando | Resultado |
 |----------|---------|-----------|
-| `s,n` | `sort natural --dir-first` | Natural (A1 < A2 < A10) |
-| `s,a` | `sort alphabetical --dir-first` | Alfabético estricto |
-| `s,m` | `sort mtime --dir-first --reverse` | Más reciente primero (`modified` no es un `SortBy` válido en 26.x) |
-| `s,s` | `sort size --dir-first --reverse` | Más grande primero |
+| `,n` | `sort natural` + `linemode none` | Natural (A1 < A2 < A10) |
+| `,a` | `sort alphabetical` + `linemode none` | Alfabético estricto |
+| `,m` | `sort mtime --reverse` + `linemode mtime` | Más reciente primero, muestra la fecha (`modified` no es un `SortBy` válido en 26.x) |
+| `,s` | `sort size --reverse` + `linemode size` | Más grande primero, muestra el tamaño. Resto de chords `,` (`,M` `,S` `,e` `,b` `,r`…) quedan default. `--dir-first` sale de `sort_dir_first = true` en yazi.toml |
 
 ### Tabs
 
@@ -77,9 +77,8 @@ Capas válidas en 26.x: `mgr`, `tasks`, `spot`, `pick`, `input`, `confirm`, `hel
 | `f` | `filter` | Filtro inline (en directorio actual) |
 | `/` | `find` | Búsqueda incremental |
 | `z` | `jump` | Jump zoxide/fzf |
-| `f,g` | `plugin fr rg` | Buscar contenido (rg + fzf, preview con bat) |
-| `f,G` | `plugin fr rga` | Buscar contenido incluyendo PDFs/documentos (ripgrep-all) |
-| `f,f` | `plugin fzf` | Buscar nombre de archivo (fzf built-in de Yazi, igual que `z`) |
+| `g,r` | `plugin fr rg` | Buscar contenido (rg + fzf, preview con bat) |
+| `g,R` | `plugin fr rga` | Buscar contenido incluyendo PDFs/documentos (ripgrep-all) |
 
 Dentro de fzf (`fr`): `<C-s>` alterna match rg/fzf, `<C-r>` recarga, `<C-\>` cambia la posición del preview, `<C-]>` cambia el tamaño del preview. Al confirmar, `fr` hace `reveal` del archivo en Yazi (I-04).
 
@@ -107,6 +106,9 @@ Dentro de fzf (`fr`): `<C-s>` alterna match rg/fzf, `<C-r>` recarga, `<C-\>` cam
 | `` `,` `` | gvfs | Volver al directorio anterior |
 | `M,M` | mount | Gestor de discos locales (udisks2) |
 | `g,i` | lazygit | Abrir lazygit en el dir actual |
+| `<A-p>` | toggle-pane | Maximizar / restaurar el preview (`T` ya es tab_create) |
+| `<A-P>` | toggle-pane | Ocultar / restaurar el preview |
+| `c,m` | chmod | Cambiar permisos de la selección (ej: `755`, `+x`) |
 
 ### Papelera (recycle-bin)
 
@@ -191,7 +193,7 @@ El dígito actúa como prefijo. Después de pulsar `3`, el siguiente `j`/`k` mue
 | `s` (sort prefix) vs `s` default | Yazi default usa `s` para buscar | Sobreescrito por `prepend_keymap` — sort gana |
 | `.` (hidden) vs `.` default | Yazi default no tenía `.` | Sin conflicto |
 | `1`–`9` vs números en default | Yazi 26.x no usa números como binds por defecto | Sin conflicto |
-| `f` (filter) vs `f,g/G/f` (fr / fzf) | `f` solo no conflicta con `f,*` chords en Yazi | Sin conflicto — Yazi distingue single vs chord |
+| `f` (filter) / `s` (search fd) | Un chord con prefijo `f,*` o `s,*` tapa la tecla sola | Por eso sort usa `,` y fr usa `g,r`/`g,R` — `f` y `s` quedan con su función default |
 
 ### Wayland / Kitty — Clipboard
 

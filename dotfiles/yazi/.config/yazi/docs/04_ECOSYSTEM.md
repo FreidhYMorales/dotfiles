@@ -22,10 +22,13 @@
 | 13 | what-size | `pirafrank/what-size` | ✅ optional | `require():setup()` |
 | 14 | lazygit | `Lil-Dank/lazygit` | ❌ | keybind-only |
 | 15 | recycle-bin | `uhs-robert/recycle-bin` | ✅ required | `require():setup()` |
+| 16 | git | `yazi-rs/plugins:git` | ✅ required | `require():setup()` + fetchers en yazi.toml |
+| 17 | toggle-pane | `yazi-rs/plugins:toggle-pane` | ✅ required | — (keybind) |
+| 18 | chmod | `yazi-rs/plugins:chmod` | ✅ required | — (keybind) |
 
 \*Fork de `dedukun/relative-motions`: el original (sin mantenimiento desde 2025-07) usa `ya.mgr_emit`, removido en Yazi 26 (ver I-10). El fork usa `ya.emit`/`ui.render`, pero su autor también lo marca como sin mantenimiento.
 
-\*\*Reemplaza a `DreamMaoMao/fg.yazi` (clone manual, archivado 2026-09, también usaba `ya.mgr_emit`). `fr` se instala con `ya pkg` y queda fijado en `package.toml` — ya no hay clone manual. `f,f` (búsqueda por nombre) usa el plugin `fzf` built-in de Yazi.
+\*\*Reemplaza a `DreamMaoMao/fg.yazi` (clone manual, archivado 2026-09, también usaba `ya.mgr_emit`). `fr` se instala con `ya pkg` y queda fijado en `package.toml` — ya no hay clone manual. `z` (búsqueda por nombre) usa el plugin `fzf` built-in de Yazi.
 
 `orhnk/system-clipboard` se eliminó: era una dependencia muerta (nada lo usaba); el clipboard activo es `XYenon/clipboard`.
 
@@ -37,7 +40,7 @@
 |--------|---------------|-------------|-------|
 | yatline | — | — | Requiere Nerd Font en Kitty |
 | clipboard | `wl-copy`, `wl-paste` | `wl-clipboard` | Ya disponible en Hyprland |
-| fr | `fzf`, `rg`, `bat`, `rga` | `fzf ripgrep bat ripgrep-all` | `ripgrep-all` solo para `f,G` (PDFs/documentos) |
+| fr | `fzf`, `rg`, `bat`, `rga` | `fzf ripgrep bat ripgrep-all` | `ripgrep-all` solo para `g,R` (PDFs/documentos) |
 | gvfs | `gio`, daemons gvfs | `gvfs gvfs-mtp gvfs-backends` | gvfs-mtp para Android/MTP |
 | mount | `udisksctl`, `lsblk`, `eject` | `udisks2 util-linux` | udisks2 ya en Hyprland |
 | rich-preview | `rich` | AUR: `rich-cli` o `pipx install rich-cli` | Python CLI |
@@ -47,6 +50,7 @@
 | ouch | `ouch` | `ouch` | Compresor/descompresor universal |
 | lazygit | `lazygit` | `lazygit` | — |
 | recycle-bin | `trash-put`, `trash-list` | `trash-cli` | — |
+| git | `git` | `git` | — |
 
 ---
 
@@ -88,7 +92,10 @@ ya pkg add \
   uhs-robert/recycle-bin \
   boydaihungst/gvfs \
   yazi-rs/plugins:mount \
-  lpnh/fr
+  lpnh/fr \
+  yazi-rs/plugins:git \
+  yazi-rs/plugins:toggle-pane \
+  yazi-rs/plugins:chmod
 
 echo "==> Symlink de plugins..."
 ln -sf ~/.config/yazi/plugins \
@@ -100,7 +107,7 @@ echo "✓ Instalación completa."
 **One-liner** (para instalaciones rápidas sin script):
 
 ```bash
-sudo pacman -S --needed gvfs gvfs-mtp gvfs-backends udisks2 util-linux fzf ripgrep ripgrep-all bat glow hexyl mediainfo imagemagick ffmpeg ouch lazygit trash-cli wl-clipboard && yay -S --needed rich-cli && ya pkg add imsi32/yatline XYenon/clipboard boydaihungst/relative-motions Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs yazi-rs/plugins:mount lpnh/fr
+sudo pacman -S --needed gvfs gvfs-mtp gvfs-backends udisks2 util-linux fzf ripgrep ripgrep-all bat glow hexyl mediainfo imagemagick ffmpeg ouch lazygit trash-cli wl-clipboard && yay -S --needed rich-cli && ya pkg add imsi32/yatline XYenon/clipboard boydaihungst/relative-motions Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs yazi-rs/plugins:mount lpnh/fr yazi-rs/plugins:git yazi-rs/plugins:toggle-pane yazi-rs/plugins:chmod
 ```
 
 ---

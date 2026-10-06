@@ -56,7 +56,7 @@ ls ~/.config/yazi/plugins/
 | Bind de input no hace nada | Comando inválido (`kill-line-to-start`, `kill-line`) | Usar `kill bol` / `kill eol`, o no declararlo (son defaults) |
 | `X` cierra otra pestaña | `tab_close 0` usa índice absoluto (cierra la primera) | Usar `close` (pestaña actual; sale si es la última) |
 | `!` no ejecuta nada | `shell --block --confirm` (`--confirm` ya no existe) | `shell --block --interactive` |
-| `s,m` no ordena | `sort modified` — `modified` no es `SortBy` válido | `sort mtime`; válidos: `none`, `mtime`, `btime`, `extension`, `alphabetical`, `natural`, `size`, `random` |
+| `,m` (antes `s,m`) no ordena | `sort modified` — `modified` no es `SortBy` válido | `sort mtime`; válidos: `none`, `mtime`, `btime`, `extension`, `alphabetical`, `natural`, `size`, `random` |
 
 ### Preview no funciona
 
@@ -101,7 +101,7 @@ ls ~/.config/yazi/plugins/
 | `clipboard` no copia | wl-clipboard no instalado | `sudo pacman -S wl-clipboard` |
 | `clipboard` parece no funcionar | MIME type equivocado al verificar | Usar `wl-paste -t text/uri-list` |
 | `relative-motions` salta mal (`3j`/`5k` erráticos) o la búsqueda de contenido (antiguo `fg.yazi`) falla; error `attempt to call a nil value (field 'mgr_emit')` | El plugin usa `ya.mgr_emit`, removido en Yazi 26 (I-10) | Usar el fork `boydaihungst/relative-motions` y `lpnh/fr` (reemplazo de `fg.yazi`); en plugins locales, cambiar `ya.mgr_emit` por `ya.emit`. Detectar: `rg -n mgr_emit plugins/` |
-| `f,G` no encuentra nada en PDFs/documentos | `ripgrep-all` (rga) no instalado | `sudo pacman -S ripgrep-all` |
+| `g,R` no encuentra nada en PDFs/documentos | `ripgrep-all` (rga) no instalado | `sudo pacman -S ripgrep-all` |
 | `gvfs` no muestra dispositivos MTP | gvfs-mtp no instalado | `sudo pacman -S gvfs-mtp` |
 | `recycle-bin` falla al restaurar | trash-cli no instalado | `sudo pacman -S trash-cli` |
 

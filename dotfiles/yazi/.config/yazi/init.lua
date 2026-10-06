@@ -299,6 +299,15 @@ require("what-size"):setup({})
 -- (sin require — invocado on-demand via keybind)
 
 -- ─────────────────────────────────────────────────────────────
+--  [16] git — Estado git por archivo en el linemode (M, A, ?, !, D...)
+--  Repo:    yazi-rs/plugins:git  (ya pkg add yazi-rs/plugins:git)
+--  Dep:     git
+--  setup(): YES — más los fetchers `git` en yazi.toml [plugin]
+--  order:   1500 — posición del signo dentro del linemode
+-- ─────────────────────────────────────────────────────────────
+require("git"):setup({ order = 1500 })
+
+-- ─────────────────────────────────────────────────────────────
 --  [15] recycle-bin — Papelera de reciclaje via trash-cli
 --  Repo:    uhs-robert/recycle-bin  (ya pkg add uhs-robert/recycle-bin)
 --  Dep:     trash-cli (sudo pacman -S trash-cli)
@@ -308,3 +317,19 @@ require("what-size"):setup({})
 if ya.uid then
 	require("recycle-bin"):setup()
 end
+
+-- ─────────────────────────────────────────────────────────────
+--  [17] toggle-pane — Maximizar/ocultar el panel de preview
+--  Repo:    yazi-rs/plugins:toggle-pane  (ya pkg add yazi-rs/plugins:toggle-pane)
+--  setup(): NO — keybind only
+--  Keybind: <A-p> max-preview | <A-P> min-preview
+-- ─────────────────────────────────────────────────────────────
+-- (sin require — invocado on-demand via keybind)
+
+-- ─────────────────────────────────────────────────────────────
+--  [18] chmod — Cambiar permisos de los archivos seleccionados
+--  Repo:    yazi-rs/plugins:chmod  (ya pkg add yazi-rs/plugins:chmod)
+--  setup(): NO — keybind only
+--  Keybind: c,m → pide el modo (ej: 755, +x) en un input
+-- ─────────────────────────────────────────────────────────────
+-- (sin require — invocado on-demand via keybind)

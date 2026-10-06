@@ -83,9 +83,16 @@ suppress_preload = false
 #  Plugins de preview se añaden aquí (gvfs, rich-preview, glow, hexyl, mediainfo, ouch)
 # ============================================================
 [plugin]
+# [git] — fetchers que calculan el estado git de archivos y carpetas
+prepend_fetchers = [
+  { url = "*",  run = "git", group = "git" },
+  { url = "*/", run = "git", group = "git" },
+]
+
 prepend_preloaders = [
   # gvfs — evitar que Yazi intente precargar archivos en puntos de montaje GVFS
-  # { url = "/run/user/1000/gvfs/**/*",   run = "noop" },
+  # (MTP/SMB/SFTP: precargar ahí lee archivos remotos completos y traba la UI)
+  { url = "/run/user/1000/gvfs/**/*",   run = "noop" },
   { url = "/run/media/deadlock/**/*",   run = "noop" },
   # simple-mtp — evitar precarga en montajes FUSE de simple-mtpfs
   { url = "/run/user/1000/mtp/**/*",    run = "noop" },

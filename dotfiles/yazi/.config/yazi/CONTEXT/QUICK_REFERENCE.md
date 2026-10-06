@@ -34,10 +34,10 @@
 | `G`           | cursor bottom                  | default   |
 | `<C-d>`       | cursor page down               | default   |
 | `<C-u>`       | cursor page up                 | default   |
-| `s,n`         | sort natural                   | keymap    |
-| `s,a`         | sort alphabetical               | keymap    |
-| `s,m`         | sort mtime (newest)            | keymap    |
-| `s,s`         | sort size (largest)            | keymap    |
+| `,n`          | sort natural (linemode none)   | keymap    |
+| `,a`          | sort alphabetical (linemode none) | keymap |
+| `,m`          | sort mtime newest + linemode mtime | keymap |
+| `,s`          | sort size largest + linemode size | keymap |
 | `T`           | tab_create --current           | keymap    |
 | `X`           | close (tab actual; sale si es la última) | keymap |
 | `<Tab>`       | tab_switch +1                  | keymap    |
@@ -54,9 +54,11 @@
 | `f`           | filter                         | default   |
 | `/`           | find (incremental)             | default   |
 | `z`           | jump (zoxide/fzf)              | default   |
-| `f,g`         | buscar contenido (rg + fzf)    | fr        |
-| `f,G`         | buscar contenido incl. PDFs/docs (rga) | fr |
-| `f,f`         | buscar nombre (fzf built-in, igual que `z`) | keymap |
+| `g,r`         | buscar contenido (rg + fzf)    | fr        |
+| `g,R`         | buscar contenido incl. PDFs/docs (rga) | fr |
+| `<A-p>` / `<A-P>` | maximizar / ocultar preview | toggle-pane |
+| `c,m`         | chmod de la selección          | chmod     |
+| `f` / `s` / `z` | filter / search fd / fzf (defaults de Yazi) | default |
 | `~`           | help                           | default   |
 
 ### Input
@@ -80,7 +82,7 @@ Sin overrides — se usan los defaults de Yazi (`<C-c>` close, `<Esc>` escape, `
 | 02 | clipboard        | Core       | ✅        | ✅          | `y` / `<C-p>`| ✅ OK               |
 | 03 | relative-motions (fork boydaihungst) | Workflow | ✅        | ✅          | `1`–`9`      | ✅ OK               |
 | 04 | bypass           | Workflow   | ✅        | ✅          | `l`/`→`/`Enter` | ✅ OK            |
-| 05 | fr               | Search     | ✅        | ✅          | `f,g` / `f,G`| ✅ OK               |
+| 05 | fr               | Search     | ✅        | ✅          | `g,r` / `g,R`| ✅ OK               |
 | 06 | gvfs             | System     | ✅        | ✅          | `M,*` / `g,m`| ✅ OK               |
 | 07 | mount            | System     | ✅        | ✅          | `M,M`        | ✅ OK               |
 | 08 | rich-preview     | Preview    | ✅        | ✅          | automático   | ✅ OK               |
@@ -92,6 +94,9 @@ Sin overrides — se usan los defaults de Yazi (`<C-c>` close, `<Esc>` escape, `
 | 13 | what-size        | Utility    | ✅        | ✅          | `<C-s>`      | ✅ OK               |
 | 14 | lazygit          | Git        | ✅        | ✅          | `g,i`        | ✅ OK               |
 | 15 | recycle-bin      | Security   | ✅        | ✅          | `R,b`+más    | ✅ OK               |
+| 16 | git              | UI         | ✅        | ✅          | automático   | ✅ OK               |
+| 17 | toggle-pane      | UI         | ✅        | ✅          | `<A-p>`/`<A-P>` | ✅ OK            |
+| 18 | chmod            | Utility    | ✅        | ✅          | `c,m`        | ✅ OK               |
 | 16 | piper            | Automation | ✅        | ✅          | automático   | ✅ OK (wrapper)     |
 | 00 | full-border      | UI         | ✅        | ✅          | —            | ✅ OK (PLAIN)       |
 | —  | ~~starship~~     | ~~UI~~     | —         | —           | —            | ❌ Eliminado        |

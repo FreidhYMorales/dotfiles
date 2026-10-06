@@ -110,7 +110,7 @@ Usuario pulsa Enter/l sobre un archivo
 ### Invocación de plugins via keybind
 
 ```
-Usuario pulsa keybind (ej: f,g)
+Usuario pulsa keybind (ej: g,r)
         │
         ▼
   Yazi busca en $YAZI_CONFIG_HOME/plugins/fr.yazi/
@@ -157,7 +157,7 @@ edit = [
 
 ### Caso concreto — búsqueda de contenido (`fr`)
 
-`f,g` / `f,G` invocan `plugin fr rg` / `plugin fr rga`. Al elegir un resultado en fzf, `fr` hace `reveal` del archivo en Yazi: el cursor queda sobre él y el usuario decide si abrirlo (`Enter`/`l` → opener `edit`). No hay `require("fr"):setup()` en `init.lua` (el setup es opcional).
+`g,r` / `g,R` invocan `plugin fr rg` / `plugin fr rga`. Al elegir un resultado en fzf, `fr` hace `reveal` del archivo en Yazi: el cursor queda sobre él y el usuario decide si abrirlo (`Enter`/`l` → opener `edit`). No hay `require("fr"):setup()` en `init.lua` (el setup es opcional).
 
 > Histórico: el plugin anterior, `fg.yazi`, se configuraba con `default_action = "jump"` para cumplir esta regla. Se reemplazó por `fr` porque estaba archivado y usaba `ya.mgr_emit`, removido en Yazi 26 (ver I-10).
 

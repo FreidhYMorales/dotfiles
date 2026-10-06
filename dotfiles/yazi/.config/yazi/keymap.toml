@@ -21,11 +21,14 @@ prepend_keymap = [
   { on = "H", run = "back",               desc = "History back"  },
   { on = "L", run = "forward",            desc = "History forward" },
 
-  # --- Sorting ---
-  { on = ["s", "n"], run = "sort natural   --dir-first", desc = "Sort: natural"      },
-  { on = ["s", "a"], run = "sort alphabetical --dir-first", desc = "Sort: alphabetical" },
-  { on = ["s", "m"], run = "sort mtime     --dir-first --reverse", desc = "Sort: modified (newest first)" },
-  { on = ["s", "s"], run = "sort size      --dir-first --reverse", desc = "Sort: size (largest first)"    },
+  # --- Sorting (`,` prefix, Yazi's default chord) ---
+  # Only the 4 below are overridden (newest/largest first + matching linemode);
+  # the rest of Yazi's `,` chords (,M ,S ,e ,b ,r ...) stay as defaults.
+  # `s` / `f` are left free again for Yazi's search (fd) / filter.
+  { on = [",", "n"], run = ["sort natural", "linemode none"],                desc = "Sort: natural" },
+  { on = [",", "a"], run = ["sort alphabetical", "linemode none"],           desc = "Sort: alphabetical" },
+  { on = [",", "m"], run = ["sort mtime --reverse", "linemode mtime"],       desc = "Sort: modified (newest first)" },
+  { on = [",", "s"], run = ["sort size --reverse", "linemode size"],         desc = "Sort: size (largest first)" },
 
   # --- Tabs ---
   { on = "T", run = "tab_create --current", desc = "New tab (current dir)" },
@@ -62,11 +65,11 @@ prepend_keymap = [
   { on = "9", run = "plugin relative-motions 9", desc = "Relative motion: 9" },
   # [PLUGIN: bypass] — keybinds en Navigation section (l, →, Enter)
   # [PLUGIN: fr] — reemplaza a fg.yazi (archivado, usaba ya.mgr_emit, removido en Yazi 26)
+  # Prefijo g,r (libre en el keymap default) — `f` vuelve a ser el filter nativo.
+  # Búsqueda por nombre: `z` (plugin fzf built-in de Yazi).
   # Dentro de fzf: <C-s> alterna match rg/fzf, <C-r> recarga, <C-\> mueve el preview
-  { on = ["f", "g"], run = "plugin fr rg",  desc = "Search file content (rg + fzf + bat)" },
-  { on = ["f", "G"], run = "plugin fr rga", desc = "Search content incl. PDFs/docs (rga)" },
-  # Búsqueda por nombre: plugin fzf built-in de Yazi (mismo que la tecla `z`)
-  { on = ["f", "f"], run = "plugin fzf",    desc = "Search filename (fzf)" },
+  { on = ["g", "r"], run = "plugin fr rg",  desc = "Search file content (rg + fzf + bat)" },
+  { on = ["g", "R"], run = "plugin fr rga", desc = "Search content incl. PDFs/docs (rga)" },
   # [PLUGIN: gvfs]
   { on = ["M", "m"], run = "plugin gvfs -- select-then-mount --jump", desc = "GVFS: montar dispositivo y saltar" },
   { on = ["M", "u"], run = "plugin gvfs -- select-then-unmount --eject", desc = "GVFS: desmontar y expulsar" },
@@ -98,6 +101,11 @@ prepend_keymap = [
   { on = "<C-s>", run = "plugin what-size", desc = "What-size: tamaño de selección o cwd" },
   # [PLUGIN: ouch]
   { on = "C", run = "plugin ouch", desc = "Ouch: comprimir selección" },
+  # [PLUGIN: toggle-pane] (oficial) — `T` ya es tab_create, por eso Alt+p
+  { on = "<A-p>", run = "plugin toggle-pane max-preview", desc = "Toggle-pane: maximize/restore preview" },
+  { on = "<A-P>", run = "plugin toggle-pane min-preview", desc = "Toggle-pane: hide/restore preview" },
+  # [PLUGIN: chmod] (oficial) — c,m libre en el keymap default (c,c/c,d/c,f/c,n copian rutas)
+  { on = ["c", "m"], run = "plugin chmod", desc = "Chmod: cambiar permisos de la selección" },
   # [PLUGIN: lazygit]
   { on = ["g", "i"], run = "plugin lazygit", desc = "Lazygit: abrir en directorio actual" },
 ]
