@@ -97,7 +97,7 @@ Usuario pulsa Enter/l sobre un archivo
               │
               ▼
         Primer mime que coincide:
-        ├── archives    → ouch decompress %s  (block=true)
+        ├── archives    → ya emit plugin ouch-extract  (plugin local: pide contraseña si hace falta)
         ├── text/*      → nvim %s  (block=true)
         ├── image/*     → xdg-open
         ├── video/*     → xdg-open

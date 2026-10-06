@@ -333,3 +333,12 @@ end
 --  Keybind: c,m → pide el modo (ej: 755, +x) en un input
 -- ─────────────────────────────────────────────────────────────
 -- (sin require — invocado on-demand via keybind)
+
+-- ─────────────────────────────────────────────────────────────
+--  [19] ouch-extract — Extracción con prompt de contraseña (plugin local)
+--  Ruta:    plugins/ouch-extract.yazi/ (versionado, no viene de ya pkg)
+--  Dep:     ouch >= 0.8 (contraseña vía OUCH_PASSWORD)
+--  setup(): NO — lo invoca el opener `extract` de yazi.toml
+-- ─────────────────────────────────────────────────────────────
+-- (sin require — invocado vía `ya emit plugin ouch-extract`)
+

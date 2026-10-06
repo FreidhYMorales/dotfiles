@@ -41,8 +41,11 @@ edit = [
 open = [
   { run = 'xdg-open %s1', desc = "xdg-open" },
 ]
+# Local plugin (plugins/ouch-extract.yazi): runs ouch, prompts for a password
+# (hidden input) when the archive is encrypted, and only moves the result into
+# place on success. `ya emit` targets this Yazi instance via $YAZI_ID.
 extract = [
-  { run = 'ouch decompress -y %s', desc = "Extract with ouch" },
+  { run = 'ya emit plugin ouch-extract', desc = "Extract with ouch" },
 ]
 reveal = [
   { run = 'xdg-open %d1', desc = "Reveal in file manager" },

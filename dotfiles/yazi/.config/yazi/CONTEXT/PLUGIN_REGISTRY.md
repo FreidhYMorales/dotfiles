@@ -287,3 +287,17 @@ Formato de cada entrada:
 - **Keybind:** `c,m`
 - **Bugs:** —
 - **Notas:** Pide el modo en un input y aplica `chmod` a la selección.
+
+---
+
+## [19] ouch-extract (local)
+
+- **Repo:** local — `plugins/ouch-extract.yazi/` (versionado en el repo, excepción en `.gitignore`; no lo gestiona `ya pkg`)
+- **setup():** NO
+- **Tipo:** plugin on-demand, invocado por el opener `extract` de `yazi.toml` (`ya emit plugin ouch-extract`)
+- **Dependencias:** `ouch` ≥ 0.8 (lee la contraseña de `OUCH_PASSWORD`)
+- **Estado:** ✅ verificado en vivo (zip/7z cifrados, contraseña incorrecta, cancelar, sin contraseña, colisión de nombre)
+- **Keybind:** `Enter`/`l` sobre un archivo comprimido (regla `[open]` de archives)
+- **Bugs:** —
+- **Notas:** Extrae a una carpeta temporal oculta junto al archivo y solo mueve el resultado si ouch terminó bien — ouch deja carpetas a medio escribir (y en 7z hasta archivos basura) cuando falta o es incorrecta la contraseña. Si detecta "password" en el error, abre un input con `obscure = true` (texto oculto) y reintenta; `Esc` cancela. La contraseña viaja por variable de entorno, nunca por argv (no aparece en `ps`). Si el destino ya existe, usa un nombre libre (`plain_1`). Reemplaza al viejo `scripts/ouch-extract.sh`, que no estaba conectado y tenía la contraseña en argv.
+

@@ -25,6 +25,7 @@
 | 16 | git | `yazi-rs/plugins:git` | ✅ required | `require():setup()` + fetchers en yazi.toml |
 | 17 | toggle-pane | `yazi-rs/plugins:toggle-pane` | ✅ required | — (keybind) |
 | 18 | chmod | `yazi-rs/plugins:chmod` | ✅ required | — (keybind) |
+| 19 | ouch-extract | local (`plugins/ouch-extract.yazi/`) | ✅ required | — (opener `extract`) |
 
 \*Fork de `dedukun/relative-motions`: el original (sin mantenimiento desde 2025-07) usa `ya.mgr_emit`, removido en Yazi 26 (ver I-10). El fork usa `ya.emit`/`ui.render`, pero su autor también lo marca como sin mantenimiento.
 

@@ -97,6 +97,7 @@ Sin overrides — se usan los defaults de Yazi (`<C-c>` close, `<Esc>` escape, `
 | 16 | git              | UI         | ✅        | ✅          | automático   | ✅ OK               |
 | 17 | toggle-pane      | UI         | ✅        | ✅          | `<A-p>`/`<A-P>` | ✅ OK            |
 | 18 | chmod            | Utility    | ✅        | ✅          | `c,m`        | ✅ OK               |
+| 19 | ouch-extract     | Archive    | ✅        | ✅          | Enter (opener) | ✅ OK (local)     |
 | 16 | piper            | Automation | ✅        | ✅          | automático   | ✅ OK (wrapper)     |
 | 00 | full-border      | UI         | ✅        | ✅          | —            | ✅ OK (PLAIN)       |
 | —  | ~~starship~~     | ~~UI~~     | —         | —           | —            | ❌ Eliminado        |
