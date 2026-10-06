@@ -88,7 +88,5 @@ use = "yazi-rs/plugins:chmod"
 rev = "6229767"
 hash = "87472b05a8c420100f6a2b9cde1e7746"
 
-[[flavor.deps]]
-use = "yazi-rs/flavors:dracula"
-rev = "20b47bf"
-hash = "40136c9a02e166067a36d9ad618887f2"
+[flavor]
+deps = []
