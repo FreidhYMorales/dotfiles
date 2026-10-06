@@ -52,13 +52,13 @@ CONTEXT/                          ← documentación técnica interna
 
 ## Servidores LSP activos
 
-lua_ls, ts_ls, html, cssls, tailwindcss, gopls, pyright, ruff, clangd, bashls,
+lua_ls, ts_ls, biome, html, cssls, tailwindcss, gopls, pyright, ruff, clangd, bashls,
 angularls, emmet_ls, marksman, rust_analyzer, qmlls, jsonls, yamlls (csharp_ls desactivado: requiere .NET SDK)
 
 ## Grupos de keymaps (`<leader>`)
 
 ```
-a → AI tools (ac=claude code)
+a → AI tools — Claude Code (ac toggle, af/ar/aC/am/ab/as/aa/ad)
 b → Buffer
 c → Code (format, actions, diagnostics, lint)
 d → Debug (DAP)

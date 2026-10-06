@@ -1,20 +1,14 @@
 return {
 	"gbprod/yanky.nvim",
-	-- event omitido: las keys = { "y", "p", ... } ya disparan la carga
+	-- Loaded on read (not only on y/p): until setup runs, its TextYankPost
+	-- handler doesn't exist and deletes/changes never reach the ring.
+	event = "BufReadPost",
+	-- Snacks must load first so Snacks.picker.yanky registers
+	dependencies = { "folke/snacks.nvim" },
 	opts = {
+		-- ring/preserve_cursor_position were the defaults; only the timer differs
 		highlight = {
-			on_put = true,
-			on_yank = true,
 			timer = 200,
-		},
-		ring = {
-			history_length = 100,
-			storage = "shada",
-			sync_with_numbered_registers = true,
-			cancel_event = "update",
-		},
-		preserve_cursor_position = {
-			enabled = true,
 		},
 	},
 	keys = {
@@ -26,7 +20,10 @@ return {
 			desc = "Yank History",
 		},
 		{ "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank text" },
-		{ "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" }, desc = "Put yanked text after cursor" },
+		{ "p", "<Plug>(YankyPutAfter)", desc = "Put yanked text after cursor" },
+		-- Visual p uses the P variant: replaces the selection without yanking it
+		-- (keeps the register, like the old `"_dP` mapping in keymaps.lua)
+		{ "p", "<Plug>(YankyPutBefore)", mode = "x", desc = "Paste without yanking selection" },
 		{ "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" }, desc = "Put yanked text before cursor" },
 		{ "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" }, desc = "Put yanked text after selection" },
 		{ "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" }, desc = "Put yanked text before selection" },

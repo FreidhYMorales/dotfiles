@@ -1,44 +1,62 @@
+-- Claude Code is the only AI tool, so its keys live directly under <leader>a
+-- (README layout). A nested <leader>ac* group made the <leader>ac toggle wait
+-- for timeoutlen.
 return {
 	"coder/claudecode.nvim",
 	dependencies = { "folke/snacks.nvim" },
+	-- Commands exist on a fresh start, before any key is pressed
+	cmd = {
+		"ClaudeCode",
+		"ClaudeCodeFocus",
+		"ClaudeCodeSelectModel",
+		"ClaudeCodeAdd",
+		"ClaudeCodeSend",
+		"ClaudeCodeTreeAdd",
+		"ClaudeCodeStatus",
+		"ClaudeCodeStart",
+		"ClaudeCodeStop",
+		"ClaudeCodeOpen",
+		"ClaudeCodeClose",
+		"ClaudeCodeDiffAccept",
+		"ClaudeCodeDiffDeny",
+		"ClaudeCodeCloseAllDiffs",
+	},
 	opts = {
 		terminal = {
 			split_side = "left",
 			split_width_percentage = 0.30,
 			provider = "snacks",
-			-- Add <leader>ac in terminal mode so the toggle works from inside the terminal.
-			-- This is buffer-local so it only intercepts that key sequence in the Claude window.
+			-- Hide from inside the terminal. Must not start with <leader> (Space):
+			-- a terminal-mode <leader> mapping delays every typed space.
 			snacks_win_opts = {
 				keys = {
-					claude_toggle = {
-						"<leader>ac",
-						function()
-							vim.cmd("ClaudeCode")
+					claude_hide = {
+						"<C-,>",
+						function(self)
+							self:hide()
 						end,
 						mode = "t",
-						desc = "Toggle Claude terminal",
+						desc = "Hide Claude terminal",
 					},
 				},
 			},
 		},
 	},
 	keys = {
-		{ "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle" },
-		{ "<leader>acf", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus" },
-		{ "<leader>acr", "<cmd>ClaudeCode --resume<cr>", desc = "Resume" },
-		{ "<leader>acc", "<cmd>ClaudeCode --continue<cr>", desc = "Continue" },
-		{ "<leader>acm", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select model" },
-		{ "<leader>acb", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add buffer" },
-		{ "<leader>acs", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
+		{ "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
+		{ "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
+		{ "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
+		{ "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
+		{ "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select model" },
+		{ "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add buffer" },
+		{ "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "x", desc = "Send selection" },
 		{
-			"<leader>acs",
+			"<leader>as",
 			"<cmd>ClaudeCodeTreeAdd<cr>",
 			desc = "Add file",
-			ft = { "NvimTree", "neo-tree", "oil", "minifiles" },
+			ft = { "oil", "snacks_picker_list" },
 		},
-		{ "<leader>aca", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-		{ "<leader>acd", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
-		{ "<leader>ack", "<cmd>ClaudeCodeContinue<cr>", desc = "Continue recent" },
-		{ "<leader>acv", "<cmd>ClaudeCodeVerbose<cr>", desc = "Verbose logging" },
+		{ "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
+		{ "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
 	},
 }

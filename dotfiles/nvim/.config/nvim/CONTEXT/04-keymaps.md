@@ -21,20 +21,19 @@
 
 ## Grupo `<leader>a` — AI Tools
 
-### `<leader>ac` → Claude Code
+### Claude Code (única herramienta de IA → directo bajo `<leader>a`)
 | Key | Modo | Acción |
 |-----|------|--------|
 | `<leader>ac` | n | Toggle terminal |
-| `<leader>acf` | n | Focus |
-| `<leader>acr` | n | Resume |
-| `<leader>acc` | n | Continue |
-| `<leader>acm` | n | Select model |
-| `<leader>acb` | n | Add buffer |
-| `<leader>acs` | v | Send selection / (ft:tree) Add file |
-| `<leader>aca` | n | Accept diff |
-| `<leader>acd` | n | Deny diff |
-| `<leader>ack` | n | Continue recent |
-| `<leader>acv` | n | Verbose logging |
+| `<leader>af` | n | Focus |
+| `<leader>ar` | n | Resume |
+| `<leader>aC` | n | Continue |
+| `<leader>am` | n | Select model |
+| `<leader>ab` | n | Add buffer |
+| `<leader>as` | x / oil | Send selection / Add file (oil, snacks picker) |
+| `<leader>aa` | n | Accept diff |
+| `<leader>ad` | n | Deny diff |
+| `<C-,>` | t | Ocultar la terminal de Claude (desde adentro) |
 
 ---
 
@@ -179,13 +178,13 @@
 
 | Key | Modo | Acción | Impl |
 |-----|------|--------|------|
-| `<leader>lr` | n | Restart LSP | `stop_client` + `edit` |
+| `<leader>lr` | n | Restart LSP | `:lsp restart` (0.12) |
 | `<leader>li` | n | Toggle inlay hints (global) | `vim.lsp.inlay_hint.enable` |
-| `<leader>ll` | n | Ver LSP log | `:LspLog` |
-| `<leader>lI` | n | Ver LSP info | `:LspInfo` |
+| `<leader>ll` | n | Ver LSP log | `vim.lsp.log.get_filename()` en tab |
+| `<leader>lI` | n | Ver LSP info | `:checkhealth vim.lsp` |
 | `<leader>lm` | n | Mason | `:Mason` |
 
-> **Keymaps buffer-local (LspAttach):** `gd`, `gD`, `gR`, `gi`, `gt`, `K`,
+> **Keymaps buffer-local (LspAttach):** `gd`, `gD`, `gR`, `gI`, `gy`, `K`,
 > `<leader>ca`, `<leader>rn`, `<leader>uh` (inlay hints buffer).
 
 ---
@@ -209,7 +208,7 @@
 
 | Key | Acción |
 |-----|--------|
-| `<leader>q` | Quit (`vim.cmd.quit`) |
+| `<leader>qq` | Quit (`vim.cmd.quit`) — `<leader>q` es solo prefijo |
 | `<leader>qa` | Quit all |
 | `<leader>Q` | Force quit all |
 | `<leader>qs` | Guardar sesión (persistence) |
@@ -361,7 +360,7 @@
 | `<leader>z` | Zen mode |
 | `<leader>?` | Keymaps buffer-local (which-key) |
 | `<leader>pk` | Keymaps globales (snacks picker) |
-| `<F1>` | Neovim help (`:help`) |
+| `<F1>` | Neovim help (default nativo) |
 | `<C-;>` | Toggle `;` al final de línea (blink.nvim) |
 | `<M-,>` | Toggle `,` al final de línea (blink.nvim) |
 | `\\` | Explorer Oil |

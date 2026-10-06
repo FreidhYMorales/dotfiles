@@ -4,9 +4,6 @@ local key = vim.keymap.set
 -- GENERAL
 -- ============================================================================
 
--- Disable Q (Ex mode — nunca útil en workflow moderno)
-key("n", "Q", "<nop>")
-
 -- Clear search highlighting
 key("n", "<Esc>", "<cmd>nohl<CR>", { desc = "Clear search highlights" })
 key("n", "<C-c>", "<cmd>nohl<CR>", { desc = "Clear search highlights" })
@@ -15,11 +12,13 @@ key("n", "<C-c>", "<cmd>nohl<CR>", { desc = "Clear search highlights" })
 -- FILE OPERATIONS
 -- ============================================================================
 
--- Save — C-s funciona en Wayland/Hyprland sin XON/XOFF
-key({ "n", "i", "v" }, "<C-s>", "<cmd>w<CR><Esc>", { desc = "Save file" })
+-- Save — C-s funciona en Wayland/Hyprland sin XON/XOFF.
+-- Sin modo insert: ahí <C-s> es la signature help nativa (0.11+).
+key({ "n", "x" }, "<C-s>", "<cmd>w<CR><Esc>", { desc = "Save file" })
 
--- Quit
-key("n", "<leader>q", vim.cmd.quit, { desc = "Quit" })
+-- Quit — <leader>qq (no <leader>q): <leader>q es el prefijo de qa y de
+-- persistence (qs/qS/ql/qd), mapearlo solo esperaba timeoutlen y luego salía.
+key("n", "<leader>qq", vim.cmd.quit, { desc = "Quit" })
 key("n", "<leader>qa", function()
 	vim.cmd.qall()
 end, { desc = "Quit all" })
@@ -46,10 +45,7 @@ end, { desc = "Make file executable" })
 -- BUFFER NAVIGATION
 -- ============================================================================
 
--- Dos estilos: bracket (convención Vim) + Shift-h/l (home row, más rápido)
--- Se eliminó <S-Left>/<S-Right> — arrow keys en normal mode = mala ergonomía
-key("n", "[b", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
-key("n", "]b", "<cmd>bnext<CR>", { desc = "Next buffer" })
+-- Shift-h/l (home row). [b/]b ya son defaults de Neovim 0.11+.
 key("n", "<S-h>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 key("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 
@@ -78,7 +74,9 @@ key("n", "<leader>|", "<C-w>v", { desc = "Split vertical" })
 key("n", "<leader>we", "<C-w>=", { desc = "Equalize splits" })
 key("n", "<leader>wx", "<cmd>close<CR>", { desc = "Close split" })
 key("n", "<leader>wo", "<C-w>o", { desc = "Close other splits" })
-key("n", "<leader>wm", "<cmd>WindowsMaximize<CR>", { desc = "Maximize split (toggle)" })
+key("n", "<leader>wm", function()
+	require("snacks").zen.zoom()
+end, { desc = "Maximize split (toggle)" })
 
 -- Navigate between splits — C-hjkl (Hyprland usa Mod+hjkl, sin conflicto)
 key("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
@@ -112,7 +110,7 @@ key("n", "<leader><tab>[", "<cmd>tabp<CR>", { desc = "Previous tab" })
 
 -- Comentar — delegado a ts-comments (gc/gcc)
 key("n", "<leader>/", "gcc", { desc = "Toggle comment", remap = true })
-key("v", "<leader>/", "gc", { desc = "Toggle comment", remap = true })
+key("x", "<leader>/", "gc", { desc = "Toggle comment", remap = true })
 
 -- Mover líneas con Alt — consistente en todos los modos, sin solapar J/K built-in
 -- J/K visual built-in (join lines en visual) se preserva
@@ -124,15 +122,16 @@ key("n", "<M-k>", function()
 	vim.cmd("m .-2")
 	vim.cmd("normal! ==")
 end, { desc = "Move line up" })
-key("v", "<M-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
-key("v", "<M-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+-- Modo "x" (no "v"): "v" incluye select mode y rompía escribir <, > o p
+-- dentro de los placeholders de snippets.
+key("x", "<M-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+key("x", "<M-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
 
 -- Indent en visual — mantiene la selección
-key("v", "<", "<gv", { desc = "Indent left" })
-key("v", ">", ">gv", { desc = "Indent right" })
+key("x", "<", "<gv", { desc = "Indent left" })
+key("x", ">", ">gv", { desc = "Indent right" })
 
--- Paste sin perder el registro en visual
-key("v", "p", '"_dP', { desc = "Paste without yanking selection" })
+-- Paste sin perder el registro en visual: lo hace yanky (yanky.lua, x-mode p)
 
 -- Join lines preservando posición del cursor
 key("n", "J", "mzJ`z", { desc = "Join lines" })
@@ -152,7 +151,7 @@ key("n", "N", "Nzzzv", { desc = "Prev match (centered)" })
 key("n", "<leader>ss", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {
 	desc = "Substitute word (global)",
 })
-key("v", "<leader>ss", [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {
+key("x", "<leader>ss", [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {
 	desc = "Substitute word (selection)",
 })
 -- <leader>sr → grug-far (configurado en grug-far.lua)
@@ -163,42 +162,30 @@ key("v", "<leader>ss", [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {
 
 -- Format — un solo atajo, aquí y en conform.lua se unifica en <leader>cf
 -- (se eliminó <leader>mp de conform.lua para no duplicar)
-key({ "n", "v" }, "<leader>cf", function()
-	require("conform").format({ lsp_format = "fallback", async = false, timeout_ms = 1000 })
+key({ "n", "x" }, "<leader>cf", function()
+	require("conform").format() -- options from conform's default_format_opts
 end, { desc = "Format file or range" })
 
 -- Diagnostics
 key("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line diagnostics" })
 
--- Toggle diagnostics — estado persistente en la sesión
-local _diag_visible = true
+-- Toggle diagnostics — enable() conserva la config (íconos de signs custom);
+-- reescribir signs = true los reemplazaba por letras.
 key("n", "<leader>ud", function()
-	_diag_visible = not _diag_visible
-	vim.diagnostic.config({
-		virtual_text = _diag_visible,
-		underline = _diag_visible,
-		signs = _diag_visible,
-	})
-	vim.notify("Diagnostics " .. (_diag_visible and "on" or "off"))
+	local enabled = not vim.diagnostic.is_enabled()
+	vim.diagnostic.enable(enabled)
+	vim.notify("Diagnostics " .. (enabled and "on" or "off"))
 end, { desc = "Toggle diagnostics" })
 
--- Navegación de diagnósticos — consistente con ]h/[h de gitsigns
-key("n", "]d", function()
-	vim.diagnostic.goto_next({ float = true })
-end, { desc = "Next diagnostic" })
-key("n", "[d", function()
-	vim.diagnostic.goto_prev({ float = true })
-end, { desc = "Prev diagnostic" })
+-- ]d/[d: defaults de Neovim (vim.diagnostic.jump). El float al saltar se
+-- configura con jump.on_jump en vim.diagnostic.config (lspconfig.lua).
 
 -- ============================================================================
 -- LSP  (<leader>l group — keymaps globales; buffer-local en lspconfig LspAttach)
 -- ============================================================================
 
--- Restart LSP del buffer actual (buffer-local también en lspconfig.lua)
-key("n", "<leader>lr", function()
-	vim.lsp.stop_client(vim.lsp.get_clients({ bufnr = 0 }))
-	vim.cmd("edit")
-end, { desc = "Restart LSP" })
+-- Restart LSP (:lsp restart, 0.12 — vim.lsp.stop_client está deprecado)
+key("n", "<leader>lr", "<cmd>lsp restart<CR>", { desc = "Restart LSP" })
 
 -- Toggle inlay hints (global — el buffer-local en LspAttach usa <leader>uh)
 key("n", "<leader>li", function()
@@ -207,9 +194,11 @@ key("n", "<leader>li", function()
 	vim.notify("Inlay hints " .. (not enabled and "on" or "off"))
 end, { desc = "Toggle inlay hints (global)" })
 
--- Log del LSP (útil para debugging)
-key("n", "<leader>ll", "<cmd>LspLog<CR>", { desc = "LSP log" })
-key("n", "<leader>lI", "<cmd>LspInfo<CR>", { desc = "LSP info" })
+-- Log / info del LSP (:LspLog y :LspInfo ya no existen en lspconfig + 0.12)
+key("n", "<leader>ll", function()
+	vim.cmd.tabnew(vim.lsp.log.get_filename())
+end, { desc = "LSP log" })
+key("n", "<leader>lI", "<cmd>checkhealth vim.lsp<CR>", { desc = "LSP info" })
 
 -- ============================================================================
 -- PLUGIN MANAGERS  (<leader>L / <leader>pm)
@@ -236,12 +225,6 @@ key("n", "<leader>ee", "<cmd>Oil<CR>", { desc = "Explorer (Oil)" })
 -- Snacks maneja <C-/> en normal y terminal mode (configurado en snacks.lua).
 -- Solo se mantiene la salida de terminal mode aquí:
 key("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
-
--- ============================================================================
--- TROUBLE  (<leader>x group) — añadido <leader>xx para toggle principal
--- ============================================================================
-
-key("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Toggle Trouble" })
 
 -- ============================================================================
 -- UI / TOGGLE  (<leader>u group)
@@ -271,14 +254,7 @@ key("c", "<M-f>", "<S-Right>", { desc = "Word forward" })
 -- CHEAT SHEET
 -- ============================================================================
 
--- <F1> reasignado a help de Neovim (más útil que duplicar <leader>pk)
--- El cheat sheet de keymaps está en <leader>pk (snacks picker)
-key("n", "<F1>", "<cmd>help<CR>", { desc = "Neovim help" })
-
--- Buffer-local keymaps (which-key)
--- <leader>? está configurado en which-key.lua
-
--- ============================================================================
--- MAN SHEET
--- ============================================================================
-key("n", "K", "<cmd>Man<CR>", { desc = "Open man pages" })
+-- <F1> → :help ya es default de Neovim. Cheat sheet de keymaps: <leader>pk
+-- (snacks picker); buffer-local: <leader>? (which-key.lua).
+-- K: sin mapeo global — 'keywordprg' por filetype (help, vim, man) y el K
+-- buffer-local del LSP (lspconfig.lua) ya cubren todos los casos.

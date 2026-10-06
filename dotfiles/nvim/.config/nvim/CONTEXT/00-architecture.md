@@ -127,17 +127,17 @@ print("mensaje")
 keymaps.lua (<leader>l*):
   <leader>lr  Restart LSP         → para todo el editor
   <leader>li  Toggle inlay hints   → global (todos los buffers)
-  <leader>ll  LspLog
-  <leader>lI  LspInfo
+  <leader>ll  LSP log (vim.lsp.log)
+  <leader>lI  :checkhealth vim.lsp
   <leader>lm  Mason
 
 lspconfig.lua (LspAttach — buffer-local):
-  gd gD gR gi gt    → navegación de definiciones
+  gd gD gR gI gy    → navegación de definiciones
   K                 → hover doc
   <leader>ca        → code actions
   <leader>rn        → rename
   <leader>uh        → inlay hints (solo buffer actual)
-  <C-h>             → signature help (insert)
+  <C-s>             → signature help (insert, nativo)
 ```
 
 ### Navegación bracket `[` / `]` — convención unificada

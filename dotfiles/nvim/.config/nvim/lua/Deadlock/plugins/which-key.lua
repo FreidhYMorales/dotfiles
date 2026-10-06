@@ -4,14 +4,12 @@ return {
 	opts_extend = { "spec" },
 	opts = {
 		preset = "helix",
-		defaults = {},
 		spec = {
 			{
 				mode = { "n", "x" },
 
-				-- AI tools
+				-- AI tools (Claude Code)
 				{ "<leader>a",   group = "ai" },
-				{ "<leader>ac",  group = "claude code" },
 
 				-- Core groups
 				{ "<leader><tab>", group = "tabs" },
@@ -41,6 +39,8 @@ return {
 
 				-- Rename (buffer-local LSP, declarado aquí para el grupo)
 				{ "<leader>r",     group = "rename/restart" },
+
+				{ "<leader>sn",    group = "noice" },
 
 				-- UI toggles
 				{ "<leader>u",     group = "ui/toggle" },
