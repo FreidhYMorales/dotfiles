@@ -8,9 +8,9 @@
 |---|--------|------|---------|---------------|
 | 01 | yatline | `imsi32/yatline` | ✅ required | `require():setup()` |
 | 02 | clipboard | `XYenon/clipboard` | ❌ | keybind-only |
-| 03 | relative-motions | `dedukun/relative-motions` | ✅ required | `require():setup()` |
+| 03 | relative-motions | `boydaihungst/relative-motions`* | ✅ required | `require():setup()` |
 | 04 | bypass | `Rolv-Apneseth/bypass` | ❌ | keybind-only |
-| 05 | fg | `DreamMaoMao/fg.yazi`* | ✅ required | `require():setup()` |
+| 05 | fr | `lpnh/fr`** | ⚪ optional (no se invoca) | keybind-only |
 | 06 | gvfs | `boydaihungst/gvfs` | ✅ required | `require():setup()` |
 | 07 | mount | `yazi-rs/plugins:mount` | ❌ | keybind-only |
 | 08 | rich-preview | `AnirudhG07/rich-preview` | ❌ | previewer (yazi.toml) |
@@ -23,7 +23,11 @@
 | 14 | lazygit | `Lil-Dank/lazygit` | ❌ | keybind-only |
 | 15 | recycle-bin | `uhs-robert/recycle-bin` | ✅ required | `require():setup()` |
 
-*`fg` no está en el registry de `ya pkg` — requiere git clone manual.
+\*Fork de `dedukun/relative-motions`: el original (sin mantenimiento desde 2025-07) usa `ya.mgr_emit`, removido en Yazi 26 (ver I-10). El fork usa `ya.emit`/`ui.render`, pero su autor también lo marca como sin mantenimiento.
+
+\*\*Reemplaza a `DreamMaoMao/fg.yazi` (clone manual, archivado 2026-09, también usaba `ya.mgr_emit`). `fr` se instala con `ya pkg` y queda fijado en `package.toml` — ya no hay clone manual. `f,f` (búsqueda por nombre) usa el plugin `fzf` built-in de Yazi.
+
+`orhnk/system-clipboard` se eliminó: era una dependencia muerta (nada lo usaba); el clipboard activo es `XYenon/clipboard`.
 
 ---
 
@@ -33,7 +37,7 @@
 |--------|---------------|-------------|-------|
 | yatline | — | — | Requiere Nerd Font en Kitty |
 | clipboard | `wl-copy`, `wl-paste` | `wl-clipboard` | Ya disponible en Hyprland |
-| fg | `fzf`, `rg`, `bat` | `fzf ripgrep bat` | Los tres son obligatorios |
+| fr | `fzf`, `rg`, `bat`, `rga` | `fzf ripgrep bat ripgrep-all` | `ripgrep-all` solo para `f,G` (PDFs/documentos) |
 | gvfs | `gio`, daemons gvfs | `gvfs gvfs-mtp gvfs-backends` | gvfs-mtp para Android/MTP |
 | mount | `udisksctl`, `lsblk`, `eject` | `udisks2 util-linux` | udisks2 ya en Hyprland |
 | rich-preview | `rich` | AUR: `rich-cli` o `pipx install rich-cli` | Python CLI |
@@ -54,11 +58,11 @@
 
 set -e
 
-echo "==> [1/4] Dependencias de pacman..."
+echo "==> [1/3] Dependencias de pacman..."
 sudo pacman -S --needed \
   gvfs gvfs-mtp gvfs-backends \
   udisks2 util-linux \
-  fzf ripgrep bat \
+  fzf ripgrep ripgrep-all bat \
   glow hexyl \
   mediainfo imagemagick ffmpeg \
   ouch \
@@ -66,14 +70,14 @@ sudo pacman -S --needed \
   trash-cli \
   wl-clipboard
 
-echo "==> [2/4] Dependencias de AUR..."
+echo "==> [2/3] Dependencias de AUR..."
 yay -S --needed rich-cli
 
-echo "==> [3/4] Plugins de Yazi (ya pkg)..."
+echo "==> [3/3] Plugins de Yazi (ya pkg)..."
 ya pkg add \
   imsi32/yatline \
   XYenon/clipboard \
-  dedukun/relative-motions \
+  boydaihungst/relative-motions \
   Rolv-Apneseth/bypass \
   AnirudhG07/rich-preview \
   yazi-rs/plugins:piper \
@@ -83,11 +87,8 @@ ya pkg add \
   Lil-Dank/lazygit \
   uhs-robert/recycle-bin \
   boydaihungst/gvfs \
-  yazi-rs/plugins:mount
-
-echo "==> [4/4] fg plugin (git clone manual)..."
-git clone https://github.com/DreamMaoMao/fg.yazi \
-  ~/.config/yazi/plugins/fg.yazi
+  yazi-rs/plugins:mount \
+  lpnh/fr
 
 echo "==> Symlink de plugins..."
 ln -sf ~/.config/yazi/plugins \
@@ -99,7 +100,7 @@ echo "✓ Instalación completa."
 **One-liner** (para instalaciones rápidas sin script):
 
 ```bash
-sudo pacman -S --needed gvfs gvfs-mtp gvfs-backends udisks2 util-linux fzf ripgrep bat glow hexyl mediainfo imagemagick ffmpeg ouch lazygit trash-cli wl-clipboard && yay -S --needed rich-cli && ya pkg add imsi32/yatline XYenon/clipboard dedukun/relative-motions Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs yazi-rs/plugins:mount && git clone https://github.com/DreamMaoMao/fg.yazi ~/.config/yazi/plugins/fg.yazi
+sudo pacman -S --needed gvfs gvfs-mtp gvfs-backends udisks2 util-linux fzf ripgrep ripgrep-all bat glow hexyl mediainfo imagemagick ffmpeg ouch lazygit trash-cli wl-clipboard && yay -S --needed rich-cli && ya pkg add imsi32/yatline XYenon/clipboard boydaihungst/relative-motions Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs yazi-rs/plugins:mount lpnh/fr
 ```
 
 ---
@@ -118,12 +119,6 @@ ya pkg upgrade
 ya pkg upgrade <nombre>
 # Ejemplo:
 ya pkg upgrade imsi32/yatline
-```
-
-### Actualizar fg (manual)
-
-```bash
-cd ~/.config/yazi/plugins/fg.yazi && git pull
 ```
 
 ### Verificar versiones instaladas
@@ -176,7 +171,7 @@ rm -rf ~/.config/yazi/plugins/<plugin>.yazi
 ls ~/.config/yazi/plugins/
 
 # Herramientas de sistema disponibles
-which fzf rg bat glow hexyl mediainfo ouch lazygit trash-put wl-copy
+which fzf rg rga bat glow hexyl mediainfo ouch lazygit trash-put wl-copy
 
 # Symlink correcto
 ls -la /home/deadlock/Files/Configuraciones/yazi/plugins

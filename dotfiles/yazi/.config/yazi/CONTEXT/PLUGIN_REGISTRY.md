@@ -31,13 +31,15 @@ Formato de cada entrada:
 
 ## [03] relative-motions
 
-- **Repo:** dedukun/relative-motions
+- **Repo:** boydaihungst/relative-motions (fork)
+- **Instalar:** `ya pkg add boydaihungst/relative-motions`
 - **setup():** SÍ
 - **Tipo:** plugin (motions numéricos)
 - **Dependencias:** ninguna
-- **Estado:** ✅ instalado y funcionando
+- **Estado:** ✅ instalado y funcionando (verificado en Yazi 26.9.1)
 - **Keybind:** `1`–`9`
 - **Bugs corregidos:**
+  - Repo original `dedukun/relative-motions` (sin mantenimiento desde 2025-07) llamaba a `ya.mgr_emit`, removido en Yazi 26 → `3j`/`5k` saltaban a posiciones incorrectas. Reemplazado por el fork, que usa `ya.emit`/`ui.render` (ver I-10). El fork también está marcado como sin mantenimiento por su autor.
   - Sintaxis de args era `--args=1` → correcto: `plugin relative-motions 1` (sin `--args=`)
   - Sección keymap era `[manager]` → correcto: `[mgr]` (Yazi 26.x)
 - **Notas:** `setup({ show_numbers = "relative_absolute", show_motion = true })`. Keybind: `run = "plugin relative-motions N"`.
@@ -83,16 +85,18 @@ Formato de cada entrada:
 
 ---
 
-## [06] fg
+## [06] fr
 
-- **Repo:** Rolv-Apneseth/fg
-- **setup():** SÍ
-- **Tipo:** plugin (fuzzy find con ripgrep)
-- **Dependencias:** `fd`, `fzf`, `ripgrep`
-- **Estado:** ⬜ pendiente
-- **Keybind:** `f,g`
-- **Bugs:** —
-- **Notas:** `default_action` DEBE ser `"jump"` (no `"nvim"` — ver I-04). Keybind: `run = "plugin fg"`.
+- **Repo:** lpnh/fr
+- **Instalar:** `ya pkg add lpnh/fr` (fijado en `package.toml`, sin clone manual)
+- **setup():** opcional — esta config no lo invoca (sin `require("fr"):setup()`)
+- **Tipo:** plugin (búsqueda de contenido con rg/rga + fzf + preview con bat)
+- **Dependencias:** `fzf`, `ripgrep`, `bat`; `ripgrep-all` (rga) para `f,G`
+- **Estado:** ✅ instalado y funcionando
+- **Keybind:** `f,g` (`plugin fr rg`) · `f,G` (`plugin fr rga`, incluye PDFs/documentos)
+- **Bugs corregidos:**
+  - Reemplaza a `DreamMaoMao/fg.yazi` (clone manual, archivado 2026-09, usaba `ya.mgr_emit` — ver I-10)
+- **Notas:** Hace `reveal` del resultado en Yazi — navega, nunca abre el editor (I-04). Dentro de fzf: `<C-s>` alterna match rg/fzf, `<C-r>` recarga, `<C-\>` cambia la posición del preview, `<C-]>` cambia el tamaño del preview. La búsqueda por nombre (`f,f`) usa el plugin `fzf` built-in de Yazi, no `fr`.
 
 ---
 

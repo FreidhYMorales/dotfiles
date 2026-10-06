@@ -1,7 +1,7 @@
 # Yazi Config — Índice de Entrada
 
 **Stack:** Arch Linux · Hyprland · Kitty · Zsh · Neovim (independiente)
-**Versión Yazi:** 26.5.6
+**Versión Yazi:** 26.9.1
 **Config root:** `/home/deadlock/Files/Configuraciones/yazi/`
 **Activar:** `YAZI_CONFIG_HOME=/home/deadlock/Files/Configuraciones/yazi yazi`
 
@@ -24,7 +24,7 @@
 | Archivo | Propósito |
 |---------|-----------|
 | `yazi.toml` | Manager, openers, previewers, tasks |
-| `keymap.toml` | Todos los keybinds (`[mgr]`, `[input]`, `[select]`) |
+| `keymap.toml` | Todos los keybinds (`[mgr]`, `[pick]`) |
 | `theme.toml` | Colores ANSI puros, transparencia nativa |
 | `init.lua` | Setup de plugins, UI tweaks |
 | `CONTEXT/INVARIANTS.md` | Reglas duras — leer antes de modificar |
@@ -43,19 +43,17 @@ ln -s ~/.config/yazi/plugins /home/deadlock/Files/Configuraciones/yazi/plugins
 
 # 3. Instalar dependencias de sistema
 sudo pacman -S gvfs gvfs-mtp gvfs-backends udisks2 \
-  fzf ripgrep bat glow hexyl mediainfo imagemagick ffmpeg \
+  fzf ripgrep ripgrep-all bat glow hexyl mediainfo imagemagick ffmpeg \
   ouch lazygit trash-cli wl-clipboard
 yay -S rich-cli
 
 # 4. Instalar plugins de Yazi
-ya pkg add imsi32/yatline XYenon/clipboard dedukun/relative-motions \
+# (con package.toml presente, `ya pkg install` instala las versiones fijadas)
+ya pkg add imsi32/yatline XYenon/clipboard boydaihungst/relative-motions \
   Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper \
   boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size \
   Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs \
-  yazi-rs/plugins:mount
-# fg: instalación manual (no está en el registry de ya pkg)
-git clone https://github.com/DreamMaoMao/fg.yazi \
-  ~/.config/yazi/plugins/fg.yazi
+  yazi-rs/plugins:mount lpnh/fr
 
 # 5. Activar
 YAZI_CONFIG_HOME=/home/deadlock/Files/Configuraciones/yazi yazi
@@ -75,3 +73,5 @@ YAZI_CONFIG_HOME=/home/deadlock/Files/Configuraciones/yazi yazi
 - `name =` en previewers/preloaders → renombrado a `url =` (Yazi 26.x)
 - `tab_width` eliminado de `[manager]` en flavor (Yazi 26.x)
 - Symlink `plugins/` es obligatorio para keybinds de plugin
+- Plugins deben usar `ya.emit`, nunca `ya.mgr_emit` (removido en Yazi 26)
+- Filetype rules: claves de estilo planas, dirs con `url = "*/"`; el theme ignora en silencio claves/secciones desconocidas

@@ -17,7 +17,7 @@ prepend_keymap = [...]
 prepend_keymap = [...]
 ```
 
-**Por qué:** En Yazi 26.x el nombre interno cambió de `manager` a `mgr`. Una sección `[manager]` se parsea sin error pero sus keybinds nunca se cargan. `[input]` y `[select]` no cambiaron.
+**Por qué:** En Yazi 26.x el nombre interno cambió de `manager` a `mgr`. Una sección `[manager]` se parsea sin error pero sus keybinds nunca se cargan. Las capas válidas de keymap en 26.x son: `mgr`, `tasks`, `spot`, `pick`, `input`, `confirm`, `help`, `cmp`. No existe una capa `[select]` (el picker es `[pick]`); una sección `[select]` también se ignora sin error.
 
 **Síntoma:** Keybinds custom no responden; plugins invocados via keybind no hacen nada.
 
@@ -98,15 +98,16 @@ return M  (con M:setup() definido) → SÍ tiene :setup() → require("plugin"):
 ```
 
 **Plugins sin setup() — solo `require(...)`:**
-- bypass, system-clipboard, lazygit, glow, hexyl, mediainfo, mount, ouch, piper, rich-preview
+- bypass, clipboard, lazygit, glow, hexyl, mediainfo, mount, ouch, piper, rich-preview
 
 **Plugins con setup():**
-- relative-motions, recycle-bin, gvfs, what-size, fg, yatline
+- relative-motions, recycle-bin, gvfs, what-size, yatline
+- fr: `setup()` es opcional — esta config no lo invoca (funciona con los defaults)
 
 **Nunca hacer:**
 ```lua
 require("bypass"):setup()        -- ← crash en runtime
-require("system-clipboard"):setup()  -- ← crash en runtime
+require("lazygit"):setup()       -- ← crash en runtime
 ```
 
 ---
@@ -117,14 +118,9 @@ require("system-clipboard"):setup()  -- ← crash en runtime
 
 **Por qué:** Neovim y Yazi son herramientas independientes. Yazi abre archivos con su opener (`nvim` en el opener `edit`), pero los plugins no deben invocar nvim internamente.
 
-**Caso concreto — fg plugin:**
-```lua
--- INCORRECTO:
-require("fg"):setup({ default_action = "nvim" })
+**Caso concreto — búsqueda de contenido (`fr`):** `lpnh/fr` (rg/rga + fzf + preview con bat) hace `reveal` del resultado en Yazi — navega al archivo, nunca abre el editor. Cualquier reemplazo futuro debe mantener ese comportamiento.
 
--- CORRECTO:
-require("fg"):setup({ default_action = "jump" })  -- navega en Yazi
-```
+> Histórico: el plugin anterior, `fg.yazi`, exponía `default_action`; la config usaba `"jump"` (nunca `"nvim"`). Se reemplazó por `fr` (ver I-10).
 
 El opener `edit` (nvim) sigue disponible manualmente con `Enter`/`l`.
 
@@ -138,17 +134,29 @@ El opener `edit` (nvim) sigue disponible manualmente con `Enter`/`l`.
 
 ```toml
 # INCORRECTO — is solo, sin url ni mime
-{ is = "link",   style = { fg = "cyan" } }
-{ is = "dir",    style = { fg = "blue" } }   ← además, "dir" no es valor válido de is
+{ is = "link", fg = "cyan" }
+{ is = "dir",  fg = "blue" }   ← además, "dir" no es valor válido de is
 
-# CORRECTO — is acompañado de url
-{ url = "**/*", is = "link",   style = { fg = "cyan"                  } }
-{ url = "**/*", is = "orphan", style = { fg = "red",  underline = true } }
-{ url = "**/*", is = "exec",   style = { fg = "green", bold = true     } }
+# INCORRECTO — estilo anidado: se ignora en silencio (sin error, sin color)
+{ url = "*", is = "link", style = { fg = "cyan" } }
 
-# CORRECTO — directorios via mime (is = "dir" no existe)
-{ mime = "inode/directory", style = { fg = "blue", bold = true } }
+# CORRECTO — is acompañado de url, claves de estilo PLANAS sobre la regla
+{ url = "*",  is = "orphan", fg = "red",   underline = true }
+{ url = "*",  is = "link",   fg = "cyan" }
+{ url = "*",  is = "exec",   fg = "green", bold = true }
+{ url = "*",  is = "hidden", fg = "bright-black" }
+
+# CORRECTO — directorios via url con barra final
+{ url = "*/", fg = "blue", bold = true }
+
+# CORRECTO — mime con el patrón del preset upstream
+{ mime = "**/image/*", fg = "bright-magenta" }
 ```
+
+**Semántica de `url` en 26.x:**
+- `url = "*/"` (barra final) → solo directorios. `url = "*"` → solo archivos (nunca matchea directorios).
+- Los patrones de `url` se comparan contra la ruta completa: `url = ".*"` nunca matcheó ocultos. Para ocultos usar `is = "hidden"`.
+- No usar `mime = "inode/directory"`: en 26.x los directorios tienen mime `folder/*`. Usar `url = "*/"`.
 
 **Valores válidos de `is`:** `hidden`, `link`, `orphan`, `dummy`, `block`, `char`, `fifo`, `sock`, `exec`, `sticky`.
 
@@ -205,19 +213,59 @@ function y() {
 
 ---
 
-## I-09 — Yazi 26.x: `tab_width` eliminado de `[manager]` en flavor
+## I-09 — Yazi 26.x: `tab_width` eliminado de `[mgr]` en flavor
 
-**Regla:** El campo `tab_width` ya no es válido en la sección `[manager]` de un flavor file.
+**Regla:** El campo `tab_width` ya no es válido en la sección `[mgr]` (antes `[manager]`, ver I-11) de un flavor file.
 
 ```toml
 # INCORRECTO — genera "data did not match any variant of untagged enum CustomField"
-[manager]
+[mgr]
 tab_width = 1
 
 # CORRECTO — eliminar la línea; el ancho de tab se controla en yatline via init.lua
 ```
 
 **Síntoma:** "data did not match any variant of untagged enum CustomField" al arrancar.
+
+---
+
+## I-10 — Yazi 26.x: `ya.mgr_emit` ya no existe — usar `ya.emit`
+
+**Regla:** Todo plugin (de terceros o local, ej. `plugins/simple-mtp.yazi/`) debe emitir comandos con `ya.emit(...)`. `ya.mgr_emit` fue removido en Yazi 26: la tabla `ya` devuelve `nil` para ese campo.
+
+**Síntoma:** comportamiento errático sin crash (ej. `3j`/`5k` saltando a posiciones incorrectas) o el error `attempt to call a nil value (field 'mgr_emit')`.
+
+**Antes de adoptar un plugin:** `rg -n 'mgr_emit' plugins/<name>.yazi/` — si aparece, el plugin no es compatible con 26.x.
+
+**Casos resueltos:**
+- `dedukun/relative-motions` (sin mantenimiento desde 2025-07) → reemplazado por el fork `boydaihungst/relative-motions` (usa `ya.emit`/`ui.render`). El fork también está marcado como sin mantenimiento por su autor — vigilar en futuros upgrades.
+- `DreamMaoMao/fg.yazi` (archivado 2026-09) → reemplazado por `lpnh/fr` vía `ya pkg`.
+- `plugins/simple-mtp.yazi/main.lua` (local) → migrado a `ya.emit`.
+
+---
+
+## I-11 — El theme/flavor ignora en silencio secciones y claves desconocidas
+
+**Regla:** Yazi no reporta error por secciones o claves de theme desconocidas — las secciones desconocidas se tratan como "custom sections" y las claves se descartan. Al actualizar Yazi, comparar `flavors/deadlock.yazi/flavor.toml` contra el preset upstream `theme-dark.toml` de esa versión.
+
+**Renombres del esquema 26.x (aplicados en el flavor):**
+
+| Antes (ignorado en 26.x) | 26.x |
+|---|---|
+| `[manager]` | `[mgr]` |
+| `hovered` / `preview_hovered` | `[indicator] current` / `parent` / `preview` |
+| `tab_active` / `tab_inactive` | `[tabs] active` / `inactive` |
+| `mode_normal`, `mode_select`, `mode_unset` | `[mode] normal_main/normal_alt`, `select_main/select_alt`, `unset_main/unset_alt` |
+| `[status] separator_open/close` | `[status] sep_left` / `sep_right` |
+| `permissions_t/r/w/x/s` | `perm_type` / `perm_read` / `perm_write` / `perm_exec` / `perm_sep` |
+| `[completion]` | `[cmp]` |
+| `[help] on/exec/desc/footer` | `[help] border/chord/action/hovered` |
+| `[input] cursor` | (eliminado) |
+| `marker_unset` | (eliminado; existe `marker_marked`) |
+
+Secciones nuevas estilizadas con ANSI: `[confirm]`, `[tasks]`, `[which]`, `[spot]`. `[icon] prepend_globs` / `prepend_conds` dentro del flavor sí funcionan.
+
+**Síntoma:** colores que no se aplican sin ningún error (ej. cursor por defecto en reverse, directorios sin negrita). Verificado en vivo: el flavor viejo renderizaba el cursor por defecto; el flavor 26.x renderiza cursor negro sobre azul y directorios azules en negrita.
 
 ---
 
@@ -230,8 +278,13 @@ tab_width = 1
 | `is = "..."` solo en filetype rules     | Yazi no arranca (falta url o mime)            |
 | `is = "dir"` en filetype rules          | Yazi no arranca ("dir" no es valor válido)    |
 | `name =` en previewers/preloaders       | Yazi no arranca (renombrado a `url =`)        |
-| `tab_width = 1` en flavor [manager]     | Yazi no arranca (campo eliminado en 26.x)     |
+| `tab_width = 1` en flavor `[mgr]`       | Yazi no arranca (campo eliminado en 26.x)     |
 | `require("bypass"):setup()`             | Runtime crash                                 |
-| `fg` con `default_action = "nvim"`      | Viola separación CLI/editor                   |
+| Plugin que abre nvim en vez de navegar  | Viola separación CLI/editor (I-04)            |
+| `[select]` en keymap.toml               | Sección ignorada (la capa es `[pick]`)        |
+| `style = { ... }` anidado en filetype   | Ignorado en silencio (claves planas, I-05)    |
+| `mime = "inode/directory"`              | No matchea dirs en 26.x (usar `url = "*/"`)   |
+| `ya.mgr_emit` en plugins                | Removido en 26.x (usar `ya.emit`, I-10)       |
+| Claves/secciones de theme pre-26.x      | Ignoradas en silencio (I-11)                  |
 | Editar colores en theme.toml directo    | Theme usa flavor — cambios deben ir en flavor |
 | `plugin <name>` sin symlink plugins/    | Silently fails, sin notificación              |

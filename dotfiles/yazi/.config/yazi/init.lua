@@ -11,7 +11,7 @@
 --  [00] full-border — Borde completo alrededor del manager
 --  Repo:    yazi-rs/plugins:full-border  (ya pkg add yazi-rs/plugins:full-border)
 --  setup(): YES — cargado en Section 1, antes que cualquier plugin de UI
---  Tipo:    ui.Border.ROUNDED (esquinas redondeadas)
+--  Tipo:    ui.Border.PLAIN (esquinas rectas, estilo terminal-alike)
 -- ─────────────────────────────────────────────────────────────
 require("full-border"):setup({
 	type = ui.Border.PLAIN,
@@ -138,6 +138,24 @@ require("yatline"):setup({
 	},
 })
 
+-- Override: upstream yatline (c5d4b48) still calls the deprecated
+-- `File:icon()`, which Yazi 26.x flags with a "Deprecated API" popup.
+-- Plugins are gitignored and reinstalled by `ya pkg`, so the fix lives here.
+function Yatline.string.get:hovered_file_extension(show_icon)
+	local hovered = cx.active.current.hovered
+	if not hovered then
+		return ""
+	end
+
+	local name = hovered.cha.is_dir and "dir" or (hovered.url.name:match("^.+%.(.+)$") or "null")
+	if not show_icon then
+		return name
+	end
+
+	local icon = th.icon:match(hovered)
+	return icon and (icon.text .. " " .. name) or name
+end
+
 -- ─────────────────────────────────────────────────────────────
 --  [02] clipboard — Sincroniza yank de Yazi con el clipboard del sistema
 --  Repo:    XYenon/clipboard  (ya pkg add XYenon/clipboard)
@@ -148,7 +166,11 @@ require("yatline"):setup({
 
 -- ─────────────────────────────────────────────────────────────
 --  [03] relative-motions — Movimientos numéricos tipo Vim (5j, 3k)
---  Repo:    dedukun/relative-motions  (ya pkg add dedukun/relative-motions)
+--  Repo:    boydaihungst/relative-motions  (ya pkg add boydaihungst/relative-motions)
+--  Nota:    fork — dedukun/relative-motions (abandonado 2025-07) usa ya.mgr_emit,
+--           que ya no existe en Yazi 26 (los motions saltaban mal). El fork
+--           migró a ya.emit/ui.render. También está marcado sin mantenimiento:
+--           revisar alternativas si una futura versión de Yazi lo rompe.
 --  setup(): YES
 -- ─────────────────────────────────────────────────────────────
 require("relative-motions"):setup({
@@ -168,15 +190,16 @@ require("relative-motions"):setup({
 -- (sin require — el plugin se carga al invocarse por keybind)
 
 -- ─────────────────────────────────────────────────────────────
---  [05] fg — Búsqueda de contenido/nombre con ripgrep + fzf
---  Repo:    DreamMaoMao/fg.yazi  (git clone, no ya pkg)
---  Deps:    fzf, ripgrep, bat
---  setup(): YES
---  INVARIANT I-04: default_action = "jump" — nunca "nvim" ni "helix"
+--  [05] fr — Búsqueda de contenido con rg/rga + fzf + preview bat
+--  Repo:    lpnh/fr  (ya pkg add lpnh/fr)
+--  Deps:    fzf, ripgrep, bat, ripgrep-all (rga, opcional — solo `f,G`)
+--  setup(): NO — opcional, solo para pasar flags extra a fzf/rg/bat/rga
+--  Keybind: f,g → rg | f,G → rga | f,f → plugin fzf built-in (por nombre)
+--  Reemplaza a DreamMaoMao/fg.yazi (archivado 2026-09, usaba ya.mgr_emit).
+--  INVARIANT I-04 se mantiene: fr hace `reveal` del resultado (salta al
+--  archivo dentro de Yazi), nunca abre un editor.
 -- ─────────────────────────────────────────────────────────────
-require("fg"):setup({
-	default_action = "jump", -- navega al archivo en Yazi, no abre editor
-})
+-- (sin require — invocado on-demand via keybind)
 
 -- ─────────────────────────────────────────────────────────────
 --  [06] gvfs — Montar/desmontar dispositivos MTP/SFTP/SMB via GVFS

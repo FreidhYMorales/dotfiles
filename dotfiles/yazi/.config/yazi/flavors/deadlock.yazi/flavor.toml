@@ -1,36 +1,41 @@
-
 # ============================================================
-#  theme.toml — Terminal-native / Transparent theme
+#  flavor.toml — deadlock: terminal-native / transparent flavor
+#  Schema: Yazi 26.x (theme sections: mgr, tabs, mode, indicator,
+#          status, input, cmp, pick, notify, help, filetype, icon)
 #  RULE: ANSI names ONLY — never hex codes.
-#        Colors inherit from Kitty's active colorscheme.
+#        Colors inherit from Kitty's active colorscheme (matugen).
 #  ANSI palette reference:
 #    black, red, green, yellow, blue, magenta, cyan, white
 #    bright-black, bright-red, bright-green, bright-yellow,
 #    bright-blue, bright-magenta, bright-cyan, bright-white
 #    "reset" = terminal default fg/bg (transparent-aware)
-# ============================================================
 #
+#  NOTE: Yazi silently ignores unknown sections/keys here (an unknown
+#  section is stored as a "custom" section, never reported). A renamed
+#  key does NOT error — it just stops applying. When upgrading Yazi,
+#  diff against the upstream preset theme-dark.toml.
+# ============================================================
+
 # ------------------------------------------------------------
 #  Manager (file list)
 # ------------------------------------------------------------
-[manager]
+[mgr]
 cwd = { fg = "cyan" }
 
-# Cursor / selected item
-hovered         = { fg = "black",  bg = "blue",        bold = true }
-preview_hovered = { fg = "black",  bg = "bright-black"             }
+# Find (n/N highlights)
+find_keyword  = { fg = "yellow",  bold = true, underline = true }
+find_position = { fg = "magenta", bg = "reset", bold = true }
 
-# Selection marker (visual mode)
-marker_selected  = { fg = "black", bg = "green" }
-marker_unset     = { fg = "reset", bg = "reset" }
-marker_copied    = { fg = "black", bg = "yellow" }
-marker_cut       = { fg = "black", bg = "red"    }
+# Symlink target shown after "->"
+symlink_target = { fg = "bright-black", italic = true }
 
-# Tab bar
-tab_active   = { fg = "black", bg = "blue",  bold = true  }
-tab_inactive = { fg = "reset", bg = "reset"               }
+# Markers (left gutter)
+marker_selected = { fg = "green",  bg = "green"  }
+marker_copied   = { fg = "yellow", bg = "yellow" }
+marker_cut      = { fg = "red",    bg = "red"    }
+marker_marked   = { fg = "cyan",   bg = "cyan"   }
 
-# Count / borders
+# Count badges
 count_selected = { fg = "black", bg = "green"  }
 count_copied   = { fg = "black", bg = "yellow" }
 count_cut      = { fg = "black", bg = "red"    }
@@ -39,61 +44,105 @@ border_symbol = "│"
 border_style  = { fg = "bright-black" }
 
 # ------------------------------------------------------------
-#  Indicator (selecction bar)
+#  Tabs (native tab bar — yatline draws its own header, but
+#  these still apply anywhere Yazi renders tabs natively)
+# ------------------------------------------------------------
+[tabs]
+active   = { fg = "black", bg = "blue", bold = true }
+inactive = { fg = "reset", bg = "reset" }
+
+# ------------------------------------------------------------
+#  Mode badges (status bar)
+# ------------------------------------------------------------
+[mode]
+normal_main = { fg = "black", bg = "blue",    bold = true }
+normal_alt  = { fg = "blue",  bg = "bright-black" }
+select_main = { fg = "black", bg = "green",   bold = true }
+select_alt  = { fg = "green", bg = "bright-black" }
+unset_main  = { fg = "black", bg = "magenta", bold = true }
+unset_alt   = { fg = "magenta", bg = "bright-black" }
+
+# ------------------------------------------------------------
+#  Indicator (hovered row) — replaces the old mgr.hovered /
+#  mgr.preview_hovered keys
 # ------------------------------------------------------------
 [indicator]
-padding = { open = "█", close = "█"}
+parent  = { fg = "black", bg = "blue", bold = true }
+current = { fg = "black", bg = "blue", bold = true }
+preview = { fg = "black", bg = "bright-black" }
+padding = { open = "█", close = "█" }
 
 # ------------------------------------------------------------
 #  Status bar
 # ------------------------------------------------------------
 [status]
-separator_open  = ""
-separator_close = ""
-separator_style = { fg = "bright-black", bg = "reset" }
+overall   = {}
+sep_left  = { open = "", close = "" }
+sep_right = { open = "", close = "" }
 
-# Segments (mode indicator)
-mode_normal  = { fg = "black", bg = "blue",    bold = true }
-mode_select  = { fg = "black", bg = "green",   bold = true }
-mode_unset   = { fg = "black", bg = "magenta", bold = true }
+perm_sep   = { fg = "bright-black" }
+perm_type  = { fg = "green"  }
+perm_read  = { fg = "yellow" }
+perm_write = { fg = "red"    }
+perm_exec  = { fg = "cyan"   }
 
 progress_label  = { bold = true }
-progress_normal = { fg = "blue",  bg = "reset" }
-progress_error  = { fg = "red",   bg = "reset" }
-
-permissions_t = { fg = "green"       }
-permissions_r = { fg = "yellow"      }
-permissions_w = { fg = "red"         }
-permissions_x = { fg = "cyan"        }
-permissions_s = { fg = "bright-black"}
+progress_normal = { fg = "blue", bg = "reset" }
+progress_error  = { fg = "red",  bg = "reset" }
 
 # ------------------------------------------------------------
 #  Input (command prompt)
 # ------------------------------------------------------------
 [input]
-cursor         = { fg = "black", bg = "cyan"  }
-title          = { fg = "cyan",  bold = true  }
-value          = { fg = "reset"               }
-selected       = { fg = "black", bg = "blue"  }
+border   = { fg = "blue" }
+title    = { fg = "cyan", bold = true }
+value    = { fg = "reset" }
+selected = { fg = "black", bg = "blue" }
 
 # ------------------------------------------------------------
-#  Completion popup
+#  Completion popup (was [completion])
 # ------------------------------------------------------------
-[completion]
-border   = { fg = "blue"                           }
+[cmp]
+border   = { fg = "blue" }
 active   = { fg = "black", bg = "blue", bold = true }
-inactive = { fg = "reset", bg = "reset"             }
+inactive = { fg = "reset", bg = "reset" }
 
 # ------------------------------------------------------------
 #  Pick dialog (open-with menu)
 # ------------------------------------------------------------
 [pick]
-border   = { fg = "blue"                            }
+border   = { fg = "blue" }
 active   = { fg = "black", bg = "blue", bold = true }
-inactive = { fg = "reset"                           }
+inactive = { fg = "reset" }
 
 # ------------------------------------------------------------
-#  Notify / help
+#  Confirm / tasks / which / spot popups
+# ------------------------------------------------------------
+[confirm]
+border  = { fg = "blue" }
+title   = { fg = "blue", bold = true }
+btn_yes = { fg = "black", bg = "blue", bold = true }
+btn_no  = { fg = "reset" }
+
+[tasks]
+border  = { fg = "blue" }
+hovered = { fg = "black", bg = "blue", bold = true }
+
+[which]
+border          = { fg = "blue" }
+cand            = { fg = "cyan" }
+rest            = { fg = "bright-black" }
+desc            = { fg = "magenta" }
+separator_style = { fg = "bright-black" }
+
+[spot]
+border   = { fg = "blue" }
+title    = { fg = "blue" }
+tbl_col  = { fg = "blue" }
+tbl_cell = { fg = "black", bg = "blue" }
+
+# ------------------------------------------------------------
+#  Notify
 # ------------------------------------------------------------
 [notify]
 title_info  = { fg = "green"  }
@@ -105,14 +154,13 @@ icon_warn  = ""
 icon_error = ""
 
 # ------------------------------------------------------------
-#  Help overlay
+#  Help overlay (old on/exec/desc/footer → chord/action/hovered)
 # ------------------------------------------------------------
 [help]
-on      = { fg = "cyan"                              }
-exec    = { fg = "green"                             }
-desc    = { fg = "reset"                             }
-hovered = { fg = "black", bg = "blue", bold = true   }
-footer  = { fg = "black", bg = "bright-black"        }
+border  = { fg = "blue" }
+chord   = { fg = "cyan" }
+action  = { fg = "green" }
+hovered = { fg = "black", bg = "blue", bold = true }
 
 # ------------------------------------------------------------
 #  Icons — ANSI palette, hereda colores del terminal
@@ -147,36 +195,35 @@ prepend_conds = [
 
 # ------------------------------------------------------------
 #  File-type color rules (ANSI only)
+#  Yazi 26.x: style keys are flat on the rule (fg/bg/bold...),
+#  not nested under `style = {}` — the nested form is ignored.
+#  First match wins. `url = "*"` matches files only, `"*/"` dirs only.
+#  Mime patterns use `**/` like the upstream preset, so they match
+#  both plain ("image/png") and scheme-prefixed mime strings.
 # ------------------------------------------------------------
 [filetype]
 rules = [
-  # Directories — mime inode/directory is the correct selector
-  { mime = "inode/directory", style = { fg = "blue",  bold = true } },
-  # Symlinks
-  { url = "**/*", is = "link",   style = { fg = "cyan"                  } },
-  # Orphan symlinks
-  { url = "**/*", is = "orphan", style = { fg = "red",  underline = true } },
+  # Special files (files and directories)
+  { url = "*",  is = "orphan", fg = "red", underline = true },
+  { url = "*",  is = "link",   fg = "cyan" },
+  { url = "*/", is = "link",   fg = "cyan", bold = true },
+  # Hidden
+  { url = "*",  is = "hidden", fg = "bright-black" },
+  { url = "*/", is = "hidden", fg = "bright-black", bold = true },
   # Executables
-  { url = "**/*", is = "exec",   style = { fg = "green", bold = true     } },
-  # Hidden files
-  { url = ".*",    style = { fg = "bright-black"       } },
-  # Archives
-  { mime = "application/zip",     style = { fg = "magenta" } },
-  { mime = "application/gzip",    style = { fg = "magenta" } },
-  { mime = "application/x-bzip2", style = { fg = "magenta" } },
-  { mime = "application/x-xz",    style = { fg = "magenta" } },
-  { mime = "application/zstd",    style = { fg = "magenta" } },
-  { mime = "application/x-tar",   style = { fg = "magenta" } },
-  { mime = "application/x-7z-compressed", style = { fg = "magenta" } },
-  { mime = "application/vnd.rar", style = { fg = "magenta" } },
+  { url = "*",  is = "exec",   fg = "green", bold = true },
   # Images
-  { mime = "image/*",   style = { fg = "bright-magenta" } },
+  { mime = "**/image/*", fg = "bright-magenta" },
   # Video
-  { mime = "video/*",   style = { fg = "bright-cyan"    } },
+  { mime = "**/video/*", fg = "bright-cyan" },
   # Audio
-  { mime = "audio/*",   style = { fg = "cyan"           } },
+  { mime = "**/audio/*", fg = "cyan" },
+  # Archives
+  { mime = "**/application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "magenta" },
   # Documents
-  { mime = "application/pdf", style = { fg = "bright-red" } },
+  { mime = "**/application/pdf", fg = "bright-red" },
+  # Directories
+  { url = "*/", fg = "blue", bold = true },
   # Fallback
-  { url = "*", style = { fg = "reset" } },
+  { url = "*",  fg = "reset" },
 ]

@@ -15,7 +15,7 @@ como fuente de verdad para dotfiles, referencias y memoria de proyecto.
 Configuraciones/
 ├── CLAUDE.md          ← este archivo
 ├── install.sh         ← entry point curl-able (detecta repo / clona si falta)
-├── .gitignore         ← excluye secrets, runtime SDDM, fg.yazi, caché de fontconfig, etc.
+├── .gitignore         ← excluye secrets, runtime SDDM, plugins/flavors de Yazi instalados por `ya pkg`, caché de fontconfig, etc.
 ├── dotfiles/          ← paquetes Stow — deploy.sh los symlinks a $HOME
 │   ├── bootstrap.sh   ← instalación completa, llama deploy.sh al final
 │   ├── deploy.sh      ← ./deploy.sh [pkg] [--dry-run]

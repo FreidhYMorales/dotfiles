@@ -1,7 +1,7 @@
 # QUICK_REFERENCE — Estado actual de la config
 
-**Última actualización:** 2026-05-11
-**Yazi:** 26.5.6
+**Última actualización:** 2026-10-06
+**Yazi:** 26.9.1
 **Config root:** `/home/deadlock/Files/Configuraciones/yazi/`
 **Activar config:** `YAZI_CONFIG_HOME=<config_root> yazi`
 
@@ -36,14 +36,14 @@
 | `<C-u>`       | cursor page up                 | default   |
 | `s,n`         | sort natural                   | keymap    |
 | `s,a`         | sort alphabetical               | keymap    |
-| `s,m`         | sort modified (newest)         | keymap    |
+| `s,m`         | sort mtime (newest)            | keymap    |
 | `s,s`         | sort size (largest)            | keymap    |
 | `T`           | tab_create --current           | keymap    |
-| `X`           | tab_close 0                    | keymap    |
+| `X`           | close (tab actual; sale si es la última) | keymap |
 | `<Tab>`       | tab_switch +1                  | keymap    |
 | `<S-Tab>`     | tab_switch -1                  | keymap    |
 | `.`           | hidden toggle                  | keymap    |
-| `!`           | shell --block --confirm        | keymap    |
+| `!`           | shell --block --interactive    | keymap    |
 | `Space`       | select (toggle)                | default   |
 | `y`           | yank (copy)                    | default   |
 | `x`           | yank --cut                     | default   |
@@ -54,16 +54,21 @@
 | `f`           | filter                         | default   |
 | `/`           | find (incremental)             | default   |
 | `z`           | jump (zoxide/fzf)              | default   |
+| `f,g`         | buscar contenido (rg + fzf)    | fr        |
+| `f,G`         | buscar contenido incl. PDFs/docs (rga) | fr |
+| `f,f`         | buscar nombre (fzf built-in, igual que `z`) | keymap |
 | `~`           | help                           | default   |
 
 ### Input
 
-| Tecla    | Acción             |
-|----------|--------------------|
-| `<C-c>`  | close (cancel)     |
-| `<Esc>`  | escape             |
-| `<C-u>`  | kill to start      |
-| `<C-k>`  | kill to end        |
+Sin overrides — se usan los defaults de Yazi (`<C-c>` close, `<Esc>` escape, `<C-u>` = `kill bol`, `<C-k>` = `kill eol`).
+
+### Pick
+
+| Tecla    | Acción             | Fuente  |
+|----------|--------------------|---------|
+| `q`      | close (cancelar)   | keymap  |
+| `<Esc>` / `<C-c>` | close     | default |
 
 ---
 
@@ -73,15 +78,15 @@
 |----|------------------|------------|-----------|-------------|--------------|---------------------|
 | 01 | yatline          | UI         | ✅        | ✅          | automático   | ✅ OK               |
 | 02 | clipboard        | Core       | ✅        | ✅          | `y` / `<C-p>`| ✅ OK               |
-| 03 | relative-motions | Workflow   | ✅        | ✅          | `1`–`9`      | ✅ OK               |
+| 03 | relative-motions (fork boydaihungst) | Workflow | ✅        | ✅          | `1`–`9`      | ✅ OK               |
 | 04 | bypass           | Workflow   | ✅        | ✅          | `l`/`→`/`Enter` | ✅ OK            |
-| 05 | fg               | Search     | ✅        | ✅          | `f,g/G/f`    | ✅ OK               |
+| 05 | fr               | Search     | ✅        | ✅          | `f,g` / `f,G`| ✅ OK               |
 | 06 | gvfs             | System     | ✅        | ✅          | `M,*` / `g,m`| ✅ OK               |
 | 07 | mount            | System     | ✅        | ✅          | `M,M`        | ✅ OK               |
 | 08 | rich-preview     | Preview    | ✅        | ✅          | automático   | ✅ OK               |
 | —  | piper            | Preview    | ✅        | ✅          | automático   | ✅ OK (wrapper)     |
 | 09 | glow (via piper) | Preview    | ✅        | ✅          | automático   | ✅ OK               |
-| 10 | hexyl (via piper)| Preview    | ✅        | ✅          | automático   | ⏸ Deshabilitado (append_previewers comentado) |
+| 10 | hexyl (via piper)| Preview    | ✅        | ✅          | automático   | ✅ Activo (fallback en append_previewers) |
 | 11 | mediainfo        | Preview    | ✅        | ✅          | `I` toggle   | ✅ OK               |
 | 12 | ouch             | Archiving  | ✅        | ✅          | `C`          | ✅ OK               |
 | 13 | what-size        | Utility    | ✅        | ✅          | `<C-s>`      | ✅ OK               |

@@ -52,6 +52,11 @@ ls ~/.config/yazi/plugins/
 | Plugin keybind no hace nada | Symlink `plugins/` roto o ausente | `ln -s ~/.config/yazi/plugins $YAZI_CONFIG_HOME/plugins` |
 | Plugin no recibe argumentos | Sintaxis `--args=val` | Cambiar a `plugin name val` (espacio directo) |
 | Chord `["s","n"]` no funciona | Otro bind consume `s` antes | Verificar que `prepend_keymap` esté activo |
+| Binds del picker no responden | Sección `[select]` (no existe esa capa en 26.x) | Usar `[pick]`; capas válidas: `mgr`, `tasks`, `spot`, `pick`, `input`, `confirm`, `help`, `cmp` |
+| Bind de input no hace nada | Comando inválido (`kill-line-to-start`, `kill-line`) | Usar `kill bol` / `kill eol`, o no declararlo (son defaults) |
+| `X` cierra otra pestaña | `tab_close 0` usa índice absoluto (cierra la primera) | Usar `close` (pestaña actual; sale si es la última) |
+| `!` no ejecuta nada | `shell --block --confirm` (`--confirm` ya no existe) | `shell --block --interactive` |
+| `s,m` no ordena | `sort modified` — `modified` no es `SortBy` válido | `sort mtime`; válidos: `none`, `mtime`, `btime`, `extension`, `alphabetical`, `natural`, `size`, `random` |
 
 ### Preview no funciona
 
@@ -62,6 +67,14 @@ ls ~/.config/yazi/plugins/
 | Archivo comprimido no muestra contenido | ouch no instalado | `sudo pacman -S ouch` |
 | Binarios sin preview | hexyl no instalado | `sudo pacman -S hexyl` |
 | `rich` falla en preview | rich-cli no en PATH | `pipx install rich-cli` o `yay -S rich-cli` |
+
+### Colores del theme no se aplican (sin ningún error)
+
+| Síntoma | Causa probable | Solución |
+|---------|---------------|----------|
+| Cursor sigue en reverse por defecto, dirs sin negrita, tabs/modo sin color | Secciones/claves pre-26.x (`[manager]`, `hovered`, `tab_active`, `mode_normal`, `separator_open`, `permissions_*`, `[completion]`…) — Yazi las ignora en silencio | Migrar al esquema 26.x (tabla en I-11); comparar el flavor contra el preset upstream `theme-dark.toml` |
+| Reglas de `[filetype]` sin efecto | Estilo anidado `style = { fg = ... }` — ignorado en silencio | Claves planas sobre la regla: `{ url = "*/", fg = "blue", bold = true }` (I-05) |
+| Ocultos sin color propio | `url = ".*"` — los patrones comparan la ruta completa, nunca matchea | `{ url = "*", is = "hidden", ... }` |
 
 ### Openers no reciben el archivo
 
@@ -75,9 +88,9 @@ ls ~/.config/yazi/plugins/
 | Síntoma | Causa probable | Solución |
 |---------|---------------|----------|
 | `missing comma between array elements` en preloaders/previewers | Campo `name =` (renombrado a `url =` en 26.x) | Cambiar `name =` por `url =` en `[plugin]` de yazi.toml |
-| `at least one of url or mime must be specified` en filetype rules | `is = "..."` sin `url` o `mime` acompañante | Añadir `url = "**/*"` junto al `is =`, o eliminar la entrada |
-| `at least one of url or mime must be specified` con `is = "dir"` | `is = "dir"` — valor inválido en Yazi 26.x | Cambiar a `mime = "inode/directory"` |
-| `data did not match any variant of untagged enum CustomField` | `tab_width = 1` en `[manager]` del flavor | Eliminar la línea; `tab_width` ya no es campo válido de flavor |
+| `at least one of url or mime must be specified` en filetype rules | `is = "..."` sin `url` o `mime` acompañante | Añadir `url = "*"` (archivos) o `url = "*/"` (directorios) junto al `is =`, o eliminar la entrada |
+| `at least one of url or mime must be specified` con `is = "dir"` | `is = "dir"` — valor inválido en Yazi 26.x | Cambiar a `url = "*/"` (barra final = solo directorios; `mime = "inode/directory"` no matchea en 26.x, los dirs son `folder/*`) |
+| `data did not match any variant of untagged enum CustomField` | `tab_width = 1` en `[mgr]` (antes `[manager]`) del flavor | Eliminar la línea; `tab_width` ya no es campo válido de flavor |
 | Runtime crash en init.lua | `:setup()` en plugin sin setup() | Verificar `tail -1 main.lua` del plugin |
 | `Error: unknown field` | Campo TOML incorrecto | Revisar INVARIANTS.md |
 
@@ -87,7 +100,8 @@ ls ~/.config/yazi/plugins/
 |---------|---------------|----------|
 | `clipboard` no copia | wl-clipboard no instalado | `sudo pacman -S wl-clipboard` |
 | `clipboard` parece no funcionar | MIME type equivocado al verificar | Usar `wl-paste -t text/uri-list` |
-| `fg` abre editor en lugar de navegar | `default_action = "nvim"` | Cambiar a `default_action = "jump"` |
+| `relative-motions` salta mal (`3j`/`5k` erráticos) o la búsqueda de contenido (antiguo `fg.yazi`) falla; error `attempt to call a nil value (field 'mgr_emit')` | El plugin usa `ya.mgr_emit`, removido en Yazi 26 (I-10) | Usar el fork `boydaihungst/relative-motions` y `lpnh/fr` (reemplazo de `fg.yazi`); en plugins locales, cambiar `ya.mgr_emit` por `ya.emit`. Detectar: `rg -n mgr_emit plugins/` |
+| `f,G` no encuentra nada en PDFs/documentos | `ripgrep-all` (rga) no instalado | `sudo pacman -S ripgrep-all` |
 | `gvfs` no muestra dispositivos MTP | gvfs-mtp no instalado | `sudo pacman -S gvfs-mtp` |
 | `recycle-bin` falla al restaurar | trash-cli no instalado | `sudo pacman -S trash-cli` |
 
@@ -148,15 +162,18 @@ Comparar el MIME type real con los patrones en `prepend_previewers`. Si no coinc
 | `plugin name --args=val` | Plugin no recibe argumentos |
 | `name =` en previewers/preloaders de yazi.toml | Yazi no arranca (renombrado a `url =` en 26.x) |
 | `is = "..."` solo en filetype rules (sin url/mime) | Yazi no arranca |
-| `is = "dir"` en filetype rules | Yazi no arranca ("dir" no válido; usar `mime = "inode/directory"`) |
-| `tab_width = 1` en `[manager]` del flavor | Yazi no arranca (campo eliminado en 26.x) |
+| `is = "dir"` en filetype rules | Yazi no arranca ("dir" no válido; usar `url = "*/"`) |
+| `style = { ... }` anidado en filetype rules | Ignorado en silencio (usar claves planas) |
+| `[select]` en keymap.toml | Sección ignorada (la capa es `[pick]`) |
+| `ya.mgr_emit` en un plugin | Removido en Yazi 26 — usar `ya.emit` |
+| `tab_width = 1` en `[mgr]` del flavor | Yazi no arranca (campo eliminado en 26.x) |
 | `require("bypass"):setup()` | Runtime crash |
 | `require("mount"):setup()` | Runtime crash |
 | Hex colors en theme.toml | Rompe herencia de colorscheme de Kitty |
 | `plugin <name>` sin symlink `plugins/` | Falla silenciosamente sin notificación |
 | `"bright-black"` en init.lua | Color no aplica (sin error) |
 | `"brightblack"` en theme.toml | Color no aplica (sin error) |
-| `default_action = "nvim"` en fg | Viola separación CLI/editor |
+| Plugin de búsqueda que abre nvim en vez de navegar | Viola separación CLI/editor (I-04) |
 | `"$@"`/`"$1"` (sintaxis shell) en `run =` de `[opener]` | Yazi 26.x no lo sustituye — el opener corre sin archivo. Usar `%s`/`%s1`/`%d1` |
 
 ---

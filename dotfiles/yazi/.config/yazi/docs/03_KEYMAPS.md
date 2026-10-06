@@ -8,11 +8,11 @@
 keymap.toml
 ├── [mgr]           ← File manager (Yazi 26.x: "mgr", NO "manager")
 │   └── prepend_keymap = [...]   ← prioridad sobre defaults
-├── [input]         ← Prompt de comandos
-│   └── prepend_keymap = [...]
-└── [select]        ← Multi-item picker
+└── [pick]          ← Picker (ej. elegir opener) — NO existe capa "select"
     └── prepend_keymap = [...]
 ```
+
+Capas válidas en 26.x: `mgr`, `tasks`, `spot`, `pick`, `input`, `confirm`, `help`, `cmp`. `[input]` no se declara: todos los binds deseados ya son defaults de Yazi.
 
 **Invariante I-00:** En Yazi 26.x el contexto del manager cambió de `[manager]` a `[mgr]`. Una sección `[manager]` se parsea sin error pero sus keybinds nunca cargan — fallo silencioso.
 
@@ -44,7 +44,7 @@ keymap.toml
 |----------|---------|-----------|
 | `s,n` | `sort natural --dir-first` | Natural (A1 < A2 < A10) |
 | `s,a` | `sort alphabetical --dir-first` | Alfabético estricto |
-| `s,m` | `sort modified --dir-first --reverse` | Más reciente primero |
+| `s,m` | `sort mtime --dir-first --reverse` | Más reciente primero (`modified` no es un `SortBy` válido en 26.x) |
 | `s,s` | `sort size --dir-first --reverse` | Más grande primero |
 
 ### Tabs
@@ -52,7 +52,7 @@ keymap.toml
 | Tecla | Comando | Acción |
 |-------|---------|--------|
 | `T` | `tab_create --current` | Nueva pestaña en el dir actual |
-| `X` | `tab_close 0` | Cerrar pestaña actual |
+| `X` | `close` | Cerrar pestaña actual; sale de Yazi si es la última (`tab_close 0` cerraba siempre la primera — el índice es absoluto) |
 | `<Tab>` | `tab_switch 1 --relative` | Siguiente pestaña |
 | `<S-Tab>` | `tab_switch -1 --relative` | Pestaña anterior |
 
@@ -77,16 +77,18 @@ keymap.toml
 | `f` | `filter` | Filtro inline (en directorio actual) |
 | `/` | `find` | Búsqueda incremental |
 | `z` | `jump` | Jump zoxide/fzf |
-| `f,g` | `plugin fg` | Buscar contenido de archivos (fzf + rg) |
-| `f,G` | `plugin fg -- rg` | Buscar contenido (ripgrep exacto) |
-| `f,f` | `plugin fg -- fzf` | Buscar nombre de archivo (fzf) |
+| `f,g` | `plugin fr rg` | Buscar contenido (rg + fzf, preview con bat) |
+| `f,G` | `plugin fr rga` | Buscar contenido incluyendo PDFs/documentos (ripgrep-all) |
+| `f,f` | `plugin fzf` | Buscar nombre de archivo (fzf built-in de Yazi, igual que `z`) |
+
+Dentro de fzf (`fr`): `<C-s>` alterna match rg/fzf, `<C-r>` recarga, `<C-\>` cambia la posición del preview, `<C-]>` cambia el tamaño del preview. Al confirmar, `fr` hace `reveal` del archivo en Yazi (I-04).
 
 ### Miscelánea
 
 | Tecla | Comando | Acción |
 |-------|---------|--------|
 | `.` | `hidden toggle` | Mostrar/ocultar archivos ocultos |
-| `!` | `shell --block --confirm` | Prompt de shell |
+| `!` | `shell --block --interactive` | Prompt de shell (bloqueante) — `--confirm` ya no existe en 26.x |
 | `~` | `help` | Ayuda / lista de keybinds |
 | `<C-s>` | `plugin what-size` | Calcular tamaño de selección o cwd |
 | `I` | `plugin mediainfo -- toggle-metadata` | Toggle thumbnail/metadata |
@@ -118,23 +120,25 @@ keymap.toml
 
 ---
 
-## 3.3 Contexto [input]
+## 3.3 Contexto input (defaults, sin sección propia)
 
-| Tecla | Acción |
-|-------|--------|
-| `<C-c>` | Cancelar / cerrar |
-| `<Esc>` | Escape |
-| `<C-u>` | Borrar hasta el inicio de línea |
-| `<C-k>` | Borrar hasta el final de línea |
+`keymap.toml` no declara `[input]`: los comandos `kill-line-to-start`/`kill-line` que usaba antes no son válidos (los correctos son `kill bol`/`kill eol`), y todos estos binds ya son defaults de Yazi.
+
+| Tecla | Comando default | Acción |
+|-------|-----------------|--------|
+| `<C-c>` | `close` | Cancelar / cerrar |
+| `<Esc>` | `escape` | Escape |
+| `<C-u>` | `kill bol` | Borrar hasta el inicio de línea |
+| `<C-k>` | `kill eol` | Borrar hasta el final de línea |
 
 ---
 
-## 3.4 Contexto [select]
+## 3.4 Contexto [pick]
 
-| Tecla | Acción |
-|-------|--------|
-| `<Esc>` | Cancelar |
-| `q` | Cancelar |
+| Tecla | Acción | Fuente |
+|-------|--------|--------|
+| `q` | `close` (cancelar) | custom |
+| `<Esc>` / `<C-c>` | `close` (cancelar) | default |
 
 ---
 
@@ -187,7 +191,7 @@ El dígito actúa como prefijo. Después de pulsar `3`, el siguiente `j`/`k` mue
 | `s` (sort prefix) vs `s` default | Yazi default usa `s` para buscar | Sobreescrito por `prepend_keymap` — sort gana |
 | `.` (hidden) vs `.` default | Yazi default no tenía `.` | Sin conflicto |
 | `1`–`9` vs números en default | Yazi 26.x no usa números como binds por defecto | Sin conflicto |
-| `f` (filter) vs `f,g/G/f` (fg plugin) | `f` solo no conflicta con `f,*` chords en Yazi | Sin conflicto — Yazi distingue single vs chord |
+| `f` (filter) vs `f,g/G/f` (fr / fzf) | `f` solo no conflicta con `f,*` chords en Yazi | Sin conflicto — Yazi distingue single vs chord |
 
 ### Wayland / Kitty — Clipboard
 

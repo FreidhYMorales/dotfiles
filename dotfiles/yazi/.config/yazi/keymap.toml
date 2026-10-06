@@ -24,12 +24,12 @@ prepend_keymap = [
   # --- Sorting ---
   { on = ["s", "n"], run = "sort natural   --dir-first", desc = "Sort: natural"      },
   { on = ["s", "a"], run = "sort alphabetical --dir-first", desc = "Sort: alphabetical" },
-  { on = ["s", "m"], run = "sort modified  --dir-first --reverse", desc = "Sort: modified (newest first)" },
+  { on = ["s", "m"], run = "sort mtime     --dir-first --reverse", desc = "Sort: modified (newest first)" },
   { on = ["s", "s"], run = "sort size      --dir-first --reverse", desc = "Sort: size (largest first)"    },
 
   # --- Tabs ---
   { on = "T", run = "tab_create --current", desc = "New tab (current dir)" },
-  { on = "X", run = "tab_close  0",         desc = "Close current tab"     },
+  { on = "X", run = "close",                desc = "Close current tab (quit if last)" },
   { on = "<Tab>",   run = "tab_switch 1 --relative", desc = "Next tab"     },
   { on = "<S-Tab>", run = "tab_switch -1 --relative", desc = "Prev tab"    },
 
@@ -37,7 +37,7 @@ prepend_keymap = [
   { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },
 
   # --- Shell ---
-  { on = "!", run = "shell --block --confirm", desc = "Open shell prompt" },
+  { on = "!", run = "shell --block --interactive", desc = "Run a shell command (block)" },
 
   # ============================================================
   #  PLUGIN KEYBINDS — added per plugin below
@@ -49,7 +49,7 @@ prepend_keymap = [
   # <C-p> → pega desde el clipboard del sistema a Yazi
   { on = "<C-p>", run = ['plugin clipboard -- --action=paste'],         desc = "Paste from system clipboard" },
 
-  # [PLUGIN: relative-motions]
+  # [PLUGIN: relative-motions] (fork boydaihungst — compat Yazi 26)
   # 1–9 como prefijos de movimiento: "3j" baja 3, "5k" sube 5, etc.
   { on = "1", run = "plugin relative-motions 1", desc = "Relative motion: 1" },
   { on = "2", run = "plugin relative-motions 2", desc = "Relative motion: 2" },
@@ -61,10 +61,12 @@ prepend_keymap = [
   { on = "8", run = "plugin relative-motions 8", desc = "Relative motion: 8" },
   { on = "9", run = "plugin relative-motions 9", desc = "Relative motion: 9" },
   # [PLUGIN: bypass] — keybinds en Navigation section (l, →, Enter)
-  # [PLUGIN: fg]
-  { on = ["f", "g"], run = "plugin fg",        desc = "Search file content (fuzzy, fzf+rg)" },
-  { on = ["f", "G"], run = "plugin fg -- rg",  desc = "Search file content (exact, ripgrep)" },
-  { on = ["f", "f"], run = "plugin fg -- fzf", desc = "Search filename (fzf)" },
+  # [PLUGIN: fr] — reemplaza a fg.yazi (archivado, usaba ya.mgr_emit, removido en Yazi 26)
+  # Dentro de fzf: <C-s> alterna match rg/fzf, <C-r> recarga, <C-\> mueve el preview
+  { on = ["f", "g"], run = "plugin fr rg",  desc = "Search file content (rg + fzf + bat)" },
+  { on = ["f", "G"], run = "plugin fr rga", desc = "Search content incl. PDFs/docs (rga)" },
+  # Búsqueda por nombre: plugin fzf built-in de Yazi (mismo que la tecla `z`)
+  { on = ["f", "f"], run = "plugin fzf",    desc = "Search filename (fzf)" },
   # [PLUGIN: gvfs]
   { on = ["M", "m"], run = "plugin gvfs -- select-then-mount --jump", desc = "GVFS: montar dispositivo y saltar" },
   { on = ["M", "u"], run = "plugin gvfs -- select-then-unmount --eject", desc = "GVFS: desmontar y expulsar" },
@@ -101,21 +103,12 @@ prepend_keymap = [
 ]
 
 # ------------------------------------------------------------
-#  INPUT context (command-line prompt)
+#  PICK context (open-with menu)
+#  <Esc>/<C-c>/<C-[> ya cierran por default — solo se agrega `q`.
+#  (No hay [input] custom: <C-u>/<C-k>/<C-c>/<Esc> ya son defaults
+#  de Yazi como `kill bol` / `kill eol` / `close` / `escape`.)
 # ------------------------------------------------------------
-[input]
+[pick]
 prepend_keymap = [
-  { on = "<C-c>", run = "close",          desc = "Cancel"   },
-  { on = "<Esc>", run = "escape",         desc = "Escape"   },
-  { on = "<C-u>", run = "kill-line-to-start", desc = "Kill to start" },
-  { on = "<C-k>", run = "kill-line",      desc = "Kill to end"  },
-]
-
-# ------------------------------------------------------------
-#  SELECT context (multi-item picker)
-# ------------------------------------------------------------
-[select]
-prepend_keymap = [
-  { on = "<Esc>", run = "close",          desc = "Cancel" },
-  { on = "q",     run = "close",          desc = "Cancel" },
+  { on = "q", run = "close", desc = "Cancel pick" },
 ]

@@ -97,7 +97,7 @@ local function action_mount()
 	local _, ok, err = run("simple-mtpfs", { "--device", tostring(dev.num), mountpoint })
 	if ok then
 		notify('Montado "' .. dev.name .. '" en ' .. mountpoint)
-		ya.mgr_emit("cd", { Url(mountpoint) })
+		ya.emit("cd", { Url(mountpoint) })
 	else
 		-- Limpiar directorio vacío si el montaje falló
 		run("rmdir", { mountpoint })

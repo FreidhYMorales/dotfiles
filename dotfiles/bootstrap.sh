@@ -198,7 +198,7 @@ sudo pacman -S --needed --noconfirm \
 step "Yazi"
 sudo pacman -S --needed --noconfirm \
     yazi gvfs gvfs-mtp udisks2 util-linux \
-    glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard \
+    glow hexyl mediainfo imagemagick ffmpeg ffmpegthumbnailer ouch trash-cli wl-clipboard ripgrep-all \
     python-pipx
 pipx install rich-cli
 
@@ -681,14 +681,9 @@ luarocks install --local magick ||
 
 step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then
+    # Every third-party plugin (incl. lpnh/fr, which replaced the archived
+    # fg.yazi git clone) is pinned in package.toml — no manual clones needed.
     ya pkg install
-    # plugins/ may not exist yet if the stow package has no tracked files there
-    mkdir -p "$HOME/.config/yazi/plugins"
-    if [[ ! -d "$HOME/.config/yazi/plugins/fg.yazi" ]]; then
-        git clone https://github.com/DreamMaoMao/fg.yazi \
-            "$HOME/.config/yazi/plugins/fg.yazi" 2>/dev/null ||
-            echo "Warning: fg.yazi clone failed — install manually: git clone https://github.com/DreamMaoMao/fg.yazi ~/.config/yazi/plugins/fg.yazi"
-    fi
 fi
 
 step "Post-install: MPD service"

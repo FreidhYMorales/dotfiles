@@ -8,7 +8,7 @@
 /home/deadlock/Files/Configuraciones/yazi/   ← YAZI_CONFIG_HOME
 │
 ├── yazi.toml          # Manager, openers, previewers, tasks
-├── keymap.toml        # Keybinds ([mgr], [input], [select])
+├── keymap.toml        # Keybinds ([mgr], [pick])
 ├── theme.toml         # Colores ANSI puros
 ├── init.lua           # Setup de plugins, orden de carga
 │
@@ -18,7 +18,7 @@
 │   ├── clipboard.yazi/
 │   ├── relative-motions.yazi/
 │   ├── bypass.yazi/
-│   ├── fg.yazi/
+│   ├── fr.yazi/
 │   ├── gvfs.yazi/
 │   ├── mount.yazi/
 │   ├── rich-preview.yazi/
@@ -91,7 +91,9 @@ Usuario pulsa Enter/l sobre un archivo
         ▼
   bypass plugin: ¿es directorio de hijo único?
   ├── Sí → entrar directamente (smart-enter)
-  └── No → evaluar [open].rules en yazi.toml
+  └── No → evaluar [open].prepend_rules en yazi.toml
+              (se anteponen a los defaults de Yazi; `rules` plano
+               los reemplazaría todos: folder/*, trash/**, vfs/*, inode/empty)
               │
               ▼
         Primer mime que coincide:
@@ -101,7 +103,8 @@ Usuario pulsa Enter/l sobre un archivo
         ├── video/*     → xdg-open
         ├── audio/*     → xdg-open
         ├── pdf         → xdg-open
-        └── *           → nvim o xdg-open
+        └── url = "*"   → fallback solo para archivos (nvim o xdg-open %s1)
+            (directorios caen en las reglas default de Yazi)
 ```
 
 ### Invocación de plugins via keybind
@@ -110,14 +113,14 @@ Usuario pulsa Enter/l sobre un archivo
 Usuario pulsa keybind (ej: f,g)
         │
         ▼
-  Yazi busca en $YAZI_CONFIG_HOME/plugins/fg.yazi/
+  Yazi busca en $YAZI_CONFIG_HOME/plugins/fr.yazi/
         │           (requiere symlink plugins/)
         ▼
   Ejecuta main.lua del plugin
         │
         ▼
   Plugin puede:
-  ├── Mostrar UI propia (fg, gvfs, mount, recycle-bin)
+  ├── Mostrar UI propia (fr, gvfs, mount, recycle-bin)
   ├── Lanzar proceso externo bloqueante (lazygit, shell)
   └── Modificar estado de Yazi (clipboard, relative-motions)
 ```
@@ -147,20 +150,16 @@ edit = [
 
 | Sin separación | Con separación |
 |----------------|----------------|
-| Plugin `fg` abre nvim → Yazi queda bloqueado | `fg` navega en Yazi → usuario decide si abrir |
+| Plugin de búsqueda abre nvim → Yazi queda bloqueado | `fr` hace `reveal` en Yazi → usuario decide si abrir |
 | Config de Yazi depende del estado de nvim | Yazi funciona sin nvim instalado |
 | Debugging mezclado entre dos herramientas | Cada herramienta se depura de forma independiente |
 | Si nvim crashea, Yazi crashea | Yazi siempre estable |
 
-### Caso concreto — fg plugin
+### Caso concreto — búsqueda de contenido (`fr`)
 
-```lua
--- INCORRECTO: fg invoca nvim → viola separación
-require("fg"):setup({ default_action = "nvim" })
+`f,g` / `f,G` invocan `plugin fr rg` / `plugin fr rga`. Al elegir un resultado en fzf, `fr` hace `reveal` del archivo en Yazi: el cursor queda sobre él y el usuario decide si abrirlo (`Enter`/`l` → opener `edit`). No hay `require("fr"):setup()` en `init.lua` (el setup es opcional).
 
--- CORRECTO: fg navega en Yazi → el usuario controla qué hacer después
-require("fg"):setup({ default_action = "jump" })
-```
+> Histórico: el plugin anterior, `fg.yazi`, se configuraba con `default_action = "jump"` para cumplir esta regla. Se reemplazó por `fr` porque estaba archivado y usaba `ya.mgr_emit`, removido en Yazi 26 (ver I-10).
 
 ### Integración legítima Yazi ↔ Neovim
 
