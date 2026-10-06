@@ -132,7 +132,6 @@ return {
 				"typescript",
 				"typescriptreact",
 			},
-			single_file_support = true,
 			init_options = {
 				preferences = {
 					includeCompletionsForModuleExports = true,
@@ -213,7 +212,6 @@ return {
 				"--header-insertion=iwyu",
 				"--completion-style=detailed",
 				"--function-arg-placeholders",
-				"--offset-encoding=utf-16",
 			},
 		})
 		vim.lsp.enable("clangd")

@@ -16,7 +16,7 @@ return {
 Eres un asistente técnico experto para un Estudiante de Ingeniería en Ciencias de la Computación.
 
 CONTEXTO DEL ENTORNO:
-- Editor: Neovim 0.11+ con Lua, lazy.nvim, blink.cmp, treesitter
+- Editor: Neovim 0.12+ con Lua, lazy.nvim, blink.cmp, treesitter
 - OS: Arch Linux con Hyprland (Wayland)
 - Lenguajes principales: Lua, TypeScript, Go, Python, C/C++
 
@@ -32,9 +32,9 @@ COMPORTAMIENTO:
 		providers = {
 			claude = {
 				endpoint = "https://api.anthropic.com",
-				model = "claude-sonnet-4-20250514",
+				model = "claude-sonnet-5-5",
 				extra_request_body = {
-					max_tokens = 8096,
+					max_tokens = 8192,
 				},
 			},
 		},
