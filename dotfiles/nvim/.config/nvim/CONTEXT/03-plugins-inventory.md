@@ -29,6 +29,7 @@
 | `neovim/nvim-lspconfig` | `lsp/lspconfig.lua` | Defaults de servidores |
 | `folke/lazydev.nvim` | `lazydev.lua` | Tipos Lua para nvim API en lua_ls |
 | `antosha417/nvim-lsp-file-operations` | dep de lspconfig | Rename de archivos via LSP |
+| `b0o/SchemaStore.nvim` | dep de lspconfig | Catálogo de schemas para `jsonls`/`yamlls` |
 
 ## AI Tools
 

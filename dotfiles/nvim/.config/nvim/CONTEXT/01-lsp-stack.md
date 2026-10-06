@@ -45,6 +45,8 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 | `angularls` | Angular | defaults |
 | `emmet_ls` | HTML/CSS snippets | filetypes: html, typescriptreact, javascriptreact, css, scss, sass, less, svelte |
 | `marksman` | Markdown | defaults |
+| `jsonls` | JSON | schemas de `SchemaStore.nvim` + `validate.enable=true`. Formato: prettier (conform) |
+| `yamlls` | YAML | schemas de `SchemaStore.nvim` (store interno desactivado: `schemaStore.enable=false`, `url=""`) |
 | `qmlls` | QML (Quickshell) | `cmd=/usr/lib/qt6/bin/qmlls` (fuera del PATH). Imports de Quickshell vía el `.qmlls.ini` que genera Quickshell junto a `shell.qml` — requiere que exista (bootstrap lo crea, está gitignoreado). Avisos `uncreatable-type`/`unresolved-type` en `PanelWindow` son falsos positivos de los metadatos de Quickshell |
 | `rust_analyzer` | Rust | `check.command="clippy"`, inlay hints |
 

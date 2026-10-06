@@ -4,6 +4,7 @@ return {
 	dependencies = {
 		"saghen/blink.cmp", -- proveedor de capabilities LSP
 		{ "antosha417/nvim-lsp-file-operations", config = true },
+		"b0o/SchemaStore.nvim", -- JSON/YAML schemas for jsonls/yamlls
 	},
 	config = function()
 		-- NOTE: LSP Keybinds
@@ -265,6 +266,31 @@ return {
 		-- marksman (Markdown)
 		vim.lsp.config("marksman", {})
 		vim.lsp.enable("marksman")
+
+		-- jsonls / yamlls — completion + validation from the SchemaStore catalog
+		-- (package.json, tsconfig, GitHub workflows, docker-compose, ...).
+		-- Formatting stays with prettier (conform).
+		local schemastore = require("schemastore")
+		vim.lsp.config("jsonls", {
+			settings = {
+				json = {
+					schemas = schemastore.json.schemas(),
+					validate = { enable = true },
+				},
+			},
+		})
+		vim.lsp.enable("jsonls")
+
+		vim.lsp.config("yamlls", {
+			settings = {
+				yaml = {
+					-- Built-in store must be off to use SchemaStore.nvim's catalog
+					schemaStore = { enable = false, url = "" },
+					schemas = schemastore.yaml.schemas(),
+				},
+			},
+		})
+		vim.lsp.enable("yamlls")
 
 		-- qmlls (QML / Quickshell) — ships with qt6-declarative outside $PATH.
 		-- Quickshell import paths come from the .qmlls.ini that Quickshell

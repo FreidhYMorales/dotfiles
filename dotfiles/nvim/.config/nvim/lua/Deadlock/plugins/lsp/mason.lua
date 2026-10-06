@@ -40,6 +40,8 @@ return {
 				"emmet_ls", -- Emmet
 				"marksman", -- Markdown
 				"rust_analyzer", -- Rust
+				"jsonls", -- JSON (+ SchemaStore)
+				"yamlls", -- YAML (+ SchemaStore)
 			},
 		})
 
