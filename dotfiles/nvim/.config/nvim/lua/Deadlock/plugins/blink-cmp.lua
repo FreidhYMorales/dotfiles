@@ -1,6 +1,6 @@
 return {
 	"saghen/blink.cmp",
-	version = "*",
+	version = "1.*",
 	dependencies = {
 		{
 			"L3MON4D3/LuaSnip",
@@ -8,8 +8,8 @@ return {
 			build = "make install_jsregexp",
 			dependencies = { "rafamadriz/friendly-snippets" },
 		},
-		{ "saghen/blink.compat", opts = {} },
-		"f3fora/cmp-spell",
+		-- Native spell source (replaces blink.compat + cmp-spell)
+		"ribru17/blink-cmp-spell",
 	},
 	opts = {
 		snippets = { preset = "luasnip" },
@@ -34,7 +34,11 @@ return {
 		},
 
 		sources = {
-			default = { "lsp", "path", "snippets", "buffer", "lazydev", "spell" },
+			default = { "lsp", "path", "snippets", "buffer", "spell" },
+			-- lazydev only for Lua (in `default` it was required in every filetype)
+			per_filetype = {
+				lua = { inherit_defaults = true, "lazydev" },
+			},
 			providers = {
 				lazydev = {
 					name = "LazyDev",
@@ -43,14 +47,28 @@ return {
 				},
 				spell = {
 					name = "Spell",
-					module = "blink.compat.source",
+					module = "blink-cmp-spell",
 					score_offset = -3,
 					enabled = function()
 						local ft = vim.bo.filetype
 						return ft == "markdown" or ft == "text"
 					end,
-					opts = { name = "spell" },
 				},
+			},
+		},
+
+		-- Spell suggestions keep their spellsuggest order (label sort), as the
+		-- blink-cmp-spell README recommends; everything else uses the defaults.
+		fuzzy = {
+			sorts = {
+				function(a, b)
+					if a.source_id == "spell" and b.source_id == "spell" then
+						return require("blink.cmp.fuzzy.sort").label(a, b)
+					end
+				end,
+				"score",
+				"kind",
+				"label",
 			},
 		},
 
@@ -62,11 +80,10 @@ return {
 			documentation = {
 				auto_show = true,
 				auto_show_delay_ms = 200,
-				window = { border = "rounded" },
 			},
 			ghost_text = { enabled = true },
+			-- Borders come from vim.o.winborder (blink uses it when border is nil)
 			menu = {
-				border = "rounded",
 				draw = {
 					treesitter = { "lsp" },
 					columns = {

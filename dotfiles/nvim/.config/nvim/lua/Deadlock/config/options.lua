@@ -1,8 +1,11 @@
 local opt = vim.opt
 
--- PROVIDERS
-vim.g.python3_host_prog = "/usr/bin/pynvim-python"
-vim.g.ruby_host_prog = vim.fn.expand("~/.local/share/gem/ruby/3.4.0/bin/neovim-ruby-host")
+-- PROVIDERS — disabled: no remote plugins in use, and the old host paths
+-- (pynvim-python, neovim-ruby-host) don't exist, which made :checkhealth fail.
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_node_provider = 0
 
 -- MOUSE
 opt.mouse = "a"
@@ -77,5 +80,5 @@ opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize", "help", "glob
 opt.shortmess:append({ W = true, I = true, c = true, C = true }) -- Reduce command line messages
 opt.showmode = false -- Don't show mode since we have a statusline
 opt.termguicolors = true -- True color support (moved from init.lua)
-vim.g.netrw_banner = 0
+
 -- Highlight groups handled by my-theme (set_background_transparent)

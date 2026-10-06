@@ -23,6 +23,10 @@ local parsers = {
 	"c_sharp",
 	"rust",
 	"bash",
+	"zsh",
+	"toml", -- yazi, matugen, starship configs
+	"hyprlang", -- Hyprland .conf files
+	"kitty",
 	"markdown",
 	"markdown_inline",
 	"latex",
@@ -34,8 +38,8 @@ local parsers = {
 	"diff",
 	"gitcommit",
 	"git_rebase",
-	"yuck",
 	"qmljs", -- QML (Quickshell)
+	"qmldir", -- Quickshell module qmldir files
 }
 
 return {

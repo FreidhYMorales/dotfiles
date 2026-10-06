@@ -3,7 +3,8 @@ return {
 	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
 		"saghen/blink.cmp", -- proveedor de capabilities LSP
-		{ "antosha417/nvim-lsp-file-operations", config = true },
+		-- (LSP file renames come from oil's lsp_file_methods; nvim-lsp-file-operations
+		-- only hooks nvim-tree/neo-tree, which aren't used)
 		"b0o/SchemaStore.nvim", -- JSON/YAML schemas for jsonls/yamlls
 	},
 	config = function()
@@ -28,18 +29,20 @@ return {
 					require("snacks").picker.lsp_definitions()
 				end, opts)
 
+				-- gI / gy (LazyVim convention): gi (insert at last position) and
+				-- gt (next tab, used for tab navigation) stay native.
 				opts.desc = "Show LSP implementations"
-				vim.keymap.set("n", "gi", function()
+				vim.keymap.set("n", "gI", function()
 					require("snacks").picker.lsp_implementations()
 				end, opts)
 
 				opts.desc = "Show LSP type definitions"
-				vim.keymap.set("n", "gt", function()
+				vim.keymap.set("n", "gy", function()
 					require("snacks").picker.lsp_type_definitions()
 				end, opts)
 
 				opts.desc = "See available code actions"
-				vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts)
+				vim.keymap.set({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, opts)
 
 				opts.desc = "Smart rename"
 				vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
@@ -47,16 +50,19 @@ return {
 				opts.desc = "Show documentation for what is under cursor"
 				vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 
-				opts.desc = "Toggle inlay hints"
+				-- Buffer scope (the global toggle is <leader>li in keymaps.lua)
+				opts.desc = "Toggle inlay hints (buffer)"
 				vim.keymap.set("n", "<leader>uh", function()
-					vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+					local filter = { bufnr = ev.buf }
+					vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(filter), filter)
 				end, opts)
 
-				-- Restart LSP: <leader>lr (global en keymaps.lua)
-				-- Se omite aquí para evitar registrarlo en cada buffer individualmente
+				-- Restart LSP: <leader>lr (global en keymaps.lua).
+				-- Signature help in insert mode: native <C-s> (0.11+).
 
-				opts.desc = "Signature help"
-				vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+				-- 0.12 highlights LSP document colors natively; nvim-highlight-colors
+				-- already does it (and feeds blink's swatches), so avoid a double layer.
+				vim.lsp.document_color.enable(false, { bufnr = ev.buf })
 			end,
 		})
 
@@ -78,6 +84,15 @@ return {
 			update_in_insert = false,
 			float = {
 				source = true,
+			},
+			-- ]d/[d (native) open the diagnostic float after jumping
+			jump = {
+				on_jump = function(diagnostic, bufnr)
+					if not diagnostic then
+						return
+					end
+					vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+				end,
 			},
 		})
 
@@ -161,6 +176,10 @@ return {
 			},
 		})
 		vim.lsp.enable("ts_ls")
+
+		-- biome (JS/TS/CSS/JSON lint) — only starts in projects that use Biome
+		-- (biome.json or biome in package.json). Formatting stays in conform.
+		vim.lsp.enable("biome")
 
 		-- gopls
 		vim.lsp.config("gopls", {

@@ -4,8 +4,7 @@ return {
 	dependencies = {
 		"mason-org/mason-lspconfig.nvim",
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		"neovim/nvim-lspconfig",
-		"saghen/blink.cmp", -- para que blink esté listo antes del LSP setup
+		"neovim/nvim-lspconfig", -- (lspconfig.lua itself depends on blink for capabilities)
 	},
 	config = function()
 		local mason = require("mason")
@@ -55,6 +54,7 @@ return {
 				"clang-format", -- C/C++/C# formatter
 				"goimports", -- Go imports formatter
 				"gofumpt", -- Go formatter (stricter gofmt)
+				"markdown-toc", -- Markdown TOC (conform, files with <!-- toc -->)
 
 				-- Linters
 				"shellcheck", -- Shell script linter

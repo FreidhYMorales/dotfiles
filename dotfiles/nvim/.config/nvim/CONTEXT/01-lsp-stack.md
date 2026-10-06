@@ -11,7 +11,7 @@ mason.nvim  (lazy=false)
 
 nvim-lspconfig  (event: BufReadPre/BufNewFile)
   └─ saghen/blink.cmp          ← capabilities bridge
-  └─ antosha417/nvim-lsp-file-operations
+  └─ b0o/SchemaStore.nvim
 ```
 
 ## Capabilities — REGLA CRÍTICA
@@ -33,6 +33,7 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 |----------|----------|-------|
 | `lua_ls` | Lua | workspace delegado a `lazydev.nvim` — NO añadir `workspace.library` manual |
 | `ts_ls` | TypeScript/JS | inlay hints completos (params, tipos, retorno) |
+| `biome` | JS/TS/CSS/JSON lint | Solo arranca en proyectos con Biome (`biome.json` o biome en `package.json`). Reemplazó al `biomejs` de nvim-lint (lintaba el archivo en disco). Formato: conform `biome-check` |
 | `html` | HTML | defaults de lspconfig |
 | `cssls` | CSS | defaults |
 | `tailwindcss` | Tailwind | filetypes extendidos a svelte |
@@ -148,11 +149,12 @@ vim.diagnostic.config({
 | `gR` | Referencias (snacks picker) |
 | `gD` | Declaración (`vim.lsp.buf.declaration`) |
 | `gd` | Definición (snacks picker) |
-| `gi` | Implementaciones (snacks picker) |
-| `gt` | Type definitions (snacks picker) |
+| `gI` | Implementaciones (snacks picker) — `gi` queda nativo |
+| `gy` | Type definitions (snacks picker) — `gt` queda para tabs |
 | `<leader>ca` | Code actions |
 | `<leader>rn` | Rename |
-| `K` | Hover doc (border=rounded) |
-| `<leader>uh` | Toggle inlay hints |
-| `<leader>lr` | Restart LSP (`stop_client` + `edit`) — global en keymaps.lua |
-| `<C-h>` (insert) | Signature help (border=rounded) |
+| `K` | Hover doc (borde vía `winborder`) |
+| `<leader>uh` | Toggle inlay hints (solo el buffer) |
+| `<leader>lr` | Restart LSP (`:lsp restart`) — global en keymaps.lua |
+| `<C-s>` (insert) | Signature help — default nativo 0.11+ |
+| `]d` / `[d` | Diagnóstico sig./ant. — nativo, abre el float vía `jump.on_jump` |

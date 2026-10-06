@@ -1,17 +1,23 @@
 return {
 	"mfussenegger/nvim-lint",
 	event = { "BufReadPre", "BufNewFile" },
+	keys = {
+		{
+			"<leader>cl",
+			function()
+				require("lint").try_lint()
+			end,
+			desc = "Lint current file",
+		},
+	},
 	config = function()
 		local lint = require("lint")
 		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
 		lint.linters_by_ft = {
-			-- JavaScript/TypeScript
-			javascript = {"biomejs"},
-			typescript = {"biomejs"},
-			javascriptreact = {"biomejs"},
-			typescriptreact = {"biomejs"},
-			svelte = { "biomejs" },
+			-- JS/TS: biome language server (lspconfig.lua) — live diagnostics on
+			-- the buffer; nvim-lint's biomejs had stdin=false and linted the
+			-- on-disk file, so unsaved edits got stale results.
 
 			-- Python: linted by the ruff language server (lspconfig.lua)
 
@@ -29,9 +35,5 @@ return {
 				lint.try_lint()
 			end,
 		})
-
-		vim.keymap.set("n", "<leader>cl", function()
-			lint.try_lint()
-		end, { desc = "Lint current file" })
 	end,
 }
