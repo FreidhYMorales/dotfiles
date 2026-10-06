@@ -11,7 +11,8 @@ lua/Deadlock/my-theme/
 ├── types.lua
 └── integrations/
     ├── bufferline.lua← highlights para tabs (usa config.italics.bufferline)
-    ├── cmp.lua       ← highlights para menú de completion (kind icons)
+    ├── blink.lua     ← menú de completion (blink.cmp) + grupos base Pmenu*
+    ├── render_markdown.lua ← headings en degradé derivado de la paleta (sirve en light/terminal)
     ├── lsp.lua       ← FloatBorder, inlay hints, hover windows
     └── noice.lua     ← cmdline popup, borders
 ```
@@ -27,7 +28,7 @@ lua/Deadlock/my-theme/
 | `dark_blue` | `#101e2c` | ❌ | Azul oscuro, text `#bdd2e7` |
 | `light` | `#ffffff` | ❌ | Blanco |
 | `light_transparent` | `none` | ✅ | Light + transparencia |
-| `terminal` | dinámica | ✅ | Colores leídos desde caelestia sequences (`my-theme/terminal.lua`); fallback a `default` si el archivo no está disponible |
+| `terminal` | dinámica | ✅ | Sigue a matugen: colores en vivo vía `kitty @ get-colors`, fallback a parsear `kitty.conf` (incluye `matugen-theme.conf`). `my-theme/terminal.lua`. Se aplica al abrir Nvim (no recarga en caliente al cambiar wallpaper) |
 
 Para cambiar variante **en runtime**: `<leader>uv` (picker flotante con preview live).
 La selección se persiste en `~/.local/share/nvim/my-theme-variant`.

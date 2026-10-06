@@ -10,7 +10,8 @@ init.lua
 │   ├── utils.lua              ← shade(), mix() para colores derivados
 │   └── integrations/
 │       ├── bufferline.lua
-│       ├── cmp.lua
+│       ├── blink.lua
+│       ├── render_markdown.lua
 │       ├── lsp.lua
 │       └── noice.lua
 │

@@ -5,8 +5,16 @@ local M = {}
 function M.highlights()
 	local float_bg = colorscheme.floatingWindowBackground
 	return {
+		-- ── Base popup menu (Neovim core: cmdline/wildmenu, blink fallbacks) ────────
+		Pmenu         = { bg = "NONE", fg = colorscheme.mainText },
+		PmenuSel      = { bg = colorscheme.menuOptionBackground, fg = colorscheme.emphasisText },
+		PmenuSbar     = { bg = colorscheme.windowBorder },
+		PmenuThumb    = { bg = colorscheme.emphasisText },
+		PmenuMatch    = { bg = "NONE", fg = colorscheme.linkText, bold = true },
+		PmenuMatchSel = { bg = colorscheme.menuOptionBackground, fg = colorscheme.linkText, bold = true },
+
 		-- ── Completion menu ────────────────────────────────────────────────────────
-		BlinkCmpMenu          = { fg = colorscheme.mainText, bg = float_bg },
+		BlinkCmpMenu        = { fg = colorscheme.mainText, bg = float_bg },
 		BlinkCmpMenuBorder    = { fg = colorscheme.emphasisText, bg = float_bg },
 		BlinkCmpMenuSelection = { bg = colorscheme.menuOptionBackground, fg = colorscheme.emphasisText },
 

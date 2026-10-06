@@ -6,7 +6,7 @@ local theme  = {}
 local colorscheme   = require("Deadlock.my-theme.colorscheme")
 local blink         = require("Deadlock.my-theme.integrations.blink")
 local bufferline    = require("Deadlock.my-theme.integrations.bufferline")
-local cmp           = require("Deadlock.my-theme.integrations.cmp")
+local render_md     = require("Deadlock.my-theme.integrations.render_markdown")
 local gitsigns      = require("Deadlock.my-theme.integrations.gitsigns")
 local lsp           = require("Deadlock.my-theme.integrations.lsp")
 local noice         = require("Deadlock.my-theme.integrations.noice")
@@ -487,7 +487,7 @@ local function build_groups()
 
 	-- ── Integrations ────────────────────────────────────────────────────────
 	groups = vim.tbl_extend("force", groups, blink.highlights())
-	groups = vim.tbl_extend("force", groups, cmp.highlights())
+	groups = vim.tbl_extend("force", groups, render_md.highlights())
 	groups = vim.tbl_extend("force", groups, gitsigns.highlights())
 	groups = vim.tbl_extend("force", groups, lsp.highlights())
 	groups = vim.tbl_extend("force", groups, noice.highlights())
@@ -524,7 +524,7 @@ function theme.setup(values)
 		"Deadlock.my-theme.terminal",
 		"Deadlock.my-theme.integrations.blink",
 		"Deadlock.my-theme.integrations.bufferline",
-		"Deadlock.my-theme.integrations.cmp",
+		"Deadlock.my-theme.integrations.render_markdown",
 		"Deadlock.my-theme.integrations.gitsigns",
 		"Deadlock.my-theme.integrations.lsp",
 		"Deadlock.my-theme.integrations.noice",
@@ -540,7 +540,7 @@ function theme.setup(values)
 	colorscheme   = require("Deadlock.my-theme.colorscheme")
 	blink         = require("Deadlock.my-theme.integrations.blink")
 	bufferline    = require("Deadlock.my-theme.integrations.bufferline")
-	cmp           = require("Deadlock.my-theme.integrations.cmp")
+	render_md     = require("Deadlock.my-theme.integrations.render_markdown")
 	gitsigns      = require("Deadlock.my-theme.integrations.gitsigns")
 	lsp           = require("Deadlock.my-theme.integrations.lsp")
 	noice         = require("Deadlock.my-theme.integrations.noice")

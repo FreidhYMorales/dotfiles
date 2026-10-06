@@ -18,7 +18,8 @@ my-theme/
 ├── types.lua             # Anotaciones LuaLS (@class, @alias)
 └── integrations/
     ├── bufferline.lua    # nvim-bufferline (recibe config como argumento)
-    ├── cmp.lua           # nvim-cmp + Pmenu base
+    ├── blink.lua         # blink.cmp + Pmenu base
+    ├── render_markdown.lua # headings en degradé derivado de la paleta
     ├── lsp.lua           # LspInfo, LspSignature, LspReferences, LspInlayHint
     └── noice.lua         # noice.nvim borders
 ```
@@ -184,7 +185,7 @@ Para fondos semitransparentes usar `utils.shade(color, alpha, base)` o
 ### Base Neovim
 `Normal`, `LineNr`, `CursorLine`, `SignColumn`, `Folded`, `StatusLine`,
 `StatusLineNC`, `TabLine`, `TabLineSel`, `VertSplit`, `WinSeparator`,
-`FloatBorder`, `NormalFloat`, `Pmenu` (via cmp.lua), `Search`, `IncSearch`,
+`FloatBorder`, `NormalFloat`, `Pmenu` (via blink.lua), `Search`, `IncSearch`,
 `Visual`, `DiffAdd/Change/Delete/Text`, `SpellBad/Cap/Local/Rare`, `Title`,
 `MatchParen`, `EndOfBuffer`, + grupos de syntaxis clásica (`Keyword`, `String`,
 `Function`, `Comment`, etc.)
@@ -219,7 +220,8 @@ regexp) + `@lsp.typemod.*`
 | Plugin      | Archivo                      | Patrón de uso                        |
 |-------------|------------------------------|--------------------------------------|
 | bufferline  | `integrations/bufferline.lua`| `M.highlights(config)` → expuesto en `theme.bufferline.highlights` |
-| nvim-cmp    | `integrations/cmp.lua`       | `M.highlights()` → merge en init    |
+| blink.cmp   | `integrations/blink.lua`     | `M.highlights()` → merge en init (incluye `Pmenu*` base) |
+| render-markdown | `integrations/render_markdown.lua` | `M.highlights()` → merge en init |
 | LSP         | `integrations/lsp.lua`       | `M.highlights()` → merge en init    |
 | noice.nvim  | `integrations/noice.lua`     | `M.highlights()` → merge en init    |
 

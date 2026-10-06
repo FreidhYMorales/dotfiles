@@ -1,9 +1,8 @@
 local M = {}
 
-local SEQUENCES       = vim.fn.expand("~/.local/state/caelestia/sequences.txt")
+-- Palette follows matugen: kitty's colors are generated into KITTY_THEME.
 local KITTY_CONF      = vim.fn.expand("~/.config/kitty/kitty.conf")
 local KITTY_THEME     = vim.fn.expand("~/.config/kitty/matugen-theme.conf")
-local OMARCHY_THEME   = vim.fn.expand("~/.config/omarchy/current/theme.name")
 
 local function lighten(hex, n)
 	local r = math.min(255, tonumber(hex:sub(2, 3), 16) + n)
@@ -77,18 +76,6 @@ local function parse_kitty_ipc(output)
 	return c
 end
 
-local function parse_caelestia(content)
-	local c = {}
-	for n, r, g, b in content:gmatch("%]4;(%d+);rgb:(%x%x)/(%x%x)/(%x%x)") do
-		c[tonumber(n)] = "#" .. r .. g .. b
-	end
-	local r, g, b = content:match("%]10;rgb:(%x%x)/(%x%x)/(%x%x)")
-	if r then c.fg = "#" .. r .. g .. b end
-	r, g, b = content:match("%]11;rgb:(%x%x)/(%x%x)/(%x%x)")
-	if r then c.bg = "#" .. r .. g .. b end
-	return c
-end
-
 local function parse_kitty_conf(path, visited)
 	visited = visited or {}
 	if visited[path] then return {} end
@@ -126,11 +113,7 @@ end
 -- Returns a value that changes when the terminal theme changes, used for
 -- cache invalidation between Neovim sessions.
 function M.mtime()
-	local stat = vim.uv.fs_stat(OMARCHY_THEME)
-	if stat then return stat.mtime.sec end
-	stat = vim.uv.fs_stat(SEQUENCES)
-	if stat then return stat.mtime.sec end
-	stat = vim.uv.fs_stat(KITTY_THEME)
+	local stat = vim.uv.fs_stat(KITTY_THEME)
 	if stat then return stat.mtime.sec end
 	stat = vim.uv.fs_stat(KITTY_CONF)
 	return stat and stat.mtime.sec or 0
@@ -144,16 +127,7 @@ function M.load()
 		if tc.bg and tc.fg and tc[0] then return build(tc) end
 	end
 
-	-- 2. caelestia sequences file (legacy)
-	local f = io.open(SEQUENCES, "r")
-	if f then
-		local content = f:read("*a")
-		f:close()
-		local tc = parse_caelestia(content)
-		if tc.bg and tc.fg and tc[0] then return build(tc) end
-	end
-
-	-- 3. kitty.conf parse (offline fallback)
+	-- 2. kitty.conf parse (offline fallback, follows its matugen include)
 	local tc = parse_kitty_conf(KITTY_CONF)
 	if not tc.bg or not tc.fg or not tc[0] then return nil end
 	return build(tc)
