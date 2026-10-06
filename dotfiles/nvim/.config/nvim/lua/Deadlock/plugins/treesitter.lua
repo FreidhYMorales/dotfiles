@@ -35,6 +35,7 @@ local parsers = {
 	"gitcommit",
 	"git_rebase",
 	"yuck",
+	"qmljs", -- QML (Quickshell)
 }
 
 return {

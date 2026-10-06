@@ -255,6 +255,15 @@ return {
 		vim.lsp.config("marksman", {})
 		vim.lsp.enable("marksman")
 
+		-- qmlls (QML / Quickshell) — ships with qt6-declarative outside $PATH.
+		-- Quickshell import paths come from the .qmlls.ini that Quickshell
+		-- generates next to shell.qml (requires an empty .qmlls.ini to exist).
+		vim.lsp.config("qmlls", {
+			cmd = { "/usr/lib/qt6/bin/qmlls" },
+			root_markers = { ".qmlls.ini", "shell.qml", ".git" },
+		})
+		vim.lsp.enable("qmlls")
+
 		-- rust_analyzer (Rust)
 		vim.lsp.config("rust_analyzer", {
 			settings = {

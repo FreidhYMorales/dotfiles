@@ -668,6 +668,13 @@ rm -f \
     "$HOME/.gitconfig"
 "$SCRIPT_DIR/deploy.sh"
 
+# Quickshell only enables QML tooling (qmlls import paths for Neovim) when an
+# .qmlls.ini exists next to shell.qml; it then replaces it with a symlink to a
+# generated config. Gitignored, so it has to be recreated on every install.
+# -L too: a dangling symlink (stale /run target) must not be followed by touch.
+QMLLS_INI="$HOME/.config/quickshell/.qmlls.ini"
+[[ -e "$QMLLS_INI" || -L "$QMLLS_INI" ]] || touch "$QMLLS_INI"
+
 # ── Post-install ──────────────────────────────────────────────────────────────
 step "Post-install: XDG user directories"
 xdg-user-dirs-update

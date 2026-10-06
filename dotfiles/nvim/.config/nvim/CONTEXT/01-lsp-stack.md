@@ -32,18 +32,20 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 | Servidor | Lenguaje | Notas |
 |----------|----------|-------|
 | `lua_ls` | Lua | workspace delegado a `lazydev.nvim` — NO añadir `workspace.library` manual |
-| `ts_ls` | TypeScript/JS | `single_file_support=true`, inlay hints completos (params, tipos, retorno) |
+| `ts_ls` | TypeScript/JS | inlay hints completos (params, tipos, retorno) |
 | `html` | HTML | defaults de lspconfig |
 | `cssls` | CSS | defaults |
 | `tailwindcss` | Tailwind | filetypes extendidos a svelte |
 | `gopls` | Go | `staticcheck=true`, `gofumpt=true`, `unusedparams=true`, `hints` activados |
 | `pyright` | Python | `typeCheckingMode="basic"`, `diagnosticMode="workspace"` |
-| `clangd` | C/C++ | `--clang-tidy`, `--header-insertion=iwyu`, `--offset-encoding=utf-16` |
-| `bashls` | Shell | filetypes: sh, bash, zsh |
+| `clangd` | C/C++ | `--clang-tidy`, `--header-insertion=iwyu` |
+| `bashls` | Shell | filetypes: sh, bash (zsh excluido: falsos positivos) |
 | `csharp_ls` | C# | desactivado (requiere .NET SDK, no instalado por mason) |
 | `angularls` | Angular | defaults |
 | `emmet_ls` | HTML/CSS snippets | filetypes: html, typescriptreact, javascriptreact, css, scss, sass, less, svelte |
 | `marksman` | Markdown | defaults |
+| `qmlls` | QML (Quickshell) | `cmd=/usr/lib/qt6/bin/qmlls` (fuera del PATH). Imports de Quickshell vía el `.qmlls.ini` que genera Quickshell junto a `shell.qml` — requiere que exista (bootstrap lo crea, está gitignoreado). Avisos `uncreatable-type`/`unresolved-type` en `PanelWindow` son falsos positivos de los metadatos de Quickshell |
+| `rust_analyzer` | Rust | `check.command="clippy"`, inlay hints |
 
 ## lua_ls — configuración mínima (lazydev se encarga del resto)
 
