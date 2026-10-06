@@ -1,6 +1,7 @@
--- Use snacks terminal for proper show/hide toggle instead of the plugin's own
--- window management (which destroys/recreates on each toggle).
+-- Gemini CLI in a snacks terminal (no dedicated plugin needed; the former
+-- gemini-cli.nvim destroyed/recreated its window on each toggle).
 -- A fixed cwd makes the terminal ID stable so the same instance is always reused.
+-- These keys are merged into the snacks.nvim spec by lazy.nvim.
 local GEMINI_CWD = vim.fn.expand("~")
 local GEMINI_WIN_OPTS = {
 	win = { position = "left", width = 0.30 },
@@ -41,7 +42,7 @@ local function gemini_send()
 end
 
 return {
-	"jonroosevelt/gemini-cli.nvim",
+	"folke/snacks.nvim",
 	keys = {
 		{
 			"<leader>ag",

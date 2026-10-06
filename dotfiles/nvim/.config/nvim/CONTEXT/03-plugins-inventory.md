@@ -89,8 +89,6 @@ convenciones, anti-patrones y estructura del proyecto.
 | `folke/noice.nvim` | `noice.lua` | Command UI, search bottom |
 | `akinsho/bufferline.nvim` | `bufferline.lua` | Buffer tabs |
 | `nvim-lualine/lualine.nvim` | `lualine.lua` | Statusline |
-| `utilyre/barbecue.nvim` | `barbecue.lua` | Winbar breadcrumbs con iconos LSP |
-| `SmiteshP/nvim-navic` | dep de barbecue | Contexto LSP para la winbar |
 | `b0o/incline.nvim` | `incline.lua` | Nombre de archivo en float |
 | `folke/which-key.nvim` | `which-key.lua` | Guía de keymaps (preset: helix) |
 | `lukas-reineke/indent-blankline.nvim` | `indent-blankline.lua` | Guías de indentación |
@@ -100,10 +98,8 @@ convenciones, anti-patrones y estructura del proyecto.
 | `folke/twilight.nvim` | `twilight.lua` | Dim de secciones inactivas |
 | `folke/zen-mode.nvim` | `zen-mode.lua` | Focus mode (`<leader>z`) |
 
-**barbecue.nvim:** `attach_navic=true` (auto-attach al LSP), `show_modified=true`.
-Carga en `BufReadPost`. Integración my-theme en `integrations/barbecue.lua` cubre
-los 26 grupos `NavicIcons*` + `NavicText`/`NavicSeparator` + 8 grupos `Barbecue*`
-+ los 26 `BarbecueContext*` por tipo LSP.
+**barbecue.nvim — removido (2026-10-06):** repo archivado y redundante con
+incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.lua`.
 
 ## Git
 

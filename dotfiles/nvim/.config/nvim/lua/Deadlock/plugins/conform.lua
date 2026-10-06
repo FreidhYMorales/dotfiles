@@ -58,7 +58,9 @@ return {
 				cs = { "clang-format" },
 
 				-- Go
-				go = { "gofmt", "goimports" },
+				-- goimports fixes imports, gofumpt is a stricter gofmt
+				-- (matches gopls `gofumpt = true`)
+				go = { "goimports", "gofumpt" },
 
 				-- Rust
 				rust = { "rustfmt" },
@@ -74,6 +76,10 @@ return {
 				end
 				-- Disable with a global or buffer-local variable
 				if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+					return
+				end
+				-- Skip writes triggered by the auto-save autocmd (autocmd.lua)
+				if vim.b[bufnr].autosaving then
 					return
 				end
 				return {

@@ -50,15 +50,19 @@ acmd("FileType", {
 	end,
 })
 
--- Auto-save on focus lost or buffer leave
+-- Auto-save on focus lost or buffer leave.
+-- vim.b.autosaving makes conform skip format-on-save, so switching buffers
+-- never blocks on a synchronous formatter; manual :w still formats.
 acmd({ "FocusLost", "BufLeave" }, {
 	group = augroup("auto-save", { clear = true }),
 	callback = function(ev)
 		local buf = ev.buf
-		if vim.bo[buf].modified and vim.bo[buf].buftype == "" and vim.fn.expand("%") ~= "" then
+		if vim.bo[buf].modified and vim.bo[buf].buftype == "" and vim.api.nvim_buf_get_name(buf) ~= "" then
+			vim.b[buf].autosaving = true
 			vim.api.nvim_buf_call(buf, function()
 				vim.cmd("silent! write")
 			end)
+			vim.b[buf].autosaving = false
 		end
 	end,
 })

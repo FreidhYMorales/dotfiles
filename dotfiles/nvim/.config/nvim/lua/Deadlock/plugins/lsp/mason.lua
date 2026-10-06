@@ -52,7 +52,8 @@ return {
 				"isort", -- Python import formatter
 				"shfmt", -- Shell script formatter
 				"clang-format", -- C/C++/C# formatter
-				"goimports", -- Go imports formatter (gofmt is built-in with Go)
+				"goimports", -- Go imports formatter
+				"gofumpt", -- Go formatter (stricter gofmt)
 
 				-- Linters
 				"pylint", -- Python linter

@@ -17,7 +17,7 @@ Configuración de Neovim de un **Estudiante de Ingeniería en Ciencias de la Com
 | Keymaps en plugins | `keys = {}` en el spec lazy.nvim |
 | Keymaps globales | `lua/Deadlock/config/keymaps.lua` |
 | Notificaciones | `snacks.notifier` — NO nvim-notify standalone |
-| Pickers | `require("snacks").picker.*` — NO telescope salvo :Telescope themes |
+| Pickers | `require("snacks").picker.*` — NO telescope (removido) |
 | Treesitter | rama `main`: parsers vía `install()`, highlight vía `vim.treesitter.start()` — NO `ensure_installed`/`highlight = {}` (API de `master`) |
 | Terminales | `Snacks.terminal.*` — NO toggleterm |
 | Input/select | `snacks` — NO dressing.nvim |
