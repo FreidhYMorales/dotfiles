@@ -10,8 +10,6 @@ lua/Deadlock/my-theme/
 ├── utils.lua         ← shade(color, factor, bg), mix(a, b, factor)
 ├── types.lua
 └── integrations/
-    ├── avante.lua    ← highlights para paneles y botones de Avante
-    ├── barbecue.lua  ← NavicIcons* + BarbecueNormal/Context/Dirname/etc.
     ├── bufferline.lua← highlights para tabs (usa config.italics.bufferline)
     ├── cmp.lua       ← highlights para menú de completion (kind icons)
     ├── lsp.lua       ← FloatBorder, inlay hints, hover windows

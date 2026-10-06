@@ -4,7 +4,6 @@ local theme  = {}
 
 -- These are refreshed in theme.setup() when the variant changes
 local colorscheme   = require("Deadlock.my-theme.colorscheme")
-local avante        = require("Deadlock.my-theme.integrations.avante")
 local blink         = require("Deadlock.my-theme.integrations.blink")
 local bufferline    = require("Deadlock.my-theme.integrations.bufferline")
 local cmp           = require("Deadlock.my-theme.integrations.cmp")
@@ -487,7 +486,6 @@ local function build_groups()
 	}
 
 	-- ── Integrations ────────────────────────────────────────────────────────
-	groups = vim.tbl_extend("force", groups, avante.highlights())
 	groups = vim.tbl_extend("force", groups, blink.highlights())
 	groups = vim.tbl_extend("force", groups, cmp.highlights())
 	groups = vim.tbl_extend("force", groups, gitsigns.highlights())
@@ -524,7 +522,6 @@ function theme.setup(values)
 	local integration_mods = {
 		"Deadlock.my-theme.colorscheme",
 		"Deadlock.my-theme.terminal",
-		"Deadlock.my-theme.integrations.avante",
 		"Deadlock.my-theme.integrations.blink",
 		"Deadlock.my-theme.integrations.bufferline",
 		"Deadlock.my-theme.integrations.cmp",
@@ -541,7 +538,6 @@ function theme.setup(values)
 	end
 
 	colorscheme   = require("Deadlock.my-theme.colorscheme")
-	avante        = require("Deadlock.my-theme.integrations.avante")
 	blink         = require("Deadlock.my-theme.integrations.blink")
 	bufferline    = require("Deadlock.my-theme.integrations.bufferline")
 	cmp           = require("Deadlock.my-theme.integrations.cmp")

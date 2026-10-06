@@ -11,12 +11,7 @@ return {
 
 				-- AI tools
 				{ "<leader>a",   group = "ai" },
-				{ "<leader>aa",  group = "avante" },
 				{ "<leader>ac",  group = "claude code" },
-				{ "<leader>ag",  group = "gemini" },
-				{ "<leader>an",  group = "codecompanion" },
-				{ "<leader>ao",  group = "opencode" },
-				{ "<leader>aop", group = "prompts" },
 
 				-- Core groups
 				{ "<leader><tab>", group = "tabs" },

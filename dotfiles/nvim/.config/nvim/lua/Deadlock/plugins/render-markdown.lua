@@ -1,10 +1,9 @@
 return {
 	"MeanderingProgrammer/render-markdown.nvim",
-	-- "Avante" incluido: el panel de avante usa ese filetype para las respuestas de Claude
-	ft = { "markdown", "Avante", "codecompanion" },
+	ft = { "markdown" },
 	dependencies = { "nvim-treesitter/nvim-treesitter", { "echasnovski/mini.icons", opts = {} } },
 	opts = {
-		file_types = { "markdown", "Avante", "codecompanion" },
+		file_types = { "markdown" },
 		heading = {
 			enabled = true,
 			sign = true,

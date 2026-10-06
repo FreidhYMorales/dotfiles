@@ -17,7 +17,6 @@ my-theme/
 ├── utils.lua             # M.mix(fg, bg, alpha) · M.shade(color, value, base)
 ├── types.lua             # Anotaciones LuaLS (@class, @alias)
 └── integrations/
-    ├── avante.lua        # Avante AI sidebar
     ├── bufferline.lua    # nvim-bufferline (recibe config como argumento)
     ├── cmp.lua           # nvim-cmp + Pmenu base
     ├── lsp.lua           # LspInfo, LspSignature, LspReferences, LspInlayHint
@@ -176,7 +175,7 @@ Al mapear highlight groups de un plugin nuevo, usar estas asociaciones:
 | Diff change                            | `syntaxFunction`      |
 
 Para fondos semitransparentes usar `utils.shade(color, alpha, base)` o
-`utils.mix(fg, bg, alpha)`. Ejemplos en `avante.lua`.
+`utils.mix(fg, bg, alpha)`. Ejemplo en `gitsigns.lua`.
 
 ---
 
@@ -219,7 +218,6 @@ regexp) + `@lsp.typemod.*`
 ### Plugins integrados
 | Plugin      | Archivo                      | Patrón de uso                        |
 |-------------|------------------------------|--------------------------------------|
-| avante.nvim | `integrations/avante.lua`    | `M.highlights()` → merge en init    |
 | bufferline  | `integrations/bufferline.lua`| `M.highlights(config)` → expuesto en `theme.bufferline.highlights` |
 | nvim-cmp    | `integrations/cmp.lua`       | `M.highlights()` → merge en init    |
 | LSP         | `integrations/lsp.lua`       | `M.highlights()` → merge en init    |

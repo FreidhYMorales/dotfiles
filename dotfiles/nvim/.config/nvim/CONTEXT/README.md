@@ -45,7 +45,7 @@ Context:     CONTEXT/  ← estás aquí
 1. **Completion bridge:** Solo `require("blink.cmp").get_lsp_capabilities()`
 2. **lua_ls workspace:** Delegar a lazydev — no añadir `workspace.library` manual
 3. **Terminals:** Solo via `Snacks.terminal.*`
-4. **vim.ui:** No usar `dressing.nvim` — conflicto con avante + snacks
+4. **vim.ui:** No usar `dressing.nvim` — conflicto con snacks
 5. **cmp-nvim-lsp:** No reinstalar — fue eliminado intencionalmente
 6. **FloatBorder doble:** El segundo set en my-theme/init.lua es intencional
 7. **Carga de plugins de colorscheme:** Usar `vim.opt.rtp:append(plugin.dir)`, NO `require("lazy").load()` — lazy.load dispara el auto-config y emite warnings en plugins cuyo repo se llama `nvim`

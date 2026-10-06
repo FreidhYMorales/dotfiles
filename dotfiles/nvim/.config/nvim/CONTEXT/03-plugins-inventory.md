@@ -34,23 +34,9 @@
 
 | Plugin | Archivo | Keymap | Lazy trigger | Rol |
 |--------|---------|--------|--------------|-----|
-| `yetone/avante.nvim` | `avante.lua` | `<leader>aa*` | `keys` (antes VeryLazy) | Diff visual interactivo |
 | `coder/claudecode.nvim` | `claude-code.lua` | `<leader>ac*` | `keys` | Agente autónomo CLI |
-| Gemini CLI | `gemini.lua` | `<leader>ag*` | `keys` | Terminal conversacional |
-| `NickvanDyke/opencode.nvim` | `opencode.lua` | `<leader>ao*` | `keys` | Agente multi-modelo |
-| `olimorris/codecompanion.nvim` | `codecompanion.lua` | `<leader>an*` | `cmd+keys` | Chat largo + MCP |
-| `zbirenbaum/copilot.lua` | `copilot.lua` | `<M-]/[/l/j/k>` | `InsertEnter+keys` | Inline bajo demanda |
 
-**Avante:** No usar `stevearc/dressing.nvim` como dep — conflicto con snacks `vim.ui.select`.
-
-**Avante system_prompt:** Configurado para Estudiante de Ingeniería. `max_tokens=8096`.
-
-**Copilot:** `auto_trigger=false` — evita conflicto de `virt_text` con blink.cmp `ghost_text`.
-Activación manual con `<M-]>`. Para volver a auto, cambiar `auto_trigger=true` y
-desactivar `ghost_text` en `blink-cmp.lua`.
-
-**CodeCompanion system_prompt:** Mismo contexto técnico que avante. Usa `snacks` como
-provider de pickers internos.
+Avante, CodeCompanion (+ mcphub), Copilot, Gemini y OpenCode removidos (2026-10-06): solo se usa Claude Code.
 
 **CLAUDE.md:** Archivo en raíz leído automáticamente por claudecode.nvim. Contiene
 convenciones, anti-patrones y estructura del proyecto.
@@ -143,7 +129,7 @@ incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.l
 |--------|---------|-------|
 | `folke/persistence.nvim` | `persistence.lua` | Sesiones (`<leader>qs/qS/ql/qd`) |
 | `luckasRanarison/tailwind-tools.nvim` | `tailwind.lua` | Preview Tailwind en editor + completion |
-| `MeanderingProgrammer/render-markdown.nvim` | `render-markdown.lua` | Render de markdown en buffer + panel de Avante (`ft=Avante`) |
+| `MeanderingProgrammer/render-markdown.nvim` | `render-markdown.lua` | Render de markdown en buffer |
 | `antosha417/nvim-lsp-file-operations` | dep lspconfig | Rename archivos via LSP |
 | `amrbashir/nvim-docs-view` | `nvim-docs-view.lua` | Panel LSP docs (`cmd=DocsViewToggle`) |
 
@@ -157,7 +143,7 @@ snacks = {
     input     = true,    -- reemplaza vim.ui.input
     quickfile = true,    -- fast buffer open
     dashboard = true,    -- pantalla inicial con ASCII "DEADLOCK"
-    terminal  = true,    -- provider de terminales (Gemini, Claude, etc.)
+    terminal  = true,    -- provider de terminales (Claude Code, lazygit)
     image     = true,    -- imágenes en markdown (requiere magick)
     -- DESACTIVADOS:
     indent    = false,   -- → indent-blankline.nvim

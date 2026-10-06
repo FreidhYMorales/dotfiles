@@ -1,7 +1,7 @@
 # Neovim Config — Contexto para IA
 
 Este archivo es leído automáticamente por Claude Code (`claudecode.nvim`) al operar
-en este directorio. También sirve como referencia manual para avante y codecompanion.
+en este directorio.
 
 ## Identidad del proyecto
 
@@ -45,7 +45,7 @@ CONTEXT/                          ← documentación técnica interna
 - **Completion**: `saghen/blink.cmp` (NOT nvim-cmp)
 - **LSP**: `neovim/nvim-lspconfig` + mason + `vim.lsp.config()` nativo (Nvim 0.11+)
 - **UI core**: `folke/snacks.nvim` (terminals, pickers, notifier, dashboard, input)
-- **AI**: avante (diff), claudecode (agente), codecompanion (chat), copilot (inline)
+- **AI**: solo `coder/claudecode.nvim` (avante, codecompanion, copilot, gemini y opencode removidos 2026-10-06)
 - **Formatter**: `stevearc/conform.nvim` (format-on-save)
 - **Linter**: `mfussenegger/nvim-lint`
 - **Color preview**: `brenoprata10/nvim-highlight-colors` (hex/rgb/hsl/tailwind inline, `render="foreground"`, integrado con blink.cmp kind_icon)
@@ -58,7 +58,7 @@ angularls, emmet_ls, marksman, rust_analyzer (csharp_ls desactivado: requiere .N
 ## Grupos de keymaps (`<leader>`)
 
 ```
-a → AI tools (aa=avante, ac=claude, ag=gemini, an=codecompanion, ao=opencode)
+a → AI tools (ac=claude code)
 b → Buffer
 c → Code (format, actions, diagnostics, lint)
 d → Debug (DAP)
@@ -81,7 +81,7 @@ z → Zen
 
 - NO añadir `hrsh7th/cmp-nvim-lsp` — fue eliminado (blink.cmp es el stack)
 - NO añadir `workspace.library` a lua_ls — lazydev.nvim lo maneja
-- NO usar `stevearc/dressing.nvim` con avante — conflicto con snacks ui.select
+- NO usar `stevearc/dressing.nvim` — conflicto con snacks ui.select
 - NO usar `event = "UIEnter"` para plugins pesados
 - NO poner keymaps de plugins en `keymaps.lua` — van en `keys = {}` del spec
 - NO usar `require("lazy").load()` para cargar plugins de colorscheme — usar

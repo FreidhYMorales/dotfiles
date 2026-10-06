@@ -21,14 +21,6 @@
 
 ## Grupo `<leader>a` — AI Tools
 
-### `<leader>aa` → Avante
-| Key | Modo | Acción |
-|-----|------|--------|
-| `<leader>aa` | n, v | Ask |
-| `<leader>aae` | v | Edit |
-| `<leader>aar` | n | Refresh |
-| `<leader>aat` | n | Toggle |
-
 ### `<leader>ac` → Claude Code
 | Key | Modo | Acción |
 |-----|------|--------|
@@ -43,33 +35,6 @@
 | `<leader>acd` | n | Deny diff |
 | `<leader>ack` | n | Continue recent |
 | `<leader>acv` | n | Verbose logging |
-
-### `<leader>ag` → Gemini
-| Key | Modo | Acción |
-|-----|------|--------|
-| `<leader>ag` | n | Toggle terminal |
-| `<leader>aG` | v | Send selection |
-
-### `<leader>an` → CodeCompanion
-| Key | Modo | Acción |
-|-----|------|--------|
-| `<leader>an*` | n | Ver plugin spec |
-
-### `<leader>ao` → OpenCode
-| Key | Modo | Acción |
-|-----|------|--------|
-| `<leader>ao`   | n | Toggle |
-| `<leader>aos`  | n | Select |
-| `<leader>aoi`  | n | Ask |
-| `<leader>aoI`  | n | Ask with context |
-| `<leader>aob`  | n | Ask about buffer |
-| `<leader>aop`  | — | Prefijo prompts |
-| `<leader>aope` | n | Explain |
-| `<leader>aopf` | n | Fix |
-| `<leader>aopd` | n | Diagnose |
-| `<leader>aopr` | n | Review |
-| `<leader>aopt` | n | Test |
-| `<leader>aopo` | n | Optimize |
 
 ---
 
@@ -409,12 +374,7 @@
 
 ```
 <leader>a    → AI
-<leader>aa   → Avante
 <leader>ac   → Claude Code    ← toggle + prefijo
-<leader>ag   → Gemini         ← toggle + prefijo
-<leader>an   → CodeCompanion
-<leader>ao   → OpenCode       ← toggle + prefijo
-<leader>aop  → Prompts
 <leader><tab>→ Tabs
 <leader>b    → Buffer
 <leader>c    → Code

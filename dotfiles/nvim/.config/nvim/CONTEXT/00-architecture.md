@@ -9,7 +9,6 @@ init.lua
 │   ├── config.lua             ← variante activa + opciones italics/overrides
 │   ├── utils.lua              ← shade(), mix() para colores derivados
 │   └── integrations/
-│       ├── avante.lua
 │       ├── bufferline.lua
 │       ├── cmp.lua
 │       ├── lsp.lua
@@ -33,7 +32,7 @@ lua/Deadlock/plugins/lsp/      ← mason.lua + lspconfig.lua (sub-módulo)
 | Completion bridge | `require("blink.cmp").get_lsp_capabilities()` | Stack es blink.cmp, NO nvim-cmp |
 | Terminals | `Snacks.terminal.*` | Provider unificado; evitar window destroy/recreate |
 | Pickers | `require("snacks").picker.*` | Reemplazó Telescope para la mayoría de casos |
-| Input/Select | `snacks` input/selector | NO usar dressing.nvim (conflicto con avante) |
+| Input/Select | `snacks` input/selector | NO usar dressing.nvim (conflicto con snacks) |
 | Notificaciones | `snacks.notifier` | NO nvim-notify standalone |
 | File explorer | `oil.nvim` (primario) + `snacks.explorer` (secundario) | |
 
@@ -101,7 +100,7 @@ print("mensaje")
 ### Grupos which-key — reglas de nemotecnia
 
 ```
-<leader>a  → AI        (avante, claude, gemini, opencode, codecompanion)
+<leader>a  → AI        (claude code)
 <leader>b  → Buffer    (delete, navigate)
 <leader>c  → Code      (format, actions, diagnostics float, symbols)
 <leader>d  → Debug     (DAP breakpoints, step, UI)
