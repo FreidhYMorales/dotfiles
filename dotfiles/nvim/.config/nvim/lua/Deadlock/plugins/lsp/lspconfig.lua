@@ -218,15 +218,17 @@ return {
 		})
 		vim.lsp.enable("clangd")
 
-		-- bashls (Bash/Shell)
+		-- bashls (Bash/Shell) — zsh excluded: bash-language-server reports
+		-- false positives on zsh syntax
 		vim.lsp.config("bashls", {
-			filetypes = { "sh", "bash", "zsh" },
+			filetypes = { "sh", "bash" },
 		})
 		vim.lsp.enable("bashls")
 
-		-- csharp_ls (C#)
-		vim.lsp.config("csharp_ls", {})
-		vim.lsp.enable("csharp_ls")
+		-- csharp_ls (C#) — disabled: not installed by mason (requires .NET SDK).
+		-- Re-enable together with its entry in mason.lua.
+		-- vim.lsp.config("csharp_ls", {})
+		-- vim.lsp.enable("csharp_ls")
 
 		-- html (HTML)
 		vim.lsp.config("html", {})

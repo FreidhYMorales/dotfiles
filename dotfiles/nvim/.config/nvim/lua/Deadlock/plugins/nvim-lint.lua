@@ -19,7 +19,7 @@ return {
 			-- Shell scripts
 			sh = { "shellcheck" },
 			bash = { "shellcheck" },
-			zsh = { "shellcheck" },
+			-- zsh: shellcheck does not support it (SC1071)
 
 			-- C/C++
 			c = { "cpplint" },

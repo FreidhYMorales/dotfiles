@@ -18,6 +18,7 @@ Configuración de Neovim de un **Estudiante de Ingeniería en Ciencias de la Com
 | Keymaps globales | `lua/Deadlock/config/keymaps.lua` |
 | Notificaciones | `snacks.notifier` — NO nvim-notify standalone |
 | Pickers | `require("snacks").picker.*` — NO telescope salvo :Telescope themes |
+| Treesitter | rama `main`: parsers vía `install()`, highlight vía `vim.treesitter.start()` — NO `ensure_installed`/`highlight = {}` (API de `master`) |
 | Terminales | `Snacks.terminal.*` — NO toggleterm |
 | Input/select | `snacks` — NO dressing.nvim |
 
@@ -52,7 +53,7 @@ CONTEXT/                          ← documentación técnica interna
 ## Servidores LSP activos
 
 lua_ls, ts_ls, html, cssls, tailwindcss, gopls, pyright, clangd, bashls,
-csharp_ls, angularls, emmet_ls, marksman
+angularls, emmet_ls, marksman, rust_analyzer (csharp_ls desactivado: requiere .NET SDK)
 
 ## Grupos de keymaps (`<leader>`)
 

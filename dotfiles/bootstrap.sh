@@ -192,7 +192,7 @@ yay -S --needed --noconfirm gping
 # ── 7. Neovim ─────────────────────────────────────────────────────────────────
 step "Neovim & runtimes"
 sudo pacman -S --needed --noconfirm \
-    neovim nodejs npm python python-pip go rust cargo luarocks
+    neovim nodejs npm python python-pip go rust cargo luarocks tree-sitter-cli
 
 # ── 8. Yazi ───────────────────────────────────────────────────────────────────
 step "Yazi"

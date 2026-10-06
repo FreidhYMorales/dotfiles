@@ -1,6 +1,8 @@
 return {
 	"echasnovski/mini.ai",
 	event = "VeryLazy",
+	-- Provides the @function/@class/@block queries used by gen_spec.treesitter
+	dependencies = { { "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" } },
 	opts = function()
 		local ai = require("mini.ai")
 		return {

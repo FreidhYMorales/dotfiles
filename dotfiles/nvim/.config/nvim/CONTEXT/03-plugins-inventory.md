@@ -66,7 +66,8 @@ convenciones, anti-patrones y estructura del proyecto.
 
 | Plugin | Archivo | Rol |
 |--------|---------|-----|
-| `nvim-treesitter/nvim-treesitter` | `treesitter.lua` | Parser + highlighting (30+ langs) |
+| `nvim-treesitter/nvim-treesitter` | `treesitter.lua` | Rama `main`: `install()` de parsers + autocmd `FileType` → `vim.treesitter.start()`. Sin lazy-loading. Requiere el CLI `tree-sitter` (pacman `tree-sitter-cli`) |
+| `nvim-treesitter/nvim-treesitter-textobjects` | dep de `mini-ai.lua` | Solo aporta las queries `@function/@class/@block` que usa `mini.ai` |
 | `nvim-treesitter/nvim-treesitter-context` | `treesitter-context.lua` | Contexto sticky en top |
 | `windwp/nvim-ts-autotag` | `nvim-ts-autotag.lua` | Auto-close/rename HTML tags |
 | `folke/ts-comments.nvim` | `ts-comments.lua` | Comentarios por contexto (reemplazó nvim-ts-context-commentstring) |
@@ -121,7 +122,7 @@ los 26 grupos `NavicIcons*` + `NavicText`/`NavicSeparator` + 8 grupos `Barbecue*
 | `mfussenegger/nvim-dap` | `nvim-dap.lua` | `<leader>d*` debug |
 | `folke/todo-comments.nvim` | `snacks.lua` | `<leader>pt/pT` via snacks picker |
 | `kevinhwang91/nvim-ufo` | `nvim-ufo.lua` | Folding avanzado (TS + indent) — `event=BufReadPost`, `zR/zM` en spec |
-| `mbbill/undotree` | `undo-tree.lua` | `<leader>u` undo tree |
+| `mbbill/undotree` | `undo-tree.lua` | `<leader>uu` undo tree (antes `<leader>u`, chocaba con el grupo `<leader>u*`) |
 | `MagicDuck/grug-far.nvim` | `grug-far.lua` | `<leader>sr` search & replace interactivo |
 
 ## Text Objects & Surround

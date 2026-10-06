@@ -40,7 +40,7 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 | `pyright` | Python | `typeCheckingMode="basic"`, `diagnosticMode="workspace"` |
 | `clangd` | C/C++ | `--clang-tidy`, `--header-insertion=iwyu`, `--offset-encoding=utf-16` |
 | `bashls` | Shell | filetypes: sh, bash, zsh |
-| `csharp_ls` | C# | defaults |
+| `csharp_ls` | C# | desactivado (requiere .NET SDK, no instalado por mason) |
 | `angularls` | Angular | defaults |
 | `emmet_ls` | HTML/CSS snippets | filetypes: html, typescriptreact, javascriptreact, css, scss, sass, less, svelte |
 | `marksman` | Markdown | defaults |
