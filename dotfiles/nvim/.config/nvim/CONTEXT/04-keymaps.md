@@ -100,11 +100,10 @@
 | Key | Acción |
 |-----|--------|
 | `\\` | Oil (explorador primario — 1 tecla) |
-| `<leader>e` | Oil (alias con leader) |
-| `<leader>es` | Snacks explorer (sidebar) |
-| `<leader>er` | Reveal archivo en blink-tree |
-| `<leader>eT` | Toggle blink-tree |
-| `<leader>et` | Toggle foco en blink-tree |
+| `<leader>ee` | Oil (alias con leader; `<leader>e` solo es el prefijo del grupo) |
+| `<leader>ey` | Yazi en el archivo actual (n, v) |
+| `<leader>eY` | Yazi en el cwd |
+| `<leader>er` | Yazi — retomar la última sesión |
 
 ---
 

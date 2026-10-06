@@ -62,7 +62,7 @@ a → AI tools (ac=claude code)
 b → Buffer
 c → Code (format, actions, diagnostics, lint)
 d → Debug (DAP)
-e → Explorer (oil, snacks, blink-tree)
+e → Explorer (ee=oil, ey/eY/er=yazi; \ = oil)
 f → File (new, path, chmod)
 g → Git (gitsigns, diffview, lazygit)
 h → Harpoon

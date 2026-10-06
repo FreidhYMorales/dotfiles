@@ -223,9 +223,11 @@ key("n", "<leader>lm", "<cmd>Mason<CR>", { desc = "Mason" })
 -- FILE EXPLORER
 -- ============================================================================
 
--- Oil como explorador primario — \ para acceso ultra-rápido (1 tecla)
+-- Oil como explorador primario — \ para acceso ultra-rápido (1 tecla).
+-- <leader>ee (no <leader>e): <leader>e es el prefijo del grupo explorer
+-- (Yazi en <leader>ey/eY/er), mapearlo solo hacía esperar timeoutlen.
 key("n", "\\", "<cmd>Oil<CR>", { desc = "Open parent dir (Oil)" })
-key("n", "<leader>e", "<cmd>Oil<CR>", { desc = "Explorer (Oil)" })
+key("n", "<leader>ee", "<cmd>Oil<CR>", { desc = "Explorer (Oil)" })
 
 -- ============================================================================
 -- TERMINAL

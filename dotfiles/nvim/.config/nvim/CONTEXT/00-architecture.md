@@ -35,7 +35,7 @@ lua/Deadlock/plugins/lsp/      ← mason.lua + lspconfig.lua (sub-módulo)
 | Pickers | `require("snacks").picker.*` | Reemplazó Telescope para la mayoría de casos |
 | Input/Select | `snacks` input/selector | NO usar dressing.nvim (conflicto con snacks) |
 | Notificaciones | `snacks.notifier` | NO nvim-notify standalone |
-| File explorer | `oil.nvim` (primario) + `snacks.explorer` (secundario) | |
+| File explorer | `oil.nvim` (editar el FS como buffer) + `yazi.nvim` (navegar/preview con la config de Yazi) | Sin snacks.explorer ni blink-tree |
 
 ## Principios de lazy-loading
 
@@ -105,7 +105,7 @@ print("mensaje")
 <leader>b  → Buffer    (delete, navigate)
 <leader>c  → Code      (format, actions, diagnostics float, symbols)
 <leader>d  → Debug     (DAP breakpoints, step, UI)
-<leader>e  → Explorer  (oil, snacks, blink-tree)
+<leader>e  → Explorer  (oil, yazi)
 <leader>f  → File      (new, path, chmod)
 <leader>g  → Git       (hunks, blame, diff, lazygit)
 <leader>h  → Harpoon   (add, menu, jump 1-5)

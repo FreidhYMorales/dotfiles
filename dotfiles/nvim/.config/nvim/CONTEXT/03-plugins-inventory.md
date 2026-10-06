@@ -4,8 +4,8 @@
 
 | Plugin | Rol | Notas |
 |--------|-----|-------|
-| `folke/snacks.nvim` | UI core: terminals, pickers, notifier, dashboard, input, explorer | `priority=1000, lazy=false` |
-| `saghen/blink.nvim` | Meta-plugin: chartoggle + blink-tree | `lazy=false` (módulos manejan su propio lazy) |
+| `folke/snacks.nvim` | UI core: terminals, pickers, notifier, dashboard, input, words | `priority=1000, lazy=false` |
+| `saghen/blink.nvim` | Solo chartoggle (`<C-;>`, `<M-,>`); tree desactivado, sin cargo build | `lazy=false` (módulos manejan su propio lazy) |
 
 ## Completion stack
 
@@ -66,7 +66,8 @@ convenciones, anti-patrones y estructura del proyecto.
 |--------|---------|---------------------|
 | `folke/flash.nvim` | `flash.lua` | `s/S` jump, `r` remote, `R` TS search |
 | `ThePrimeagen/harpoon` | `harpoon.lua` | `<leader>ha` add, `<leader>hh` menu, `<leader>1-5` |
-| `stevearc/oil.nvim` | `oil.lua` | `\\`, `<leader>e` — explorador primario |
+| `stevearc/oil.nvim` | `oil.lua` | `\\`, `<leader>ee` — editar el FS como buffer |
+| `mikavilpas/yazi.nvim` | `yazi.lua` | `<leader>ey/eY/er` — Yazi flotante con tu config (no toma directorios: eso es de oil) |
 | `vim-maximizer` | `vim-maximizer.lua` | `<leader>sm` maximizar split |
 
 ## UI / Visual
@@ -139,7 +140,7 @@ incline/bufferline/lualine. Se borró también `my-theme/integrations/barbecue.l
 snacks = {
     notifier  = true,    -- reemplaza nvim-notify
     picker    = true,    -- reemplaza Telescope para la mayoría de casos
-    explorer  = true,    -- explorador secundario (<leader>es)
+    explorer  = false,   -- oil + yazi.nvim cubren la navegación
     input     = true,    -- reemplaza vim.ui.input
     quickfile = true,    -- fast buffer open
     dashboard = true,    -- pantalla inicial con ASCII "DEADLOCK"

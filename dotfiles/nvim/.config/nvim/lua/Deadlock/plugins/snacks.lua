@@ -19,12 +19,7 @@ return {
 			scope = { enabled = false }, -- Disabled in favor of indent-blankline.nvim scope
 			scroll = { enabled = false }, -- Using smear-cursor instead
 			words = { enabled = true }, -- LSP reference highlight + ]]/[[ jumps (replaced vim-illuminate)
-			explorer = {
-				enabled = true,
-				layout = {
-					cycle = false,
-				},
-			},
+			explorer = { enabled = false }, -- oil + yazi.nvim cover file navigation
 			styles = {
 				input = {
 					keys = {
@@ -224,13 +219,6 @@ return {
 					require("snacks").lazygit.log()
 				end,
 				desc = "Lazygit Logs",
-			},
-			{
-				"<leader>es",
-				function()
-					require("snacks").explorer()
-				end,
-				desc = "Open Snacks Explorer",
 			},
 			{
 				"<leader>rN",
