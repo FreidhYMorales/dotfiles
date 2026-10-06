@@ -13,8 +13,7 @@ return {
 			typescriptreact = {"biomejs"},
 			svelte = { "biomejs" },
 
-			-- Python
-			python = { "pylint" },
+			-- Python: linted by the ruff language server (lspconfig.lua)
 
 			-- Shell scripts
 			sh = { "shellcheck" },

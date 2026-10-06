@@ -44,7 +44,8 @@ return {
 				lua = { "stylua" },
 
 				-- Python
-				python = { "isort", "black" },
+				-- ruff replaces isort + black (autofixes stay as code actions)
+				python = { "ruff_organize_imports", "ruff_format" },
 
 				-- Shell scripts
 				sh = { "shfmt" },

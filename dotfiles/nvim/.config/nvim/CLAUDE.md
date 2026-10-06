@@ -52,7 +52,7 @@ CONTEXT/                          ← documentación técnica interna
 
 ## Servidores LSP activos
 
-lua_ls, ts_ls, html, cssls, tailwindcss, gopls, pyright, clangd, bashls,
+lua_ls, ts_ls, html, cssls, tailwindcss, gopls, pyright, ruff, clangd, bashls,
 angularls, emmet_ls, marksman, rust_analyzer, qmlls (csharp_ls desactivado: requiere .NET SDK)
 
 ## Grupos de keymaps (`<leader>`)

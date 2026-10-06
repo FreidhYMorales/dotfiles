@@ -37,7 +37,8 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 | `cssls` | CSS | defaults |
 | `tailwindcss` | Tailwind | filetypes extendidos a svelte |
 | `gopls` | Go | `staticcheck=true`, `gofumpt=true`, `unusedparams=true`, `hints` activados |
-| `pyright` | Python | `typeCheckingMode="basic"`, `diagnosticMode="workspace"` |
+| `pyright` | Python | Solo tipos: `typeCheckingMode="basic"`, `diagnosticMode="workspace"`, `disableOrganizeImports=true` (los imports los ordena ruff) |
+| `ruff` | Python | Lint en vivo + code actions (`ruff server`). `hoverProvider` desactivado → el hover lo da pyright |
 | `clangd` | C/C++ | `--clang-tidy`, `--header-insertion=iwyu` |
 | `bashls` | Shell | filetypes: sh, bash (zsh excluido: falsos positivos) |
 | `csharp_ls` | C# | desactivado (requiere .NET SDK, no instalado por mason) |
@@ -114,17 +115,15 @@ Inlay hints deshabilitados (no añadir — lazydev.nvim los gestiona cuando apli
 |------|-----------|
 | `prettier` | JS/TS/HTML/CSS/JSON/YAML/GraphQL |
 | `stylua` | Lua (4-space indent en `.stylua.toml`) |
-| `black` | Python |
-| `isort` | Python imports |
+| `ruff` | Python — conform: `ruff_organize_imports` + `ruff_format` (reemplaza isort + black; `ruff_fix` NO va en format-on-save, los autofixes quedan como code actions) |
 | `shfmt` | Shell (4-space) |
 | `clang-format` | C/C++ (deshabilitado en conform, solo instalado) |
-| `goimports` | Go |
+| `goimports` + `gofumpt` | Go |
 
 ## Linters instalados
 
 | Tool | Lenguajes |
 |------|-----------|
-| `pylint` | Python |
 | `shellcheck` | Shell |
 | `biome` | JS/TS |
 

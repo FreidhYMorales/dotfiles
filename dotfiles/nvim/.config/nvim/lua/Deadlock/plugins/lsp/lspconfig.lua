@@ -184,9 +184,12 @@ return {
 		})
 		vim.lsp.enable("gopls")
 
-		-- pyright (Python)
+		-- pyright (Python) — types only; imports are organized by ruff
 		vim.lsp.config("pyright", {
 			settings = {
+				pyright = {
+					disableOrganizeImports = true,
+				},
 				python = {
 					analysis = {
 						typeCheckingMode = "basic",
@@ -198,6 +201,14 @@ return {
 			},
 		})
 		vim.lsp.enable("pyright")
+
+		-- ruff (Python lint + quick fixes). Hover is left to pyright.
+		vim.lsp.config("ruff", {
+			on_attach = function(client)
+				client.server_capabilities.hoverProvider = false
+			end,
+		})
+		vim.lsp.enable("ruff")
 
 		-- clangd (C/C++)
 		vim.lsp.config("clangd", {

@@ -48,15 +48,13 @@ return {
 				-- Formatters
 				"prettier", -- JS/TS/HTML/CSS/JSON/YAML formatter
 				"stylua", -- Lua formatter
-				"black", -- Python formatter
-				"isort", -- Python import formatter
+				"ruff", -- Python formatter, import sorter, linter and LSP
 				"shfmt", -- Shell script formatter
 				"clang-format", -- C/C++/C# formatter
 				"goimports", -- Go imports formatter
 				"gofumpt", -- Go formatter (stricter gofmt)
 
 				-- Linters
-				"pylint", -- Python linter
 				"shellcheck", -- Shell script linter
 				"biome", -- JS/TS linter and formatter
 
