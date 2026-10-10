@@ -7,7 +7,7 @@
 | # | Plugin | Repo | Setup() | Tipo de carga |
 |---|--------|------|---------|---------------|
 | 01 | yatline | `imsi32/yatline` | ✅ required | `require():setup()` |
-| 02 | clipboard | `XYenon/clipboard` | ❌ | keybind-only |
+| 02 | sys-clipboard | local (`plugins/sys-clipboard.yazi/`, copia de `XYenon/clipboard`) | ❌ | keybind-only |
 | 03 | relative-motions | `boydaihungst/relative-motions`* | ✅ required | `require():setup()` |
 | 04 | bypass | `Rolv-Apneseth/bypass` | ❌ | keybind-only |
 | 05 | fr | `lpnh/fr`** | ⚪ optional (no se invoca) | keybind-only |
@@ -31,7 +31,7 @@
 
 \*\*Reemplaza a `DreamMaoMao/fg.yazi` (clone manual, archivado 2026-09, también usaba `ya.mgr_emit`). `fr` se instala con `ya pkg` y queda fijado en `package.toml` — ya no hay clone manual. `z` (búsqueda por nombre) usa el plugin `fzf` built-in de Yazi.
 
-`orhnk/system-clipboard` se eliminó: era una dependencia muerta (nada lo usaba); el clipboard activo es `XYenon/clipboard`.
+`orhnk/system-clipboard` se eliminó: era una dependencia muerta (nada lo usaba); el clipboard activo es `sys-clipboard`, copia local de `XYenon/clipboard` (Yazi 26.x trae un plugin built-in llamado `clipboard` y avisa "deprecated as a custom plugin name" si existe `plugins/clipboard.yazi`; `ya pkg` no permite instalarlo con otro nombre).
 
 ---
 
@@ -40,7 +40,7 @@
 | Plugin | Herramienta(s) | Paquete Arch | Notas |
 |--------|---------------|-------------|-------|
 | yatline | — | — | Requiere Nerd Font en Kitty |
-| clipboard | `wl-copy`, `wl-paste` | `wl-clipboard` | Ya disponible en Hyprland |
+| sys-clipboard | `wl-copy`, `wl-paste` | `wl-clipboard` | Ya disponible en Hyprland |
 | fr | `fzf`, `rg`, `bat`, `rga` | `fzf ripgrep bat ripgrep-all` | `ripgrep-all` solo para `g,R` (PDFs/documentos) |
 | gvfs | `gio`, daemons gvfs | `gvfs gvfs-mtp gvfs-backends` | gvfs-mtp para Android/MTP |
 | mount | `udisksctl`, `lsblk`, `eject` | `udisks2 util-linux` | udisks2 ya en Hyprland |
@@ -81,7 +81,6 @@ yay -S --needed rich-cli
 echo "==> [3/3] Plugins de Yazi (ya pkg)..."
 ya pkg add \
   imsi32/yatline \
-  XYenon/clipboard \
   boydaihungst/relative-motions \
   Rolv-Apneseth/bypass \
   AnirudhG07/rich-preview \
@@ -108,7 +107,7 @@ echo "✓ Instalación completa."
 **One-liner** (para instalaciones rápidas sin script):
 
 ```bash
-sudo pacman -S --needed gvfs gvfs-mtp gvfs-backends udisks2 util-linux fzf ripgrep ripgrep-all bat glow hexyl mediainfo imagemagick ffmpeg ouch lazygit trash-cli wl-clipboard && yay -S --needed rich-cli && ya pkg add imsi32/yatline XYenon/clipboard boydaihungst/relative-motions Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs yazi-rs/plugins:mount lpnh/fr yazi-rs/plugins:git yazi-rs/plugins:toggle-pane yazi-rs/plugins:chmod
+sudo pacman -S --needed gvfs gvfs-mtp gvfs-backends udisks2 util-linux fzf ripgrep ripgrep-all bat glow hexyl mediainfo imagemagick ffmpeg ouch lazygit trash-cli wl-clipboard && yay -S --needed rich-cli && ya pkg add imsi32/yatline boydaihungst/relative-motions Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs yazi-rs/plugins:mount lpnh/fr yazi-rs/plugins:git yazi-rs/plugins:toggle-pane yazi-rs/plugins:chmod
 ```
 
 ---

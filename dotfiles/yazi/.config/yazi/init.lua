@@ -157,8 +157,12 @@ function Yatline.string.get:hovered_file_extension(show_icon)
 end
 
 -- ─────────────────────────────────────────────────────────────
---  [02] clipboard — Sincroniza yank de Yazi con el clipboard del sistema
---  Repo:    XYenon/clipboard  (ya pkg add XYenon/clipboard)
+--  [02] sys-clipboard — Sincroniza yank de Yazi con el clipboard del sistema
+--  Origen:  copia local de XYenon/clipboard @ a2655fd (AGPL-3.0)
+--           en plugins/sys-clipboard.yazi/ — versionada, no viene de ya pkg.
+--           Renombrado: Yazi 26.x trae un plugin built-in `clipboard` y avisa
+--           ("deprecated as a custom plugin name") si existe uno propio con
+--           ese nombre; ya pkg no permite instalar con otro nombre.
 --  Dep:     wl-clipboard (wl-copy) — ya disponible en Hyprland
 --  setup(): NO — se invoca on-demand via keybind, no requiere require()
 -- ─────────────────────────────────────────────────────────────

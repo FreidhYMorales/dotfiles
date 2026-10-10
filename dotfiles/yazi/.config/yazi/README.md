@@ -49,7 +49,7 @@ yay -S rich-cli
 
 # 4. Instalar plugins de Yazi
 # (con package.toml presente, `ya pkg install` instala las versiones fijadas)
-ya pkg add imsi32/yatline XYenon/clipboard boydaihungst/relative-motions \
+ya pkg add imsi32/yatline boydaihungst/relative-motions \
   Rolv-Apneseth/bypass AnirudhG07/rich-preview yazi-rs/plugins:piper \
   boydaihungst/mediainfo ndtoan96/ouch pirafrank/what-size \
   Lil-Dank/lazygit uhs-robert/recycle-bin boydaihungst/gvfs \

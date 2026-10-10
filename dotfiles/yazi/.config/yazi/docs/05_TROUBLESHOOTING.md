@@ -98,8 +98,9 @@ ls ~/.config/yazi/plugins/
 
 | Síntoma | Causa probable | Solución |
 |---------|---------------|----------|
-| `clipboard` no copia | wl-clipboard no instalado | `sudo pacman -S wl-clipboard` |
-| `clipboard` parece no funcionar | MIME type equivocado al verificar | Usar `wl-paste -t text/uri-list` |
+| `sys-clipboard` no copia | wl-clipboard no instalado | `sudo pacman -S wl-clipboard` |
+| `sys-clipboard` parece no funcionar | MIME type equivocado al verificar | Usar `wl-paste -t text/uri-list` |
+| Aviso "`clipboard` is deprecated as a custom plugin name" | Existe `plugins/clipboard.yazi` (choca con el built-in de Yazi 26.x) | Renombrar el plugin y actualizar `keymap.toml` — acá vive como `sys-clipboard` |
 | `relative-motions` salta mal (`3j`/`5k` erráticos) o la búsqueda de contenido (antiguo `fg.yazi`) falla; error `attempt to call a nil value (field 'mgr_emit')` | El plugin usa `ya.mgr_emit`, removido en Yazi 26 (I-10) | Usar el fork `boydaihungst/relative-motions` y `lpnh/fr` (reemplazo de `fg.yazi`); en plugins locales, cambiar `ya.mgr_emit` por `ya.emit`. Detectar: `rg -n mgr_emit plugins/` |
 | `g,R` no encuentra nada en PDFs/documentos | `ripgrep-all` (rga) no instalado | `sudo pacman -S ripgrep-all` |
 | `gvfs` no muestra dispositivos MTP | gvfs-mtp no instalado | `sudo pacman -S gvfs-mtp` |

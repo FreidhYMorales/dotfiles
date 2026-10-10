@@ -61,8 +61,8 @@ Capas válidas en 26.x: `mgr`, `tasks`, `spot`, `pick`, `input`, `confirm`, `hel
 | Tecla | Comando | Acción |
 |-------|---------|--------|
 | `Space` | `select` | Toggle selección |
-| `y` | `yank` + `plugin clipboard` | Copiar + clipboard del sistema |
-| `<C-p>` | `plugin clipboard -- --action=paste` | Pegar desde clipboard del sistema |
+| `y` | `yank` + `plugin sys-clipboard` | Copiar + clipboard del sistema |
+| `<C-p>` | `plugin sys-clipboard -- --action=paste` | Pegar desde clipboard del sistema |
 | `x` | `yank --cut` | Cortar |
 | `p` | `paste` | Pegar |
 | `d` | `remove` | Mover a papelera (trash nativo) |
@@ -174,12 +174,12 @@ El dígito actúa como prefijo. Después de pulsar `3`, el siguiente `j`/`k` mue
 ### clipboard — Yank extendido
 
 ```toml
-{ on = "y", run = ["yank", "plugin clipboard -- --action=copy --notify-unknown-display-server"] }
+{ on = "y", run = ["yank", "plugin sys-clipboard -- --action=copy --notify-unknown-display-server"] }
 ```
 
 `y` ejecuta dos comandos en secuencia:
 1. `yank` → copia rutas al registro interno de Yazi
-2. `plugin clipboard` → copia las mismas rutas como `text/uri-list` al clipboard de Wayland
+2. `plugin sys-clipboard` → copia las mismas rutas como `text/uri-list` al clipboard de Wayland
 
 **Verificar clipboard:** `wl-paste -t text/uri-list` (no `wl-paste` a secas — el MIME type es URI list, no texto plano).
 
@@ -197,7 +197,7 @@ El dígito actúa como prefijo. Después de pulsar `3`, el siguiente `j`/`k` mue
 
 ### Wayland / Kitty — Clipboard
 
-El plugin `clipboard` de XYenon usa `wl-copy` (wl-clipboard). En Hyprland/Wayland esto funciona directamente. No requiere `xclip` ni `xsel`. Si `wl-copy` no está disponible, el plugin notifica vía `--notify-unknown-display-server`.
+El plugin `sys-clipboard` (copia local del de XYenon) usa `wl-copy` (wl-clipboard). En Hyprland/Wayland esto funciona directamente. No requiere `xclip` ni `xsel`. Si `wl-copy` no está disponible, el plugin notifica vía `--notify-unknown-display-server`.
 
 ```bash
 # Verificar disponibilidad

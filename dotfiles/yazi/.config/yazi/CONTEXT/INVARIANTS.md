@@ -30,7 +30,7 @@ prepend_keymap = [...]
 ```toml
 run = "plugin relative-motions 1"        ← CORRECTO
 run = "plugin relative-motions --args=1" ← INCORRECTO en Yazi 26.x
-run = "plugin clipboard -- --action=copy" ← CORRECTO (doble guion para flags propias del plugin)
+run = "plugin sys-clipboard -- --action=copy" ← CORRECTO (doble guion para flags propias del plugin)
 ```
 
 ---

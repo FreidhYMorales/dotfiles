@@ -46,11 +46,11 @@ prepend_keymap = [
   #  PLUGIN KEYBINDS — added per plugin below
   # ============================================================
 
-  # [PLUGIN: clipboard (XYenon)]
+  # [PLUGIN: sys-clipboard] — local copy of XYenon/clipboard (renamed: `clipboard` is now a Yazi built-in)
   # y → yank nativo de Yazi + copia rutas al clipboard del sistema (wl-copy)
-  { on = "y",     run = ["yank", 'plugin clipboard -- --action=copy --notify-unknown-display-server'],  desc = "Yank + copy to system clipboard" },
+  { on = "y",     run = ["yank", 'plugin sys-clipboard -- --action=copy --notify-unknown-display-server'],  desc = "Yank + copy to system clipboard" },
   # <C-p> → pega desde el clipboard del sistema a Yazi
-  { on = "<C-p>", run = ['plugin clipboard -- --action=paste'],         desc = "Paste from system clipboard" },
+  { on = "<C-p>", run = ['plugin sys-clipboard -- --action=paste'],         desc = "Paste from system clipboard" },
 
   # [PLUGIN: relative-motions] (fork boydaihungst — compat Yazi 26)
   # 1–9 como prefijos de movimiento: "3j" baja 3, "5k" sube 5, etc.

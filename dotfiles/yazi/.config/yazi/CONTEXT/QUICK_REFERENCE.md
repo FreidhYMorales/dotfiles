@@ -79,7 +79,7 @@ Sin overrides — se usan los defaults de Yazi (`<C-c>` close, `<Esc>` escape, `
 | #  | Plugin           | Categoría  | Instalado | Configurado | Keybind      | Estado              |
 |----|------------------|------------|-----------|-------------|--------------|---------------------|
 | 01 | yatline          | UI         | ✅        | ✅          | automático   | ✅ OK               |
-| 02 | clipboard        | Core       | ✅        | ✅          | `y` / `<C-p>`| ✅ OK               |
+| 02 | sys-clipboard    | Core       | ✅        | ✅          | `y` / `<C-p>`| ✅ OK               |
 | 03 | relative-motions (fork boydaihungst) | Workflow | ✅        | ✅          | `1`–`9`      | ✅ OK               |
 | 04 | bypass           | Workflow   | ✅        | ✅          | `l`/`→`/`Enter` | ✅ OK            |
 | 05 | fr               | Search     | ✅        | ✅          | `g,r` / `g,R`| ✅ OK               |

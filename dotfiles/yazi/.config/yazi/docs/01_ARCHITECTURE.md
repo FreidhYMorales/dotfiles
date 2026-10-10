@@ -15,7 +15,7 @@
 ├── plugins/           # SYMLINK → ~/.config/yazi/plugins/
 │   │                  # (ya pkg add instala aquí; el symlink lo expone)
 │   ├── yatline.yazi/
-│   ├── clipboard.yazi/
+│   ├── sys-clipboard.yazi/   (local, versionado)
 │   ├── relative-motions.yazi/
 │   ├── bypass.yazi/
 │   ├── fr.yazi/

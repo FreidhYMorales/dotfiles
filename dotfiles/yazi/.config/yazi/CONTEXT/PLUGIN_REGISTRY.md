@@ -59,16 +59,16 @@ Formato de cada entrada:
 
 ---
 
-## [02] clipboard
+## [02] sys-clipboard
 
-- **Repo:** XYenon/clipboard
-- **Instalar:** `ya pkg add XYenon/clipboard`
+- **Repo:** local — `plugins/sys-clipboard.yazi/`, copia de XYenon/clipboard @ a2655fd (AGPL-3.0, LICENSE incluida)
+- **Instalar:** versionado en el repo (excepción en `.gitignore`); no viene de `ya pkg`. Para actualizar: bajar `main.lua` del upstream y conservar el encabezado
 - **setup():** NO — invocado on-demand por keybind, sin `require()` en init.lua
 - **Tipo:** plugin (sincroniza yank de Yazi con clipboard del sistema)
 - **Dependencias:** `wl-clipboard` — ya disponible en Hyprland/Wayland
 - **Estado:** ✅ instalado y funcionando
 - **Keybinds:** `y` (yank + copy) · `<C-p>` (paste)
-- **Notas:** `y` ejecuta dos acciones: `yank` (Yazi interno) + `plugin clipboard -- --action=copy`. Así el yank nativo de Yazi sigue funcionando Y se sincroniza con wl-copy. Sin `require()` en init.lua — el plugin se carga cuando se invoca.
+- **Notas:** `y` ejecuta dos acciones: `yank` (Yazi interno) + `plugin sys-clipboard -- --action=copy`. Así el yank nativo de Yazi sigue funcionando Y se sincroniza con wl-copy. Sin `require()` en init.lua — el plugin se carga cuando se invoca. Renombrado de `clipboard` porque Yazi 26.x trae un built-in con ese nombre (avisa "deprecated as a custom plugin name").
 
 ---
 
