@@ -10,3 +10,5 @@
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !/usr/bin/gh auth git-credential
+[core]
+	hooksPath = /home/deadlock/Documents/MISC/DOTFILES IA/git-hooks
