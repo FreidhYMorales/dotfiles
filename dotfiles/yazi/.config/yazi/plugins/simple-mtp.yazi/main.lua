@@ -130,8 +130,8 @@ end
 
 -- ── Entry point ───────────────────────────────────────────────
 
-function M:entry(_, args)
-	local action = args[1]
+function M:entry(job)
+	local action = job.args[1]
 	if action == "mount" then
 		action_mount()
 	elseif action == "unmount" then
