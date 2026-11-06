@@ -17,14 +17,28 @@ Scope {
     // own lock background until the first real input.
     property bool lockedViaIdle: false
 
+    function doLock(viaIdle) {
+        lockedViaIdle = viaIdle
+        sessionLock.locked = true
+    }
+
+    // External trigger only (Hyprland keybind: `qs ipc call lock lock`,
+    // a separate process). Internal callers use Visibilities.requestLock()
+    // below instead of forking `qs ipc` to talk to this same process.
     IpcHandler {
         target: "lock"
         function lock(): void {
-            sessionLock.locked = true
+            root.doLock(false)
         }
         function lockFromIdle(): void {
-            lockedViaIdle = true
-            sessionLock.locked = true
+            root.doLock(true)
+        }
+    }
+
+    Connections {
+        target: Visibilities
+        function onLockRequested(viaIdle) {
+            root.doLock(viaIdle)
         }
     }
 

@@ -11,7 +11,6 @@ singleton BatteryProfile 1.0 BatteryProfile.qml
 singleton Bluetooth    1.0 Bluetooth.qml
 singleton Network      1.0 Network.qml
 singleton Notifs       1.0 Notifs.qml
-singleton Hypr         1.0 Hypr.qml
 singleton LockConfig   1.0 LockConfig.qml
 singleton LockLayouts  1.0 LockLayouts.qml
 singleton LockLanguages 1.0 LockLanguages.qml
@@ -24,4 +23,5 @@ singleton Keybinds     1.0 Keybinds.qml
 singleton Style        1.0 Style.qml
 NotifData              1.0 NotifData.qml
 singleton PowerActions  1.0 PowerActions.qml
+singleton NotchConfig  1.0 NotchConfig.qml
 

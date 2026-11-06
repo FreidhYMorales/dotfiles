@@ -135,9 +135,9 @@ keybind(
 )
 
 -- Mensajería
-keybind(mainMod .. " + SHIFT + C", hl.dsp.workspace.toggle_special("messaging"), descrip("Toggle messaging workspace"))
+keybind(mainMod .. " + C", hl.dsp.workspace.toggle_special("messaging"), descrip("Toggle messaging workspace"))
 keybind(
-	mainMod .. " + ALT + C",
+	mainMod .. " + SHIFT + C",
 	hl.dsp.window.move({ workspace = "special:messaging" }),
 	descrip("Move to messaging workspace")
 )
@@ -202,5 +202,5 @@ keybind(mainMod .. " + SHIFT + W", exec("kitty --class impala -e impala"), descr
 keybind(mainMod .. " + SPACE", exec(qsIpc .. " launcher toggle"), descrip("Toggle Launcher"))
 keybind(mainMod .. " + D", exec(qsIpc .. " dashboard toggle"), descrip("Toggle Dashboard"))
 keybind(mainMod .. " + N", exec(qsIpc .. " notifications toggle"), descrip("Toggle Notifications"))
-keybind(mainMod .. " + C", exec(qsIpc .. " calendar toggle"), descrip("Toggle Calendar"))
+keybind(mainMod .. " + ALT + C", exec(qsIpc .. " calendar toggle"), descrip("Toggle Calendar"))
 keybind("CTRL + ALT + DELETE", exec(qsIpc .. " powermenu toggle"), descrip("Toggle Power Menu"))

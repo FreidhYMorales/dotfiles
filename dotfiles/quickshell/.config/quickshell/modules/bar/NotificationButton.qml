@@ -17,16 +17,16 @@ Item {
         anchors.fill: parent
         visible:      root.standalone
         radius:       Style.cornerRadius
-        color:        hov.hovered ? root.colors.m3tertiaryContainer : root.colors.m3surfaceContainerHigh
+        color:        stateLayer.hovered ? root.colors.m3tertiaryContainer : root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
     }
 
     HoverIconText {
         anchors.centerIn: parent
         text:           Visibilities.silentMode ? "󰂛" : Notifs.list.length > 0 ? "󰂚" : "󰂜"
-        color:          hov.hovered ? root.colors.m3primary : root.colors.m3onSurface
+        color:          stateLayer.hovered ? root.colors.m3primary : root.colors.m3onSurface
         font.pixelSize: 13
-        active:         hov.hovered
+        active:         stateLayer.hovered
     }
 
     // Unread badge
@@ -44,11 +44,13 @@ Item {
         }
     }
 
-    HoverHandler { id: hov }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape:  Qt.PointingHandCursor
-        onClicked:    Visibilities.toggle("notifications")
+    // El fondo ya cambia de color sólido en hover (swap, no tinte translúcido)
+    // — tinte propio del StateLayer apagado para no sumarle un segundo efecto.
+    StateLayer {
+        id: stateLayer
+        hoverOpacity:   0
+        pressedOpacity: 0
+        cursorShape:    Qt.PointingHandCursor
+        onClicked:      Visibilities.toggle("notifications")
     }
 }

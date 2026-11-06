@@ -63,7 +63,7 @@ Item {
         }
 
         Text {
-            text:           Utils.SysInfo.uptime.length > 0 ? "up " + Utils.SysInfo.uptime : "up —"
+            text:           Utils.OsInfo.uptime.length > 0 ? "up " + Utils.OsInfo.uptime : "up —"
             color:          Colours.m3onSurfaceVariant
             font.family:    Style.fontFamily
             font.pixelSize: 11
@@ -119,7 +119,8 @@ Item {
                             anchors.fill: parent
                             cursorShape:  Qt.PointingHandCursor
                             onClicked: {
-                                Quickshell.execDetached(powerBtn.modelData.cmd)
+                                if (powerBtn.modelData.action) powerBtn.modelData.action()
+                                else Quickshell.execDetached(powerBtn.modelData.cmd)
                                 Visibilities.toggle("dashboard")
                             }
                         }

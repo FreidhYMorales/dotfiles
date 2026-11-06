@@ -9,12 +9,11 @@ Singleton {
     // Typography
     property string fontFamily: "DepartureMono Nerd Font"
 
-    // Corner Radii (0 for terminal-alike square aesthetic)
-    property int cornerRadius: 0
-    property int cornerRadiusSmall: 0
-    property int cornerRadiusMedium: 0
-    property int cornerRadiusLarge: 0
-
-    // Corner style toggle
-    property bool isSquare: true
+    // Corner Radii (Caelestia-esque rounded default — was 0/0/0/0 for the
+    // prior terminal-alike square aesthetic). Relative sizing kept
+    // consistent across tiers: small < base < medium < large.
+    property int cornerRadius: 8
+    property int cornerRadiusSmall: 6
+    property int cornerRadiusMedium: 10
+    property int cornerRadiusLarge: 16
 }

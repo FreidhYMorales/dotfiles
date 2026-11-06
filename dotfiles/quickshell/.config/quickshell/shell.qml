@@ -10,16 +10,18 @@ import "utils"
 import "services"
 import "modules/background"
 import "modules/bar"
+import "modules/notch"
 import "modules/launcher"
 import "modules/dashboard"
 import "modules/lock"
 import "modules/notifications"
 import "modules/powermenu"
 import "modules/screensaver"
+
 ShellRoot {
     // NotificationServer must live here (ShellRoot) to register on DBus
     NotificationServer {
-        keepOnReload:     true
+        keepOnReload: true
         actionsSupported: true
         onNotification: notif => Notifs.receive(notif)
     }
@@ -32,27 +34,44 @@ ShellRoot {
     //   keybind(mainMod .. " + C",     exec(qsIpc .. " calendar toggle"),      descrip("Toggle Calendar"))
     IpcHandler {
         target: "launcher"
-        function toggle() { Visibilities.toggle("launcher") }
+        function toggle() {
+            Visibilities.toggle("launcher");
+        }
     }
     IpcHandler {
         target: "dashboard"
-        function toggle() { Visibilities.toggle("dashboard") }
+        function toggle() {
+            Visibilities.toggle("dashboard");
+        }
     }
     IpcHandler {
         target: "notifications"
-        function toggle() { Visibilities.toggle("notifications") }
+        function toggle() {
+            Visibilities.toggle("notifications");
+        }
     }
     IpcHandler {
         target: "calendar"
-        function toggle() { Visibilities.toggle("calendar") }
+        function toggle() {
+            Visibilities.toggle("calendar");
+        }
     }
     IpcHandler {
         target: "powermenu"
-        function toggle() { Visibilities.toggle("powerMenu") }
+        function toggle() {
+            Visibilities.toggle("powerMenu");
+        }
+    }
+    IpcHandler {
+        target: "caffeine"
+        function toggle() {
+            IdleManager.caffeineMode = !IdleManager.caffeineMode;
+        }
     }
 
     Background {}
     Bar {}
+    // Notch {} // paused — work continues later, old Bar restored to normal in the meantime
     Launcher {}
     Dashboard {}
     CalendarPopout {}
@@ -78,8 +97,7 @@ ShellRoot {
         Timer {
             interval: 800
             running: true
-            onTriggered: Quickshell.execDetached(
-                ["notify-send", "-a", "Quickshell", "-i", "dialog-information", "Quickshell", "Shell loaded"])
+            onTriggered: Quickshell.execDetached(["notify-send", "-a", "Quickshell", "-i", "dialog-information", "Quickshell", "Shell loaded"])
         }
     }
 }

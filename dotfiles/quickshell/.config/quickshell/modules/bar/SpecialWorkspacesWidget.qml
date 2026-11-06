@@ -26,10 +26,18 @@ Row {
     // of these render as tofu/wrong glyph. Escapes used instead of literal
     // glyph characters because astral-plane PUA chars got mangled in transit
     // when pasted literally.
+    // yOffset: per-icon manual optical-centering nudge (logical px, +down).
+    // Qt's Text anchors.centerIn uses the font's ascent/descent metrics, not
+    // each glyph's actual ink bounds — a speech-bubble glyph with a "tail"
+    // hanging below its main body reads visually high with plain centering.
+    // Confirmed live (screenshot, cropped/zoomed) that "messaging" sits
+    // ~2-3px above the workspace circles' shared center; magic/music were
+    // never visually verified (typed from memory, no live check yet per the
+    // NOTE above) so they keep the prior default (0) until actually seen.
     readonly property var specials: [
-        { name: "magic",     iconActive: "",    iconOccupied: "" },    // nf-cod-star_full / nf-cod-star_empty
-        { name: "music",     iconActive: "󰎈", iconOccupied: "󰽴" }, // nf-md-music_note_2 / nf-md-music_note_outline
-        { name: "messaging", iconActive: "󰍨", iconOccupied: "󱜽" }, // nf-md-message_reply_text / nf-md-message_reply_outline
+        { name: "magic",     iconActive: "",    iconOccupied: "",  yOffset: 0 }, // nf-cod-star_full / nf-cod-star_empty
+        { name: "music",     iconActive: "󰎈", iconOccupied: "󰽴", yOffset: 0 }, // nf-md-music_note_2 / nf-md-music_note_outline
+        { name: "messaging", iconActive: "󰍨", iconOccupied: "󱜽", yOffset: 2 }, // nf-md-message_reply_text / nf-md-message_reply_outline
     ]
 
     // Collapses the whole cluster to zero width (and zero Row spacing in the
@@ -120,7 +128,7 @@ Row {
 
             Text {
                 anchors.centerIn: parent
-                anchors.verticalCenterOffset: -1
+                anchors.verticalCenterOffset: -1 + parent.modelData.yOffset
                 text:           parent.isActive ? parent.modelData.iconActive : parent.modelData.iconOccupied
                 color:          parent.isActive ? specialRow.colors.m3primary : specialRow.colors.m3onSurfaceVariant
                 font.family:    Style.fontFamily

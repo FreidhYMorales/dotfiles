@@ -15,9 +15,7 @@ Item {
     // wherever else it might be instantiated without a screen context.
     property var  colors:       Colours.palette
 
-    HoverHandler { id: hov }
-
-    readonly property bool active: hov.hovered
+    readonly property bool active: stateLayer.hovered
 
     Timer {
         id: hideTimer
@@ -45,6 +43,21 @@ Item {
         radius:       Style.cornerRadius
         color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
+    }
+
+    // El fondo de este widget es un color fijo (no reacciona al hover), solo
+    // el ícono/porcentaje cambian de color — tinte del StateLayer apagado a
+    // propósito.
+    StateLayer {
+        id: stateLayer
+        hoverOpacity:    0
+        pressedOpacity:  0
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked:       Visibilities.toggle("volume")
+        onRightClicked: {
+            if (mixerProc.running) mixerProc.running = false
+            else mixerProc.running = true
+        }
     }
 
     Row {
@@ -90,18 +103,5 @@ Item {
         id: mixerProc
         running: false
         command: ["kitty", "--class", "qs-volume", "-e", "wiremix"]
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: mouse => {
-            if (mouse.button === Qt.LeftButton) {
-                Visibilities.toggle("volume")
-            } else if (mouse.button === Qt.RightButton) {
-                if (mixerProc.running) mixerProc.running = false
-                else mixerProc.running = true
-            }
-        }
     }
 }

@@ -1,10 +1,14 @@
 Anim             1.0 Anim.qml
 CAnim            1.0 CAnim.qml
 Capsule          1.0 Capsule.qml
-StyledRect       1.0 StyledRect.qml
 StyledText       1.0 StyledText.qml
 StateLayer       1.0 StateLayer.qml
 MonitorOsdWindow 1.0 MonitorOsdWindow.qml
 MoveGuard        1.0 MoveGuard.qml
 HoverIconText    1.0 HoverIconText.qml
 PillDivider      1.0 PillDivider.qml
+NotchZone        1.0 NotchZone.qml
+NotchDropdown    1.0 NotchDropdown.qml
+NotchEarShape    1.0 NotchEarShape.qml
+CornerEarShape   1.0 CornerEarShape.qml
+CornerPill       1.0 CornerPill.qml

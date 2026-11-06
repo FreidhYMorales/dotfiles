@@ -20,7 +20,14 @@ Variants {
         PanelWindow {
             id: bgWindow
             screen: screenScope.modelData
-            color:  "black"
+            // Transparent, not black: hyprpaper (below, same committed
+            // wallpaper — see matugen/post-hook.sh) is already showing the
+            // right image while this surface's own Wallpapers.actualCurrent
+            // is still restoring async. A solid color here would hide that
+            // correct frame and cause a visible cut; transparent lets it
+            // show through until our own Image/Video is ready to crossfade
+            // over the same picture.
+            color:  "transparent"
 
             WlrLayershell.layer:         WlrLayer.Background
             WlrLayershell.namespace:     "deadlock-wallpaper"

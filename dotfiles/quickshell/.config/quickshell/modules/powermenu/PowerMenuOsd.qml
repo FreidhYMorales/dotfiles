@@ -112,9 +112,10 @@ Variants {
                             if (selectedIndex < 0 || selectedIndex >= buttons.length) return
                             // Capture before toggling — closing the menu resets
                             // selectedIndex synchronously via the Connections below.
-                            const cmd = buttons[selectedIndex].cmd
+                            const button = buttons[selectedIndex]
                             Visibilities.toggle("powerMenu")
-                            Quickshell.execDetached(cmd)
+                            if (button.action) button.action()
+                            else Quickshell.execDetached(button.cmd)
                         }
 
                         Row {
@@ -131,7 +132,8 @@ Variants {
                                     selected:   index === pill.selectedIndex
                                     onActivated: {
                                         Visibilities.toggle("powerMenu")
-                                        Quickshell.execDetached(modelData.cmd)
+                                        if (modelData.action) modelData.action()
+                                        else Quickshell.execDetached(modelData.cmd)
                                     }
 
                                     // Segment divider — hidden after the last button

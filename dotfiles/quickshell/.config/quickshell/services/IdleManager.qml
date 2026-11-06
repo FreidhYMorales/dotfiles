@@ -77,7 +77,7 @@ Singleton {
         onIsIdleChanged: {
             if (isIdle) {
                 root.lockGraceElapsed = false
-                Quickshell.execDetached(["qs", "ipc", "-p", Quickshell.shellDir, "call", "lock", "lockFromIdle"])
+                Visibilities.requestLock(true)
             }
         }
     }

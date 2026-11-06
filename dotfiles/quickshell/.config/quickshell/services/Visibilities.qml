@@ -26,6 +26,14 @@ Singleton {
     // without needing a reference to the non-singleton Lock scope.
     property bool locked: false
 
+    // Reverse direction of `locked` above: lets services/ singletons (e.g.
+    // IdleManager, PowerActions) ask Lock.qml to lock without a reference to
+    // that non-singleton Scope. Lock.qml listens via Connections. Internal
+    // callers only — the external Hyprland keybind still goes through
+    // `qs ipc call lock lock` since it's a separate process.
+    signal lockRequested(bool viaIdle)
+    function requestLock(viaIdle) { lockRequested(viaIdle) }
+
     property real volumeBarCenterX:  0
     property real batteryBarCenterX: 0
     // Center X of whichever tray icon was right-clicked (not the whole

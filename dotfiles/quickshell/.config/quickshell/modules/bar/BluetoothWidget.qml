@@ -14,9 +14,7 @@ Item {
     // wherever else it might be instantiated without a screen context.
     property var  colors:     Colours.palette
 
-    HoverHandler { id: hov }
-
-    readonly property bool active: hov.hovered
+    readonly property bool active: stateLayer.hovered
 
     Rectangle {
         anchors.fill: parent
@@ -24,6 +22,18 @@ Item {
         radius:       Style.cornerRadius
         color:        root.colors.m3surfaceContainerHigh
         Behavior on color { CAnim {} }
+    }
+
+    // El fondo de este widget es un color fijo (no reacciona al hover), solo
+    // el ícono cambia de color — tinte del StateLayer apagado a propósito.
+    StateLayer {
+        id: stateLayer
+        hoverOpacity:   0
+        pressedOpacity: 0
+        onClicked: {
+            if (btProc.running) btProc.running = false
+            else btProc.running = true
+        }
     }
 
     HoverIconText {
@@ -41,13 +51,5 @@ Item {
         id: btProc
         running: false
         command: ["kitty", "--class", "qs-bluetooth", "-e", "bluetui"]
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            if (btProc.running) btProc.running = false
-            else btProc.running = true
-        }
     }
 }

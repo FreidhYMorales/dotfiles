@@ -17,9 +17,7 @@ Item {
     implicitWidth:  row.implicitWidth + 16
     implicitHeight: 26
 
-    HoverHandler { id: hov }
-
-    readonly property bool active: hov.hovered
+    readonly property bool active: stateLayer.hovered
 
     function _fmtElapsed() {
         const m = Math.floor(Recorder.elapsedSeconds / 60)
@@ -32,6 +30,15 @@ Item {
         radius: Style.cornerRadius
         color: "transparent"
         Behavior on color { CAnim {} }
+    }
+
+    // Sin fondo/tinte propio en este widget (solo el ícono/texto reaccionan
+    // al hover) — tinte apagado a propósito.
+    StateLayer {
+        id: stateLayer
+        hoverOpacity:   0
+        pressedOpacity: 0
+        onClicked:      Recorder.recording ? Recorder.stop() : Recorder.start()
     }
 
     Row {
@@ -56,10 +63,5 @@ Item {
             font.pixelSize: 12
             Behavior on color { CAnim {} }
         }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: Recorder.recording ? Recorder.stop() : Recorder.start()
     }
 }

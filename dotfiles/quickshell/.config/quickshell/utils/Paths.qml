@@ -37,6 +37,7 @@ Singleton {
     readonly property string wallpaperPerScreenStatePath: `${appState}/wallpaper-screens.json`
     readonly property string themeStatePath:  `${appState}/theme.json`
     readonly property string idleStatePath:   `${appState}/idle.json`
+    readonly property string notchStatePath:  `${appState}/notch.json`
     readonly property string weatherLocPath:  `${appState}/weather-loc.json`
     readonly property string securityStatePath: `${appState}/security.json`
 
