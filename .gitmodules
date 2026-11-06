@@ -1,0 +1,4 @@
+[submodule "dotfiles/quickshell/.config/quickshell/notch-repo"]
+	path = dotfiles/quickshell/.config/quickshell/notch-repo
+	url = https://github.com/FreidhYMorales/quickshell-notch.git
+	branch = main

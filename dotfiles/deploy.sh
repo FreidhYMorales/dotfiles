@@ -37,6 +37,13 @@ if [[ -n "$GIT_ROOT" ]] && [[ -z "$(git -C "$GIT_ROOT" status --porcelain -- dot
     WAS_CLEAN=true
 fi
 
+# The quickshell package ships the notch shell as a submodule (notch-repo/),
+# and a fresh clone leaves that directory empty: `qs -c notch` would fail
+# until it is filled. Initialise it before stowing so the links resolve.
+if [[ -n "$GIT_ROOT" ]] && [[ "$DRY_RUN" == false ]]; then
+    git -C "$DOTFILES_DIR" submodule update --init --recursive
+fi
+
 # --adopt moves conflicting real files into the stow package so the link can be
 # created, then git restore puts back the repo version. Net effect: conflicts are
 # resolved non-interactively and the repo copy always wins.
