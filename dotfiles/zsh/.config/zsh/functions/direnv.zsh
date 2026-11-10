@@ -1,3 +1,1 @@
-if command -v direnv &>/dev/null; then
-    eval "$(direnv hook zsh)"
-fi
+_zsh_cached_init direnv direnv hook zsh

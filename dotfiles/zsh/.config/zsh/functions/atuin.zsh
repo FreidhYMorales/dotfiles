@@ -1,3 +1,1 @@
-if command -v atuin &>/dev/null; then
-    eval "$(atuin init zsh)"
-fi
+_zsh_cached_init atuin atuin init zsh

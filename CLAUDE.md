@@ -75,7 +75,6 @@ Configuraciones/
   - **`system/systemd/system-sleep/lock-before-sleep`**: hook nativo de systemd-logind (`/usr/lib/systemd/system-sleep/`, root, 755) — corre en el `pre` de CUALQUIER suspensión (tapa, auto-suspensión por idle, botón manual del dashboard, `systemctl suspend` a mano), no solo la de la tapa. logind espera a que termine antes de suspender de verdad, así que un `sleep 1` síncrono ahí adentro ordena bloqueo-antes-de-dormir sin carreras — de paso tapa el hueco ya documentado de que el botón manual de Suspend no bloqueaba antes. Corre como root; usa `runuser -u deadlock` (NO `sudo -u` — ver gotcha abajo) + `XDG_RUNTIME_DIR`/`WAYLAND_DISPLAY` detectados dinámicamente para llegar al `qs ipc call lock lock` de la sesión real, envuelto en `timeout 3` como segunda red de contención
   - **Gotcha (confirmado en vivo)**: la primera versión del hook usaba `sudo -u deadlock` y colgaba la máquina entera en vez de suspender (pantalla congelada, sin responder) — `/etc/hostname` es `archlinux` pero `/etc/hosts` no tenía ninguna entrada para ese hostname, y `sudo` hace un lookup del hostname para su log de auditoría en CADA invocación; sin esa entrada se cuelga esperando resolución (peor todavía justo cuando la red se está cayendo por la suspensión). Como logind espera a que el hook `pre` termine antes de suspender de verdad, el cuelgue de `sudo` trababa toda la suspensión. Fix de dos partes: `runuser` en vez de `sudo -u` (no hace ese lookup) + `timeout 3` como resguardo adicional. `bootstrap.sh` ahora agrega la línea `127.0.1.1 <hostname>` a `/etc/hosts` si falta (paso nuevo, sección 0b) — este problema existe independientemente del hook, cualquier `sudo` en esta máquina venía siendo más lento de lo normal por esto
   - **`LockSurface.qml` — reintentos de fondo tras resumir de suspensión**: `onBgSourceChanged` ya reseteaba `bgFailed` cuando cambia la ruta, pero no cubría un error de decodificación transitorio del `Image` con la MISMA ruta (típico justo al volver de suspender, GPU/compositor todavía re-inicializando) — ahí `bgSource` nunca cambia, así que nunca se auto-corregía y quedaba pegado en `default.jpg`. Fix: hasta 3 reintentos (400ms c/u, forzando `source = ""` y de vuelta) antes de recién ahí caer al default
-- `secrets.zsh` vive en `dotfiles/zsh/.config/zsh/secrets.zsh` (gitignoreado) — restaurar GEMINI_API_KEY manualmente
 - `git config --global safe.directory` ya está en `.gitconfig` para rutas del disco externo; también incluye credential helper de gh CLI
 - **`system/sddm/`** — tema silent completo + conf + `README.md` propio (guía de instalación/troubleshooting manual, verificada contra el `bootstrap.sh` real). Bootstrap lo copia a `/usr/share/sddm/themes/` y `/etc/sddm.conf.d/`. Runtime files (custom.conf, qs-current.*) gitignoreados
 - `sddm-theme-sync` helper instalado en `/usr/local/bin/` con sudoers entry — llamado desde el post-hook de matugen para actualizar colores SDDM dinámicamente
@@ -221,10 +220,9 @@ Sesión dedicada a auditar todo el shell y aplicar mejoras, en dos tandas (ver `
 
 ## Secrets / Sensibles
 
-- `~/.config/zsh/secrets.zsh` — API keys (GEMINI_API_KEY) — NO en repo
-- `dotfiles/zsh/.config/zsh/secrets.zsh` — template gitignoreado (sin valores)
+- Sin secrets en archivos planos (2026-11-10): `secrets.zsh` eliminado — no se usaba y la `GEMINI_API_KEY` venció. Si hace falta una key, guardarla cifrada con `secret-tool` (gnome-keyring) o `pass` y leerla bajo demanda. La regla de `.gitignore` para `secrets.zsh` se mantiene como red de seguridad
 - No hay backup de SSH/GPG keys vigente hoy — generar/importar desde donde corresponda en cada máquina nueva
-- **Pendiente diferido**: una copia vieja de `GEMINI_API_KEY` quedó filtrada en el historial de git (revocada, repo es público) — plan de limpieza en `auditorias/optimizacion/README.md` §P1, no urgente
+- Una copia vieja de `GEMINI_API_KEY` quedó en el historial de git (repo público) — key revocada/vencida, P1 resuelto (ver `auditorias/optimizacion/README.md` §P1)
 
 ---
 
@@ -242,9 +240,8 @@ curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/instal
 # Pasos manuales DESPUÉS del bootstrap (2026-08-05 — bootstrap.sh ya no imprime
 # esta lista al final, queda documentada acá; detalle completo en
 # backup/references/post-install.md):
-#   1. Restaurar GEMINI_API_KEY en ~/.config/zsh/secrets.zsh
-#   2. Verificar gh auth status (credential helper en .gitconfig)
-#   3. Configurar Spicetify con paths correctos de Spotify
-#   4. Revisar safe.directory en .gitconfig si cambió la ruta del disco
-#   5. grub-install (machine-specific — ver instrucciones en bootstrap.sh step 30)
+#   1. Verificar gh auth status (credential helper en .gitconfig)
+#   2. Configurar Spicetify con paths correctos de Spotify
+#   3. Revisar safe.directory en .gitconfig si cambió la ruta del disco
+#   4. grub-install (machine-specific — ver instrucciones en bootstrap.sh step 30)
 ```

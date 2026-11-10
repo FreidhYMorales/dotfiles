@@ -13,6 +13,18 @@ alias pa='$aurhelper -Ss'                                              # list av
 alias pc='$aurhelper -Sc'                                              # remove unused cache
 alias po='$aurhelper -Qtdq | $aurhelper -Rns -'                        # remove unused packages, also try > $aurhelper -Qqd | $aurhelper -Rsu --print -
 alias n='nvim'                                                         # gui code editor
-alias fastfetch='fastfetch --logo-type kitty'                          # fastfetch
+alias ff='fastfetch --logo-type kitty'                                 # fastfetch on demand
 alias e='exit'                                                         # exit
 alias music='ncmpcpp'                                                  # ncmpcpp music player cli (local music)
+
+# Git (curated; history showed no use of the oh-my-zsh set)
+alias g='git'
+alias gs='git status -sb'
+alias ga='git add'
+alias gc='git commit'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias gsw='git switch'
+alias gp='git push'
+alias gl='git pull'
+alias glog='git log --oneline --graph --decorate'
