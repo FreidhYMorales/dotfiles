@@ -64,6 +64,33 @@ test_deploy_keeps_vesktop_config_a_real_directory() {
         "real-dir settings settings.json" "$actual"
 }
 
+test_matugen_renders_vesktop_theme_from_the_palette() {
+    # Runs matugen with the repo's config.toml on a known seed in a throwaway
+    # HOME (templates linked in, every output written there). The Vencord theme
+    # it writes must paint Discord's background, text and accent with the same
+    # palette matugen wrote to colors.json in that run.
+    local home theme colors expected actual var
+    home=$(mktemp -d)
+    mkdir -p "$home/.config/matugen" "$home/.config/vesktop"
+    ln -s "$DOTFILES/matugen/.config/matugen/templates" "$home/.config/matugen/templates"
+    ln -s "$DOTFILES/matugen/.config/matugen/colors.json.template" "$home/.config/matugen/colors.json.template"
+    HOME="$home" matugen color hex "#4285f4" --mode dark --quiet \
+        --config "$DOTFILES/matugen/.config/matugen/config.toml" >/dev/null 2>&1
+    colors="$home/.config/matugen/colors.json"
+    theme="$home/.config/vesktop/themes/matugen.theme.css"
+    expected=$(python3 -I -c 'import json, sys
+c = json.load(open(sys.argv[1]))["colors"]
+print(c["background"]["hex"], c["on_surface"]["hex"], c["primary"]["hex"])' "$colors" 2>/dev/null)
+    actual=""
+    for var in --background-primary --text-normal --brand-500; do
+        actual+="$(rg -o --no-filename "^\s*$var:\s*(#[0-9a-fA-F]{6})" -r '$1' "$theme" 2>/dev/null | head -1) "
+    done
+    rm -rf "$home"
+    assert_eq "matugen run yields a palette to compare" "yes" "$([[ $expected == \#* ]] && echo yes || echo no)"
+    assert_eq "vesktop theme paints background, text and accent from the palette" \
+        "$expected" "${actual% }"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
