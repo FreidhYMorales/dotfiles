@@ -75,6 +75,20 @@ test_non_interactive_shell_loads_no_interactive_config() {
     assert_eq "aliases present in zsh -i" "aliases=1" "$(grep '^aliases=' <<<"$out")"
 }
 
+test_command_not_found_suggests_package() {
+    local out status
+    # cowsay is not installed but extra/cowsay provides /usr/bin/cowsay.
+    out=$(zsh_clean -i -c 'cowsay' 2>&1)
+    status=$?
+    assert_eq "missing command exits 127" 127 "$status"
+    assert_eq "suggests extra/cowsay" 1 "$(grep -c 'extra/cowsay' <<<"$out")"
+    # Triangulation: a name no package provides.
+    out=$(zsh_clean -i -c 'zzqx-no-such-cmd' 2>&1)
+    status=$?
+    assert_eq "unknown command exits 127" 127 "$status"
+    assert_eq "says no package provides it" 1 "$(grep -c 'no package provides it' <<<"$out")"
+}
+
 main() {
     local tests=("$@")
     if ((${#tests[@]} == 0)); then
