@@ -86,6 +86,22 @@ test_starship_hook_only_in_interactive_shells() {
         "$(zsh_clean -i -c 'print -l $precmd_functions' 2>/dev/null | grep -c '^prompt_starship_precmd$')"
 }
 
+test_fastfetch_only_in_first_kitty_terminal() {
+    local tmp
+    tmp=$(mktemp -d)
+    mkdir -p "$tmp/bin" "$tmp/run"
+    printf '#!/bin/sh\necho FASTFETCH\n' >"$tmp/bin/fastfetch"
+    chmod +x "$tmp/bin/fastfetch"
+    run_term() { # TERM
+        env -i HOME="$HOME" USER="$USER" TERM="$1" XDG_RUNTIME_DIR="$tmp/run" \
+            PATH="$tmp/bin:/usr/local/bin:/usr/bin" zsh -i -c exit 2>/dev/null | grep -c FASTFETCH
+    }
+    assert_eq "non-kitty terminal: no fastfetch" 0 "$(run_term xterm-256color)"
+    assert_eq "first kitty terminal: fastfetch" 1 "$(run_term xterm-kitty)"
+    assert_eq "second kitty terminal: no fastfetch" 0 "$(run_term xterm-kitty)"
+    rm -rf "$tmp"
+}
+
 test_plugins_load_without_oh_my_zsh() {
     local out
     # shellcheck disable=SC2016 # expansions happen inside zsh
