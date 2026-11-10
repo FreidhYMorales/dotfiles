@@ -115,6 +115,9 @@ key("x", "<leader>/", "gc", { desc = "Toggle comment", remap = true })
 -- Mover líneas con Alt — consistente en todos los modos, sin solapar J/K built-in
 -- J/K visual built-in (join lines en visual) se preserva
 key("n", "<M-j>", function()
+	if vim.fn.line(".") == vim.fn.line("$") then
+		return
+	end
 	vim.cmd("m .+1")
 	vim.cmd("normal! ==")
 end, { desc = "Move line down" })
