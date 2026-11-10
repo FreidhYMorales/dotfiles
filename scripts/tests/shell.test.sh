@@ -36,6 +36,24 @@ test_modules_load_once_and_path_has_no_duplicates() {
     assert_eq "no duplicated PATH entries" "" "$(sort <<<"$path_out" | uniq -d)"
 }
 
+test_plugins_load_without_oh_my_zsh() {
+    local out
+    # shellcheck disable=SC2016 # expansions happen inside zsh
+    out=$(zsh_clean -i -c '
+        print "omz=$(( ${+functions[omz]} ))"
+        print "autosuggest=$(( ${+functions[_zsh_autosuggest_start]} ))"
+        print "highlight=$(( ${+functions[_zsh_highlight]} ))"
+        print "fzftab=$(( ${+widgets[fzf-tab-complete]} ))"
+    ' 2>/dev/null)
+    assert_eq "oh-my-zsh not loaded" "omz=0" "$(grep '^omz=' <<<"$out")"
+    # zsh-256color unsets its own functions after running; detect it by its source line.
+    assert_eq "zsh-256color not loaded" 0 \
+        "$(zsh_clean -i -x -c exit 2>&1 | grep -c 'zsh-256color.plugin.zsh')"
+    assert_eq "autosuggestions active" "autosuggest=1" "$(grep '^autosuggest=' <<<"$out")"
+    assert_eq "syntax-highlighting active" "highlight=1" "$(grep '^highlight=' <<<"$out")"
+    assert_eq "fzf-tab active" "fzftab=1" "$(grep '^fzftab=' <<<"$out")"
+}
+
 main() {
     local tests=("$@")
     if ((${#tests[@]} == 0)); then
