@@ -670,20 +670,6 @@ Terminal de Gemini CLI como panel lateral. Mantiene la sesión activa entre togg
 <leader>aG   Enviar selección visual a Gemini (visual)
 ```
 
-#### GitHub Copilot — Sugerencias inline bajo demanda
-
-Copilot está configurado en **modo manual** para no competir visualmente con
-el ghost text de blink.cmp. Se activa explícitamente:
-
-```
-<M-]>   Siguiente sugerencia de Copilot (activa la primera)
-<M-[>   Sugerencia anterior
-<M-l>   Aceptar sugerencia completa
-<M-j>   Aceptar línea
-<M-k>   Aceptar palabra
-<C-]>   Descartar sugerencia
-```
-
 ---
 
 ### Edición de texto
@@ -720,8 +706,7 @@ p / P        Pegar (con ciclo de historial disponible)
 ```
 <C-s>        Guardar archivo
 jk / jj      Escape desde insert mode
-<M-j/k>      Mover línea hacia abajo/arriba
-J/K          (visual) Mover selección hacia abajo/arriba
+<M-j/k>      Mover línea o selección (normal/visual); en el borde del buffer no hace nada
 >/<          (visual) Indentar sin perder selección
 <C-d/u>      Scroll + centrar cursor
 n/N          Búsqueda + centrar cursor
