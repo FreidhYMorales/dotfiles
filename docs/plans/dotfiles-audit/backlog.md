@@ -12,7 +12,7 @@
 
 01. [x] 0d688d5 As the owner, I want my shell (zsh, starship) audited and tuned so that every terminal starts fast and clean.
 02. [x] 6d3e953 As the owner, I want my terminal stack (kitty, zellij) audited so that it is consistent with the theme and keybinds.
-03. [~] As the owner, I want a light re-check of nvim and yazi so that only drift since their recent audits is fixed.
+03. [x] 10693ac As the owner, I want a light re-check of nvim and yazi so that only drift since their recent audits is fixed.
 04. [ ] As the owner, I want my Hyprland session (hypr, uwsm, xdg-portal, termfilechooser) audited so that the desktop starts and behaves reliably.
 05. [ ] As the owner, I want the theming pipeline (matugen, spicetify, vesktop, betterdiscord, stylus, chromium-extension) audited so that every app follows the wallpaper.
 06. [ ] As the owner, I want my media setup (mpv, mpd, ncmpcpp, wiremix) audited so that playback and audio just work.
