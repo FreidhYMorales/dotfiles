@@ -132,6 +132,36 @@ PY
 )"
 }
 
+test_zellij_prefix_reaches_tab_layout_group_and_quit() {
+    # Actions that used to have Alt/Ctrl shortcuts stay reachable after Ctrl b.
+    local cfg="$HOME/.config/zellij/config.kdl"
+    assert_eq "zellij accepts the config" "" \
+        "$(zellij --config "$cfg" setup --check 2>&1 | rg -i -m1 'error|failed')"
+    assert_eq "Ctrl b <key> actions" \
+        '< => MoveTab "left"
+> => MoveTab "right"
+Shift space => PreviousSwapLayout
+g => TogglePaneInGroup
+q => Quit' "$(python3 -I - "$cfg" <<'PY'
+import re, sys
+want = {"<", ">", "Shift space", "g", "q"}
+found, depth, mode = {}, 0, None
+for raw in open(sys.argv[1]).read().splitlines():
+    line = raw.split("//", 1)[0].strip()
+    if not line:
+        continue
+    if depth == 1:
+        mode = line.split()[0]
+    elif depth == 2 and mode == "tmux" and line.startswith("bind "):
+        m = re.match(r'bind\s+"([^"]+)"\s*\{\s*([^;]+);', line)
+        if m and m.group(1) in want:
+            found[m.group(1)] = m.group(2).strip()
+    depth += line.count("{") - line.count("}")
+print("\n".join(f"{k} => {v}" for k, v in sorted(found.items())))
+PY
+)"
+}
+
 main() {
     local tests=("$@") t
     if ((${#tests[@]} == 0)); then
