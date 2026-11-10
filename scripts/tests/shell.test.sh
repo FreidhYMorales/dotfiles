@@ -89,6 +89,25 @@ test_command_not_found_suggests_package() {
     assert_eq "says no package provides it" 1 "$(grep -c 'no package provides it' <<<"$out")"
 }
 
+test_sudo_widget_and_git_aliases() {
+    local out
+    # shellcheck disable=SC2016 # expansions happen inside zsh
+    out=$(zsh_clean -i -c '
+        print "bind=$(bindkey "\e\e")"
+        BUFFER="pacman -Syu"; sudo-command-line; print "add=$BUFFER"
+        BUFFER="sudo pacman -Syu"; sudo-command-line; print "remove=$BUFFER"
+        print "gs=${aliases[gs]}"
+        print "gsw=${aliases[gsw]}"
+        print "glog=${aliases[glog]}"
+    ' 2>/dev/null)
+    assert_eq "Esc Esc bound to sudo widget" '"^[^[" sudo-command-line' "$(grep '^bind=' <<<"$out" | cut -d= -f2-)"
+    assert_eq "widget prepends sudo" "add=sudo pacman -Syu" "$(grep '^add=' <<<"$out")"
+    assert_eq "widget removes sudo" "remove=pacman -Syu" "$(grep '^remove=' <<<"$out")"
+    assert_eq "gs alias" "gs=git status -sb" "$(grep '^gs=' <<<"$out")"
+    assert_eq "gsw alias" "gsw=git switch" "$(grep '^gsw=' <<<"$out")"
+    assert_eq "glog alias" "glog=git log --oneline --graph --decorate" "$(grep '^glog=' <<<"$out")"
+}
+
 main() {
     local tests=("$@")
     if ((${#tests[@]} == 0)); then
