@@ -48,6 +48,22 @@ settings/settings.json"
     assert_eq "vesktop package holds only settings" "$expected" "$actual"
 }
 
+test_deploy_keeps_vesktop_config_a_real_directory() {
+    # On a fresh HOME, stow would fold ~/.config/vesktop into one symlink to the
+    # package, and Vesktop would then write its session data into the repo.
+    # deploy.sh must leave a real directory that links only the settings.
+    local home actual
+    home=$(mktemp -d)
+    HOME="$home" "$DOTFILES/deploy.sh" vesktop >/dev/null 2>&1
+    # A real directory resolves to itself: no symlinked ancestor (a folded
+    # ~/.config would also hide it inside the repo).
+    actual="$([[ "$(realpath "$home/.config/vesktop" 2>/dev/null)" == "$(realpath "$home")/.config/vesktop" ]] && echo real-dir || echo not-real-dir)"
+    actual+=" $(cd "$home/.config/vesktop" 2>/dev/null && fd . --max-depth 1 --type symlink | LC_ALL=C sort | xargs)"
+    rm -rf "$home"
+    assert_eq "deploy leaves ~/.config/vesktop a real directory linking only settings" \
+        "real-dir settings settings.json" "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
