@@ -35,6 +35,22 @@ bindkey '^[[1;5C' forward-word  # Ctrl+Right
 bindkey '^[[1;5D' backward-word # Ctrl+Left
 bindkey '^H' backward-kill-word # Ctrl+Backspace
 
+# --- Cached tool init ----------------------------------------------------
+# `eval "$(tool init zsh)"` forks the tool on every shell start. Cache its
+# output and regenerate only when the binary is newer than the cache.
+#   _zsh_cached_init <name> <command...>
+_zsh_cached_init() {
+    local name=$1; shift
+    local bin=${commands[$1]}
+    [[ -n $bin ]] || return 0
+    local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/init/$name.zsh"
+    if [[ ! -s $cache || $bin -nt $cache ]]; then
+        mkdir -p "${cache:h}"
+        "$@" >|"$cache" 2>/dev/null || { rm -f "$cache"; return 1; }
+    fi
+    source "$cache"
+}
+
 # --- Completion ----------------------------------------------------------
 zmodload zsh/complist
 setopt complete_in_word always_to_end
@@ -49,9 +65,11 @@ zstyle ':completion:*:descriptions' format '[%d]' # group headers for fzf-tab
 autoload -Uz compinit
 _zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
 [[ -d ${_zcompdump:h} ]] || mkdir -p "${_zcompdump:h}"
-if [[ -n ${_zcompdump}(#qN.mh+24) ]]; then
+# Globs don't expand inside [[ ]]: collect the stale dump into an array.
+_zcompdump_stale=(${_zcompdump}(N.mh+24))
+if [[ ! -s $_zcompdump ]] || (( ${#_zcompdump_stale} )); then
     compinit -d "$_zcompdump"
 else
     compinit -C -d "$_zcompdump"
 fi
-unset _zcompdump
+unset _zcompdump _zcompdump_stale
