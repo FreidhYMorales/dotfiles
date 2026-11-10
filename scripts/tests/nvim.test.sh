@@ -48,6 +48,13 @@ test_move_up_at_first_line_stays_put() {
         "a|b|c err=" "$(nvim_keys 1 '<M-k>')"
 }
 
+test_move_selection_at_edges_stays_put() {
+    assert_eq "visual Alt j with the selection on the last line, no change, no error" \
+        "a|b|c err=" "$(nvim_keys 2 'Vj<M-j>')"
+    assert_eq "visual Alt k with the selection on the first line, no change, no error" \
+        "a|b|c err=" "$(nvim_keys 1 'Vj<M-k>')"
+}
+
 tests=("$@")
 if ((${#tests[@]} == 0)); then
     mapfile -t tests < <(declare -F | awk '{print $3}' | rg '^test_')
