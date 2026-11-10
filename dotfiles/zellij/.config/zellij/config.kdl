@@ -205,6 +205,11 @@ keybinds clear-defaults=true {
         bind "up" { MoveFocus "up"; SwitchToMode "normal"; }
         bind "right" { MoveFocus "right"; SwitchToMode "normal"; }
         bind "space" { NextSwapLayout; }
+        bind "Shift space" { PreviousSwapLayout; }
+        bind "<" { MoveTab "left"; }
+        bind ">" { MoveTab "right"; }
+        bind "g" { TogglePaneInGroup; SwitchToMode "normal"; }
+        bind "q" { Quit; }
         bind "\"" { NewPane "down"; SwitchToMode "normal"; }
         bind "%" { NewPane "right"; SwitchToMode "normal"; }
         bind "," { SwitchToMode "renametab"; }
