@@ -38,6 +38,37 @@ nvim_keys() {
     printf '%s' "$out"
 }
 
+# nvim_lsp <file name> <content>: opens a file with that name and content,
+# waits up to 15 s for language servers, and prints the attached server names
+# (sorted, comma separated), then "err=" with the last error message, if any.
+nvim_lsp() {
+    local tmp out
+    tmp=$(mktemp -d)
+    printf '%s\n' "$2" >"$tmp/$1"
+    NVIM_TEST_OUT="$tmp/out" timeout 40 nvim --headless "$tmp/$1" '+lua vim.defer_fn(function()
+            vim.wait(15000, function() return #vim.lsp.get_clients({ bufnr = 0 }) > 0 end, 200)
+            vim.wait(1500)
+            local names = {}
+            for _, c in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do names[#names + 1] = c.name end
+            table.sort(names)
+            local err = vim.v.errmsg:gsub("%s+", " ")
+            vim.fn.writefile({ table.concat(names, ",") .. " err=" .. err }, vim.env.NVIM_TEST_OUT)
+            vim.cmd("qa!")
+        end, 500)' >/dev/null 2>&1
+    out=$(<"$tmp/out")
+    rm -rf "$tmp"
+    printf '%s' "$out"
+}
+
+test_lsp_attaches_without_errors() {
+    assert_eq "Lua file: lua_ls attaches, no error" \
+        "lua_ls err=" "$(nvim_lsp t.lua 'local a = 1')"
+    assert_eq "Python file: pyright and ruff attach, no error" \
+        "pyright,ruff err=" "$(nvim_lsp t.py 'x = 1')"
+    assert_eq "QML file: qmlls attaches, no error" \
+        "qmlls err=" "$(nvim_lsp t.qml $'import QtQuick\nItem {}')"
+}
+
 test_move_down_at_last_line_stays_put() {
     assert_eq "Alt j on the last line leaves the buffer as is, no error" \
         "a|b|c err=" "$(nvim_keys 3 '<M-j>')"
