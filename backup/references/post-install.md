@@ -7,10 +7,6 @@ Steps required after running `bootstrap.sh` + `deploy.sh` that bootstrap can't s
 ## 1. Secrets and credentials
 
 ```bash
-# Restore API keys
-nano ~/.config/zsh/secrets.zsh
-# Add: export GEMINI_API_KEY="..."
-
 # Verify GitHub CLI auth
 gh auth status
 ```

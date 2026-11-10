@@ -124,17 +124,14 @@ Ends by running `deploy.sh` (Stow), updating XDG dirs, rebuilding font cache, an
 Bootstrap prints a checklist at the end. Key items:
 
 ```bash
-# 1. Restore secrets
-echo 'export GEMINI_API_KEY="..."' >> ~/.config/zsh/secrets.zsh
-
-# 2. Restore SSH keys
+# 1. Restore SSH keys
 cp ~/path/to/backup/ssh/* ~/.ssh/
 chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_ed25519
 
-# 3. Restore GPG keys
+# 2. Restore GPG keys
 gpg --import ~/path/to/backup/gnupg/public-keys.asc
 
-# 4. GRUB install (machine-specific, run once)
+# 3. GRUB install (machine-specific, run once)
 sudo grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```

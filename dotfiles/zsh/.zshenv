@@ -16,6 +16,3 @@ export SUDO_EDITOR="nvim -u $HOME/.config/nvim/init.lua"
 export MANPAGER='nvim +Man!'
 export MANWIDTH=100
 export aurhelper=yay
-
-# Secrets (API keys, tokens) — file is gitignored, create it manually
-[[ -f "$HOME/.config/zsh/secrets.zsh" ]] && source "$HOME/.config/zsh/secrets.zsh"
