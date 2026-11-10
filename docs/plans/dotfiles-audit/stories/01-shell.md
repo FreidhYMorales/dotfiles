@@ -6,9 +6,9 @@
 
 ## Acceptance criteria
 
-- [ ] Given a new kitty window, when it opens, then the prompt appears with every plugin/hook initialized once, no duplicated PATH entries, and startup at or below the 174 ms baseline (`hyperfine -N 'zsh -i -c exit'`).
-- [ ] Given a wallpaper change, when matugen re-themes kitty, then the starship prompt follows the new palette (no hardcoded hex colors).
-- [ ] Given I type a command that is not installed, when zsh can't find it, then it tells me which package provides it (or that none does); non-interactive `zsh -c` scripts load no aliases or prompt hooks.
+- [x] Given a new kitty window, when it opens, then the prompt appears with every plugin/hook initialized once, no duplicated PATH entries, and startup at or below the 174 ms baseline (`hyperfine -N 'zsh -i -c exit'`).
+- [x] Given a wallpaper change, when matugen re-themes kitty, then the starship prompt follows the new palette (no hardcoded hex colors).
+- [x] Given I type a command that is not installed, when zsh can't find it, then it tells me which package provides it (or that none does); non-interactive `zsh -c` scripts load no aliases or prompt hooks.
 
 ## Plan
 
@@ -54,3 +54,5 @@ Risk: item 5, 6 (shell runtime config; only verifiable live)
 - L5 pair steps 2-6: red→green pairs a359265→16f4821 (drop OMZ, pacman plugins + fzf-tab), dc30d9e→85f4e6f (pacman -F not-found handler), 61c23a1→7dda567 (Esc Esc sudo + curated git aliases), 402b8dc→cfdb6de (starship ANSI palette, trimmed modules). ae3c58a pins test 3, already green from 612d808 (confirmed: old .zshenv loaded 24 aliases in zsh -c). Manual items: 556ee9d (cached tool init, compinit -C fix), 89b85ba (fastfetch once per session + `ff`, fd/rg helpers, no ffch/global --help/p10k). 3bc4ffe removes unused secrets.zsh hook and expired API key docs (user request). ~/.oh-my-zsh deleted (user OK).
 - L6 manual checks (user, live kitty): fastfetch first terminal only + `ff` OK (initially consumed by a test run inside kitty, marker reset); prompt re-themes with wallpaper OK; fzf-tab Tab OK; atuin Ctrl-R OK. Startup: 174 ms → 69 ms → 25 ms (hyperfine `zsh -i -c exit`).
 - L7 verifier #1: FAIL — C1 "every plugin/hook once" only pinned for functions/*.zsh; untested behaviour in 556ee9d/89b85ba; Log stale. Correction batch: 64b7c69 (every sourced file once; mutant duplicate prompt.zsh + autosuggestions → FAIL), dd7f22c→0d688d5 (cached init regenerates on new binary or new args; real bug fixed), 2e27259 (starship hook only interactive; test 3 checked a wrong function name — mutant starship init in .zshenv → FAIL), fastfetch-once test (mutant without marker → FAIL).
+- L8 verifier recheck: PASS (HEAD e8f20bc). Suite: 10 tests, all passed; test command passes. Optional leftover: dead `starship_precmd` assertion in test 3 (shell.test.sh:70), superseded by 2e27259; kept per tamper rule unless the owner approves removal.
+- Done. Last code commit 0d688d5. Risk: item 5, 6 (shell runtime config; only verifiable live). Follow-ups for story 10: bootstrap still installs oh-my-zsh and its plugin clones; must install zsh-autosuggestions/zsh-syntax-highlighting/zsh-completions via pacman, clone Aloxaf/fzf-tab to ~/.local/share/zsh/plugins, run `pacman -Fy` and enable pacman-filesdb-refresh.timer.
