@@ -122,6 +122,9 @@ key("n", "<M-j>", function()
 	vim.cmd("normal! ==")
 end, { desc = "Move line down" })
 key("n", "<M-k>", function()
+	if vim.fn.line(".") == 1 then
+		return
+	end
 	vim.cmd("m .-2")
 	vim.cmd("normal! ==")
 end, { desc = "Move line up" })
