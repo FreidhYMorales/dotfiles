@@ -25,7 +25,7 @@ sudo mkdir -p /etc/sddm.conf.d
 sudo cp system/sddm/sddm.conf.d/deadlock.conf /etc/sddm.conf.d/
 ```
 
-`deadlock.conf` incluye `QT_SCREEN_SCALE_FACTORS=eDP-1=2` — debe coincidir a mano con la escala configurada en `dotfiles/hypr/.config/hypr/monitors.conf` (SDDM arranca antes que Hyprland, no puede leer ese archivo). Si cambia la escala del monitor, actualizar acá también.
+`deadlock.conf` incluye `QT_SCREEN_SCALE_FACTORS=eDP-1=2` — debe coincidir a mano con la escala configurada en `dotfiles/hypr/.config/hypr/monitors.lua` (SDDM arranca antes que Hyprland, no puede leer ese archivo). Si cambia la escala del monitor, actualizar acá también.
 
 ## 4. Perfil visual activo
 
