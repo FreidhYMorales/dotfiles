@@ -53,6 +53,29 @@ test_every_sourced_file_loads_once() {
     done
 }
 
+test_cached_init_regenerates_only_when_stale() {
+    local tmp out
+    tmp=$(mktemp -d)
+    mkdir -p "$tmp/bin" "$tmp/cache"
+    printf '#!/bin/sh\necho "print gen:$*"\n' >"$tmp/bin/faketool"
+    chmod +x "$tmp/bin/faketool"
+    touch -d '-1 hour' "$tmp/bin/faketool"
+    # shellcheck disable=SC2016 # expansions happen inside zsh
+    out=$(env -i HOME="$HOME" USER="$USER" TERM=xterm-256color XDG_CACHE_HOME="$tmp/cache" \
+        PATH="$tmp/bin:/usr/local/bin:/usr/bin" zsh -i -c '
+        c=$XDG_CACHE_HOME/zsh/init/fk.zsh
+        _zsh_cached_init fk faketool a         # first run: generates
+        print -r -- "print cached" >| $c
+        _zsh_cached_init fk faketool a         # same args, fresh cache: reuses
+        _zsh_cached_init fk faketool b         # args changed: regenerates
+        print -r -- "print cached" >| $c
+        touch -d "+1 hour" ${commands[faketool]}
+        _zsh_cached_init fk faketool b         # binary newer: regenerates
+    ' 2>/dev/null)
+    rm -rf "$tmp"
+    assert_eq "cached init sequence" $'gen:a\ncached\ngen:b\ngen:b' "$out"
+}
+
 test_plugins_load_without_oh_my_zsh() {
     local out
     # shellcheck disable=SC2016 # expansions happen inside zsh
