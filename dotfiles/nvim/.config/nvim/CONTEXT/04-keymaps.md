@@ -331,7 +331,7 @@
 | `<C-d>` / `<C-u>` | n | Scroll + centrar cursor |
 | `n` / `N` | n | Resultado de búsqueda + centrar |
 | `J` | n | Join lines (preserva cursor) |
-| `<M-j>` / `<M-k>` | n, v | Mover línea/selección abajo/arriba |
+| `<M-j>` / `<M-k>` | n, x | Mover línea/selección abajo/arriba (no hace nada en el borde del buffer) |
 | `<` / `>` | v | Indentar (mantiene selección) |
 | `p` | v | Paste sin perder registro |
 | `<leader>/` | n, v | Toggle comentario |
