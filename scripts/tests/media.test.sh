@@ -56,6 +56,27 @@ test_deploy_keeps_mpd_dropin_dir_real() {
         "real-dir state.conf" "$actual"
 }
 
+mpd_cmd() { # command... -> mpd's raw protocol reply (live mpd on 127.0.0.1:6600)
+    bash -c 'exec 3<>/dev/tcp/127.0.0.1/6600 || exit 1
+        printf "%s\n" "$@" close >&3
+        timeout 3 cat <&3' _ "$@" 2>/dev/null
+}
+
+test_live_mpd_keeps_its_library_after_migration() {
+    # After moving the database to ~/.local/state/mpd, the running mpd (started
+    # through the unit and its drop-in) still knows every track in ~/Music.
+    local expected actual
+    expected=$(fd -t f -e mp3 -e flac -e m4a -e ogg -e opus -e wav . "$HOME/Music" | wc -l)
+    actual=$(mpd_cmd stats | rg -o -r '$1' '^songs: (\d+)')
+    assert_eq "music files in ~/Music are non-zero" "yes" "$([[ $expected -gt 0 ]] && echo yes || echo no)"
+    assert_eq "mpd database file in the state dir" "yes" \
+        "$([[ -s $HOME/.local/state/mpd/database ]] && echo yes || echo no)"
+    assert_eq "mpd unit loads the state drop-in" \
+        "$HOME/.config/systemd/user/mpd.service.d/state.conf" \
+        "$(systemctl --user show mpd -p DropInPaths --value)"
+    assert_eq "mpd knows every track in ~/Music" "$expected" "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
