@@ -43,6 +43,26 @@ monitors.lua"
     assert_eq "hypr package holds only files the session reads" "$expected" "$actual"
 }
 
+test_autostart_runs_through_uwsm_without_duplicates() {
+    # Loads the real execs.lua with a fake hl table that prints every command
+    # started on hyprland.start. Each one must go through `uwsm app --`; the
+    # environment export (uwsm), gnome-keyring (PAM auto_start) and
+    # termfilechooser (D-Bus activated) are never started by hand.
+    local actual
+    actual=$(lua -e '
+        hl = { exec_cmd = function(cmd) print(cmd) end,
+               on = function(_, callback) callback() end }
+        dofile(arg[1])' "$HYPR/deadlock/execs.lua" 2>&1)
+    assert_eq "autostart runs each app once through uwsm" \
+        "uwsm app -- sh -c 'config=\"\${XDG_STATE_HOME:-\$HOME/.local/state}/quickshell-notch/hyprpaper.conf\"; if [ -f \"\$config\" ]; then exec hyprpaper -c \"\$config\"; else exec hyprpaper; fi'
+uwsm app -- wl-paste --type text --watch cliphist store
+uwsm app -- wl-paste --type image --watch cliphist store
+uwsm app -- qs -c notch
+uwsm app -- trash-empty 30
+uwsm app -- mpris-proxy" \
+        "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
