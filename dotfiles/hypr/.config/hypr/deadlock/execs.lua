@@ -4,7 +4,9 @@
 local exec = hl.exec_cmd
 
 local dbus = "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
-local wallpaper = "hyprpaper"
+-- Use the notch's last saved wallpaper at startup, falling back to the normal
+-- hyprpaper configuration until the notch has generated one.
+local wallpaper = 'sh -c \'config="${XDG_STATE_HOME:-$HOME/.local/state}/quickshell-notch/hyprpaper.conf"; if [ -f "$config" ]; then exec hyprpaper -c "$config"; else exec hyprpaper; fi\''
 -- polkit-gnome-authentication-agent-1 (GTK, visually mismatched with the
 -- rest of the shell) replaced by Quickshell's own native agent
 -- (services/Polkit.qml + modules/launcher/PolkitForm.qml, rendered inside
@@ -14,7 +16,7 @@ local wallpaper = "hyprpaper"
 local keyring = "/usr/bin/gnome-keyring-daemon --start --components=secrets"
 local cliphistText = "wl-paste --type text --watch cliphist store"
 local cliphistImg = "wl-paste --type image --watch cliphist store"
-local quickshell = "quickshell"
+local quickshell = "qs -c notch"
 local term_file_chosser = "/usr/lib/xdg-desktop-portal-termfilechooser"
 -- Auto-empties trash items older than 30 days (trash-cli, already in bootstrap.sh)
 local trashCleanup = "trash-empty 30"

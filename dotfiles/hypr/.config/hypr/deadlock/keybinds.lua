@@ -55,7 +55,7 @@ local function resize(x, y)
 end
 
 -- Quickshell panels
-local qsIpc = "qs ipc call"
+local qsIpc = "qs -c notch ipc call"
 
 -- Keybinds
 -- Applications
@@ -185,7 +185,7 @@ keybind(mainMod .. " + O", exec("ocr"), descrip("OCR: extract text from screen r
 keybind(mainMod .. " + R", exec("reminder show"), descrip("Show active reminders"))
 
 -- Power button → lock screen (logind HandlePowerKey=ignore lets this through)
-keybind("XF86PowerOff", exec("qs ipc call lock lock"), { description = "Power button: lock screen" })
+keybind("XF86PowerOff", exec("qs -c notch ipc call lock lock"), { description = "Power button: lock screen" })
 
 -- NOTE: lid close is intentionally NOT bound here. A "switch:on:Lid Switch"
 -- bind was tried and never fired in this fork's Lua bridge (confirmed live
@@ -199,8 +199,10 @@ keybind(mainMod .. " + SHIFT + B", exec("kitty --class bluetui -e bluetui"), des
 keybind(mainMod .. " + SHIFT + W", exec("kitty --class impala -e impala"), descrip("Open wifi manager"))
 
 -- Quickshell Panels
+keybind(mainMod .. " + L", exec(qsIpc .. " lock lock"), descrip("Lock Screen"))
+keybind(mainMod .. " + ALT + W", exec(qsIpc .. " quickWallpaper toggle"), descrip("Toggle Wallpaper Picker"))
 keybind(mainMod .. " + SPACE", exec(qsIpc .. " launcher toggle"), descrip("Toggle Launcher"))
-keybind(mainMod .. " + D", exec(qsIpc .. " dashboard toggle"), descrip("Toggle Dashboard"))
-keybind(mainMod .. " + N", exec(qsIpc .. " notifications toggle"), descrip("Toggle Notifications"))
-keybind(mainMod .. " + ALT + C", exec(qsIpc .. " calendar toggle"), descrip("Toggle Calendar"))
-keybind("CTRL + ALT + DELETE", exec(qsIpc .. " powermenu toggle"), descrip("Toggle Power Menu"))
+keybind(mainMod .. " + D", exec(qsIpc .. " controlcenter open"), descrip("Open Control Center"))
+keybind(mainMod .. " + N", exec(qsIpc .. " controlcenter notifications"), descrip("Open Notifications"))
+keybind(mainMod .. " + ALT + C", exec(qsIpc .. " expanded toggle"), descrip("Toggle Expanded Notch"))
+keybind("CTRL + ALT + DELETE", exec(qsIpc .. " power open"), descrip("Open Power Menu"))
