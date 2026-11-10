@@ -55,6 +55,14 @@ test_move_away_from_edges_still_moves() {
         "a|c|b err=" "$(nvim_keys 3 'V<M-k>')"
 }
 
+test_visual_indent_keeps_selection() {
+    # A second > or < only acts on the same lines if the selection survived.
+    assert_eq "visual > twice indents the selected lines twice" \
+        $'\t\ta|\t\tb|c err=' "$(nvim_keys 1 'Vj>>')"
+    assert_eq "visual > then < returns the selected lines to column 0" \
+        "a|b|c err=" "$(nvim_keys 1 'Vj><')"
+}
+
 test_move_selection_at_edges_stays_put() {
     assert_eq "visual Alt j with the selection on the last line, no change, no error" \
         "a|b|c err=" "$(nvim_keys 2 'Vj<M-j>')"
