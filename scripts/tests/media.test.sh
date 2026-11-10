@@ -77,6 +77,22 @@ test_live_mpd_keeps_its_library_after_migration() {
     assert_eq "mpd knows every track in ~/Music" "$expected" "$actual"
 }
 
+test_live_mpd_saves_a_playlist() {
+    # Saving the queue as a playlist (what ncmpcpp does) lands an .m3u in the
+    # state dir, and mpd's log has no missing-playlists-folder error since it
+    # last started. The test playlist is removed afterwards.
+    local name="flow-story06-test" file reply errors
+    file="$HOME/.local/state/mpd/playlists/$name.m3u"
+    reply=$(mpd_cmd "save \"$name\"" | tail -1)
+    assert_eq "mpd accepts saving a playlist" "OK" "$reply"
+    assert_eq "playlist file written to the state dir" "yes" "$([[ -f $file ]] && echo yes || echo no)"
+    mpd_cmd "rm \"$name\"" >/dev/null
+    errors=$(journalctl --user -u mpd -o cat --no-pager \
+        --since "$(systemctl --user show mpd -p ActiveEnterTimestamp --value)" |
+        rg -c 'playlists: No such file')
+    assert_eq "mpd log reports no missing playlists folder" "0" "${errors:-0}"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
