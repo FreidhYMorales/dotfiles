@@ -76,6 +76,16 @@ test_cached_init_regenerates_only_when_stale() {
     assert_eq "cached init sequence" $'gen:a\ncached\ngen:b\ngen:b' "$out"
 }
 
+test_starship_hook_only_in_interactive_shells() {
+    # starship's precmd is prompt_starship_precmd (test 3 checked a wrong name).
+    # shellcheck disable=SC2016
+    assert_eq "no starship precmd in zsh -c" 0 \
+        "$(zsh_clean -c 'print -l $precmd_functions' 2>/dev/null | grep -c '^prompt_starship_precmd$')"
+    # shellcheck disable=SC2016
+    assert_eq "starship precmd in zsh -i" 1 \
+        "$(zsh_clean -i -c 'print -l $precmd_functions' 2>/dev/null | grep -c '^prompt_starship_precmd$')"
+}
+
 test_plugins_load_without_oh_my_zsh() {
     local out
     # shellcheck disable=SC2016 # expansions happen inside zsh
