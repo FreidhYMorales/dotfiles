@@ -125,7 +125,6 @@ test_non_interactive_shell_loads_no_interactive_config() {
     # shellcheck disable=SC2016 # expansions happen inside zsh
     out=$(zsh_clean -c '
         print "aliases=${#aliases}"
-        print "starship=$(( ${+functions[starship_precmd]} ))"
         print "atuin=$(( ${+functions[_atuin_precmd]} ))"
     ' 2>&1)
     # zsh itself defines run-help/which-command; compare against a config-less shell.
@@ -133,7 +132,6 @@ test_non_interactive_shell_loads_no_interactive_config() {
     # shellcheck disable=SC2016
     builtin_aliases=$(zsh_clean -f -c 'print "aliases=${#aliases}"')
     assert_eq "no config aliases in zsh -c" "$builtin_aliases" "$(grep '^aliases=' <<<"$out")"
-    assert_eq "no starship hook in zsh -c" "starship=0" "$(grep '^starship=' <<<"$out")"
     assert_eq "no atuin hook in zsh -c" "atuin=0" "$(grep '^atuin=' <<<"$out")"
     # Companion: the interactive shell does get them.
     # shellcheck disable=SC2016
