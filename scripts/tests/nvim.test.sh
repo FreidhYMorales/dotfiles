@@ -43,6 +43,11 @@ test_move_down_at_last_line_stays_put() {
         "a|b|c err=" "$(nvim_keys 3 '<M-j>')"
 }
 
+test_move_up_at_first_line_stays_put() {
+    assert_eq "Alt k on the first line leaves the buffer as is, no error" \
+        "a|b|c err=" "$(nvim_keys 1 '<M-k>')"
+}
+
 tests=("$@")
 if ((${#tests[@]} == 0)); then
     mapfile -t tests < <(declare -F | awk '{print $3}' | rg '^test_')
