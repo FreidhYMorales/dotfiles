@@ -37,16 +37,24 @@ bindkey '^H' backward-kill-word # Ctrl+Backspace
 
 # --- Cached tool init ----------------------------------------------------
 # `eval "$(tool init zsh)"` forks the tool on every shell start. Cache its
-# output and regenerate only when the binary is newer than the cache.
+# output; regenerate when the binary is newer or the command line changed
+# (<name>.cmd next to the cache records the command it was built from).
 #   _zsh_cached_init <name> <command...>
 _zsh_cached_init() {
     local name=$1; shift
     local bin=${commands[$1]}
     [[ -n $bin ]] || return 0
     local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/init/$name.zsh"
-    if [[ ! -s $cache || $bin -nt $cache ]]; then
+    local cmd="${(q)@}" prev=
+    [[ -r $cache.cmd ]] && prev=$(<"$cache.cmd")
+    if [[ ! -s $cache || $prev != "$cmd" || $bin -nt $cache ]]; then
         mkdir -p "${cache:h}"
-        "$@" >|"$cache" 2>/dev/null || { rm -f "$cache"; return 1; }
+        if "$@" >|"$cache" 2>/dev/null; then
+            print -r -- "$cmd" >|"$cache.cmd"
+        else
+            rm -f "$cache" "$cache.cmd"
+            return 1
+        fi
     fi
     source "$cache"
 }
