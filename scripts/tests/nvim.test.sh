@@ -48,6 +48,13 @@ test_move_up_at_first_line_stays_put() {
         "a|b|c err=" "$(nvim_keys 1 '<M-k>')"
 }
 
+test_move_away_from_edges_still_moves() {
+    assert_eq "Alt j on the first line moves it below the second" \
+        "b|a|c err=" "$(nvim_keys 1 '<M-j>')"
+    assert_eq "visual Alt k on the last line moves it above the second" \
+        "a|c|b err=" "$(nvim_keys 3 'V<M-k>')"
+}
+
 test_move_selection_at_edges_stays_put() {
     assert_eq "visual Alt j with the selection on the last line, no change, no error" \
         "a|b|c err=" "$(nvim_keys 2 'Vj<M-j>')"
