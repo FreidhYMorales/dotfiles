@@ -116,14 +116,9 @@ fi
 source "$HOME/.config/zsh/terminal.zsh"
 source "$HOME/.config/zsh/prompt.zsh"
 source "$HOME/.config/zsh/user.zsh"
-export PATH="$HOME/.local/bin:$PATH"
 
-export PATH=$PATH:/home/deadlock/.spicetify
+# PATH: unique entries only (installers keep appending their own lines here;
+# fold them into this array instead).
+typeset -U path
+path=("$HOME/.local/bin" "$HOME/.opencode/bin" $path "$HOME/.spicetify")
 export LIBVIRT_DEFAULT_URI="qemu:///system"
-
-
-# Added by Antigravity CLI installer
-export PATH="/home/deadlock/.local/bin:$PATH"
-
-# opencode
-export PATH=/home/deadlock/.opencode/bin:$PATH
