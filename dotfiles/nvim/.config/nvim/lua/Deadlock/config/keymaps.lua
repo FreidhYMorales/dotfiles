@@ -130,8 +130,19 @@ key("n", "<M-k>", function()
 end, { desc = "Move line up" })
 -- Modo "x" (no "v"): "v" incluye select mode y rompía escribir <, > o p
 -- dentro de los placeholders de snippets.
-key("x", "<M-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
-key("x", "<M-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+-- En el borde del buffer no hace nada (si no, :m tira E16 Invalid range).
+key("x", "<M-j>", function()
+	if math.max(vim.fn.line("v"), vim.fn.line(".")) == vim.fn.line("$") then
+		return ""
+	end
+	return ":m '>+1<CR>gv=gv"
+end, { expr = true, desc = "Move selection down" })
+key("x", "<M-k>", function()
+	if math.min(vim.fn.line("v"), vim.fn.line(".")) == 1 then
+		return ""
+	end
+	return ":m '<-2<CR>gv=gv"
+end, { expr = true, desc = "Move selection up" })
 
 -- Indent en visual — mantiene la selección
 key("x", "<", "<gv", { desc = "Indent left" })
