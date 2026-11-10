@@ -6,9 +6,9 @@
 
 ## Acceptance criteria
 
-- [ ] Given Vesktop is open, when I pick a new wallpaper, then Discord's UI switches to the new palette without restarting Vesktop.
-- [ ] Given a site with a Stylus userstyle open in Zen and in a Chromium webapp, when I pick a new wallpaper and reload it, then the page uses the new palette in both browsers.
-- [ ] Given the repo deployed on this machine, when I use Vesktop and list the theming packages, then there is no Spotify/Spicetify or BetterDiscord config left and Vesktop's runtime data never shows up as repo changes.
+- [x] Given Vesktop is open, when I pick a new wallpaper, then Discord's UI switches to the new palette without restarting Vesktop.
+- [x] Given a site with a Stylus userstyle open in a Chromium webapp, and Zen loading the palette vars through userContent.css, when I pick a new wallpaper and reload, then both use the new palette.
+- [x] Given the repo deployed on this machine, when I use Vesktop and list the theming packages, then there is no Spotify/Spicetify or BetterDiscord config left and Vesktop's session data, crash dumps and window state never show up as repo changes (its curated settings stay tracked).
 
 ## Plan
 
@@ -47,3 +47,5 @@ Risk: item 1, 5, 6 (Vesktop login data when restowing; stow packages and install
 - L4 pair: red→green pairs 1c39090→0e82ca2 (spicetify/betterdiscord packages removed), d1e3c64→2f9e9ac (empty commit: live migration of Crashpad/sessionData/state.json/themes to a real ~/.config/vesktop), 86d5cd5→415bba6 (deploy.sh REAL_DIRS keeps ~/.config/vesktop unfolded), c5be5ed→2d13364 (vesktop matugen Vencord theme), d37262e→022d1aa (theme enabled); a269699 characterization test (browser palette already worked; failed with matugen-server stopped). Suite 10/10 ok; test command passes. Owner uninstalled spotify, spicetify-cli and spicetify-cli-debug.
 - L5 manual checks (owner, live): Vesktop recolors live on a wallpaper change; the Chromium webapps follow the palette. Vesktop was not logged in, so the login check could not be exercised. Correction: Zen does not use Stylus (Stylus is Chromium-only, so the webapps feel native); Zen gets the vars through userContent.css.
 - L6 verifier: NEEDS DECISION (refs unchanged, HEAD a269699). Folded settings/ means the tracked settings/settings.json still shows up as modified when Vencord rewrites it, which conflicts with C3 as worded; C2 wording still says Stylus in Zen.
+- L7 decision (owner: "si"): settings/settings.json is curated config, not runtime data, so it stays tracked; Vencord rewrites get committed by the owner as chore(vesktop) when wanted. C3 narrowed to session data, crash dumps and window state; C2 reworded (Stylus is Chromium-only, Zen gets the vars via userContent.css). No code change, so no verifier recheck.
+- Done. Last code commit 022d1aa. Risk: item 1, 5, 6 (Vesktop login data when restowing; stow packages and installed apps; colors verifiable only live). Follow-ups: story 10 drops spotify/spicetify-cli from bootstrap.sh and keeps deploy.sh REAL_DIRS; story 15 covers per-site Stylus coverage; dotfiles/README.md zsh row still lists the removed ~/.p10k.zsh.
