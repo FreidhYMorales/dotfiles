@@ -40,6 +40,22 @@ test_mpd_runtime_lives_in_state_dir() {
         ".config/mpd/mpd.conf .config/systemd/user/mpd.service.d/state.conf" "$actual"
 }
 
+test_deploy_keeps_mpd_dropin_dir_real() {
+    # systemd ignores a drop-in directory that is itself a symlink, so the unit
+    # would never create mpd's state dirs and mpd would fail to open its
+    # database. On a fresh HOME (no ~/.config/systemd yet) deploy.sh must leave
+    # mpd.service.d a real directory that links only state.conf.
+    local home dir actual
+    home=$(mktemp -d)
+    HOME="$home" "$DOTFILES/deploy.sh" mpd >/dev/null 2>&1
+    dir="$home/.config/systemd/user/mpd.service.d"
+    actual="$([[ "$(realpath "$dir" 2>/dev/null)" == "$(realpath "$home")/.config/systemd/user/mpd.service.d" ]] && echo real-dir || echo not-real-dir)"
+    actual+=" $(cd "$dir" 2>/dev/null && fd . --max-depth 1 --type symlink | LC_ALL=C sort | xargs)"
+    rm -rf "$home"
+    assert_eq "deploy leaves mpd.service.d a real directory linking only state.conf" \
+        "real-dir state.conf" "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
