@@ -24,11 +24,6 @@ local micMute = "mute-toggle input"
 local brightUp = "brightnessctl -e4 -n2 set 5%+"
 local brightDown = "brightnessctl -e4 -n2 set 5%-"
 
--- Audio Control
-local audioNext = "playerctl next"
-local play = "playerctl play-pause"
-local audioPrev = "playerctl previous"
-
 -- Flags
 local lockRep = { locked = true, repeating = true }
 local repeating = { repeating = true }
@@ -153,11 +148,9 @@ keybind("XF86AudioMicMute", exec(micMute), lockRep)
 keybind("XF86MonBrightnessUp", exec(brightUp), lockRep)
 keybind("XF86MonBrightnessDown", exec(brightDown), lockRep)
 
--- Requires playerctl
-keybind("XF86AudioNext", exec(audioNext), { locked = true })
-keybind("XF86AudioPause", exec(play), { locked = true })
-keybind("XF86AudioPlay", exec(play), { locked = true })
-keybind("XF86AudioPrev", exec(audioPrev), { locked = true })
+-- No media playback binds: the X1 Carbon Gen 13 has no play/next/prev keys
+-- (ThinkPad Extra Buttons exposes none of them), and Bluetooth headphone
+-- buttons reach MPRIS players through mpris-proxy (execs.lua).
 
 -- Screenshots (screenshot script — smart snap, satty editor, notification)
 keybind("PRINT", exec("screenshot fullscreen"), descrip("Screenshot fullscreen"))
