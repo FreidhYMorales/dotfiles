@@ -101,6 +101,23 @@ print(" ".join(json.load(open(sys.argv[1]))["enabledThemes"]))' \
     assert_eq "vesktop enables the matugen theme" "matugen.theme.css" "$actual"
 }
 
+test_browsers_receive_the_current_palette() {
+    # Live check of the palette path to web pages: the Chromium extension
+    # fetches matugen-vars.css from matugen-server, and Zen loads
+    # userContent.css from its profile. Both must carry the primary color
+    # matugen last wrote to colors.json.
+    local primary served zen
+    primary=$(python3 -I -c 'import json, os
+print(json.load(open(os.path.expanduser("~/.config/matugen/colors.json")))["colors"]["primary"]["hex"])' 2>&1)
+    served=$(curl -fsS --max-time 3 http://localhost:9119/matugen-vars.css 2>&1 |
+        rg -o -r '$1' -- '--mat-primary:\s*(#[0-9a-fA-F]{6})' | head -1)
+    zen=$(cat "$HOME"/.config/zen/*/chrome/userContent.css 2>/dev/null |
+        rg -o -r '$1' -- '--mat-primary:\s*(#[0-9a-fA-F]{6})' | sort -u | xargs)
+    assert_eq "colors.json holds a primary color" "yes" "$([[ $primary == \#* ]] && echo yes || echo "no ($primary)")"
+    assert_eq "matugen-server serves the current primary to Chromium" "$primary" "$served"
+    assert_eq "Zen userContent.css carries the current primary" "$primary" "$zen"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
