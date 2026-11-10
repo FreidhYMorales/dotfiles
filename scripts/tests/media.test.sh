@@ -93,6 +93,21 @@ test_live_mpd_saves_a_playlist() {
     assert_eq "mpd log reports no missing playlists folder" "0" "${errors:-0}"
 }
 
+test_mpv_config_parses() {
+    # The installed mpv accepts every option in the repo's mpv.conf: it plays
+    # one frame of a generated test source with no option errors. Video and
+    # audio go to null outputs so the test needs no window or sound, and
+    # keep-open is overridden so mpv exits at the end instead of waiting.
+    local out status
+    out=$(timeout 20 mpv --no-config --include="$DOTFILES/mpv/.config/mpv/mpv.conf" \
+        --vo=null --ao=null --keep-open=no --frames=1 --msg-level=all=warn \
+        "av://lavfi:testsrc=duration=1" 2>&1)
+    status=$?
+    assert_eq "mpv exits cleanly with the repo config" "0" "$status"
+    assert_eq "mpv reports no option errors" "" \
+        "$(printf '%s\n' "$out" | rg -i 'error parsing|unknown|invalid|not found|deprecated')"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
