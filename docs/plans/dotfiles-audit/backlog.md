@@ -5,7 +5,7 @@
 - What: Audit and improve the dotfiles repo one area at a time (visuals and workflow updated, optimized, and new integrations explored where worthwhile), ending with bootstrap, local models, greetd and notch. Plan: none.
 - Stack: Arch Linux, Hyprland (Lua bridge), Quickshell, GNU Stow, bash
 - Expensive decisions: SDDM → greetd (login/lock/theming pipeline)
-- Test command: shellcheck dotfiles/*.sh && dotfiles/deploy.sh --dry-run
+- Test command: shellcheck -S error dotfiles/*.sh && dotfiles/deploy.sh --dry-run
 - Single test: shellcheck <file>
 
 ## Backlog
