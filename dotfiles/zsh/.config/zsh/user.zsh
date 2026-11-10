@@ -1,45 +1,22 @@
-#  Startup 
-# Commands to execute on startup (before the prompt is shown)
-# Check if the interactive shell option is set
-if [[ $- == *i* ]]; then
-    # This is a good place to load graphic/ascii art, display system information, etc.
-    if command -v pokego >/dev/null; then
-        pokego --no-title -r 1,3,6
-    elif command -v pokemon-colorscripts >/dev/null; then
-        pokemon-colorscripts --no-title -r 1,3,6
-    elif command -v fastfetch >/dev/null; then
-        if do_render "image"; then
-            fastfetch --logo-type kitty
-        fi
+#!/usr/bin/env zsh
+# Personal interactive bits: startup banner and small helpers.
+
+# fastfetch only in the first kitty terminal of the login session
+# (marker lives in XDG_RUNTIME_DIR, wiped on logout). Run `ff` any time.
+if [[ $TERM == xterm-kitty && -n $XDG_RUNTIME_DIR ]] && (( $+commands[fastfetch] )); then
+    if [[ ! -e $XDG_RUNTIME_DIR/zsh-fastfetch-shown ]]; then
+        : >"$XDG_RUNTIME_DIR/zsh-fastfetch-shown"
+        fastfetch --logo-type kitty
     fi
 fi
 
-#Configuracion Yazi
-function y() {
-    local tmp="$(mktemp -t yazi-cwd.XXXXXX)"
-    YAZI_CONFIG_HOME=/home/deadlock/.config/yazi \
-        yazi "$@" --cwd-file="$tmp"
-    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-        cd -- "$cwd"
+# y: yazi that cd's into the directory you quit in.
+y() {
+    local tmp cwd
+    tmp=$(mktemp -t yazi-cwd.XXXXXX)
+    yazi "$@" --cwd-file="$tmp"
+    if cwd=$(<"$tmp") && [[ -n $cwd && $cwd != "$PWD" ]]; then
+        builtin cd -- "$cwd"
     fi
     rm -f -- "$tmp"
 }
-
-export aurhelper="yay"
-
-export SUDO_EDITOR="nvim -u /home/$USER/.config/nvim/init.lua"
-# O una alternativa más limpia si usas alias:
-export EDITOR="nvim"
-
-export XDG_CONFIG_HOME="$HOME/.config"
-
-# Configuraciones man
-# Para usar bat como visor:
-# export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-# export MANROFFOPT="-c"
-# Para usar neovim como visor:
-export MANPAGER='nvim +Man!'
-export MANWIDTH=100
-# export $(dbus-launch)
-# export SSH_AUTH_SOCK
-# mysql-workbench

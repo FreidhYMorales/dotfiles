@@ -13,7 +13,7 @@ alias pa='$aurhelper -Ss'                                              # list av
 alias pc='$aurhelper -Sc'                                              # remove unused cache
 alias po='$aurhelper -Qtdq | $aurhelper -Rns -'                        # remove unused packages, also try > $aurhelper -Qqd | $aurhelper -Rsu --print -
 alias n='nvim'                                                         # gui code editor
-alias fastfetch='fastfetch --logo-type kitty'                          # fastfetch
+alias ff='fastfetch --logo-type kitty'                                 # fastfetch on demand
 alias e='exit'                                                         # exit
 alias music='ncmpcpp'                                                  # ncmpcpp music player cli (local music)
 
