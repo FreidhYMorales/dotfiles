@@ -91,6 +91,16 @@ print(c["background"]["hex"], c["on_surface"]["hex"], c["primary"]["hex"])' "$co
         "$expected" "${actual% }"
 }
 
+test_vesktop_enables_the_matugen_theme() {
+    # Vencord applies only the themes listed in enabledThemes; the file name is
+    # the one matugen writes into ~/.config/vesktop/themes/.
+    local actual
+    actual=$(python3 -I -c 'import json, sys
+print(" ".join(json.load(open(sys.argv[1]))["enabledThemes"]))' \
+        "$DOTFILES/vesktop/.config/vesktop/settings/settings.json" 2>&1)
+    assert_eq "vesktop enables the matugen theme" "matugen.theme.css" "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
