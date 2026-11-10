@@ -35,6 +35,19 @@ test_unused_theming_packages_are_gone() {
         "chromium-extension matugen stylus vesktop" "${rows% }"
 }
 
+test_vesktop_package_holds_only_settings() {
+    # Only the settings the owner curates live in the repo. Session data, crash
+    # dumps, window state and generated themes stay in the real
+    # ~/.config/vesktop, so using Vesktop never shows up as repo changes.
+    # Lists what is on disk (ignored files included), not just what git tracks.
+    local expected actual
+    expected="settings.json
+settings/quickCss.css
+settings/settings.json"
+    actual=$(cd "$DOTFILES/vesktop/.config/vesktop" && fd . --hidden --no-ignore --type f | LC_ALL=C sort)
+    assert_eq "vesktop package holds only settings" "$expected" "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
