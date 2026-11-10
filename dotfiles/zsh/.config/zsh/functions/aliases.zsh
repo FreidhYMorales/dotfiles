@@ -16,3 +16,15 @@ alias n='nvim'                                                         # gui cod
 alias fastfetch='fastfetch --logo-type kitty'                          # fastfetch
 alias e='exit'                                                         # exit
 alias music='ncmpcpp'                                                  # ncmpcpp music player cli (local music)
+
+# Git (curated; history showed no use of the oh-my-zsh set)
+alias g='git'
+alias gs='git status -sb'
+alias ga='git add'
+alias gc='git commit'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias gsw='git switch'
+alias gp='git push'
+alias gl='git pull'
+alias glog='git log --oneline --graph --decorate'
