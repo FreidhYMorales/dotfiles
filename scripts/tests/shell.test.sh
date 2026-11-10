@@ -36,6 +36,23 @@ test_modules_load_once_and_path_has_no_duplicates() {
     assert_eq "no duplicated PATH entries" "" "$(sort <<<"$path_out" | uniq -d)"
 }
 
+test_every_sourced_file_loads_once() {
+    local sourced
+    sourced=$(zsh_clean -i -x -c exit 2>&1 |
+        sed -nE 's/^\+[^ ]*> (source|\.) "?([^" ]+)"?.*/\2/p' | sort)
+    assert_eq "no file sourced twice" "" "$(uniq -d <<<"$sourced")"
+    local cache="$HOME/.cache/zsh/init" f
+    for f in "$HOME/.config/zsh/core.zsh" "$HOME/.config/zsh/terminal.zsh" \
+        "$HOME/.config/zsh/prompt.zsh" "$HOME/.config/zsh/user.zsh" \
+        "$HOME/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh" \
+        /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh \
+        /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+        "$cache/starship.zsh" "$cache/zoxide.zsh" "$cache/atuin.zsh" \
+        "$cache/direnv.zsh" "$cache/fzf.zsh"; do
+        assert_eq "$(basename "$f") sourced once" 1 "$(grep -cxF "$f" <<<"$sourced")"
+    done
+}
+
 test_plugins_load_without_oh_my_zsh() {
     local out
     # shellcheck disable=SC2016 # expansions happen inside zsh
