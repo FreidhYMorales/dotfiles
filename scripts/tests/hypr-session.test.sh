@@ -63,6 +63,39 @@ uwsm app -- mpris-proxy" \
         "$actual"
 }
 
+test_every_keybind_runs_something_that_exists() {
+    # Loads the real keybinds.lua with a fake hl table and lists the command of
+    # every exec bind. Each program must resolve on the session PATH (uwsm
+    # prepends ~/.local/bin), and each `qs -c notch ipc call <target> <fn>`
+    # must name a function the running notch shell exposes.
+    local cmds ipc missing="" n=0 cmd prog target fn
+    cmds=$(lua -e '
+        local function proxy()
+            return setmetatable({}, { __index = function() return proxy() end,
+                                      __call = function() return proxy() end })
+        end
+        hl = { dsp = proxy(), bind = function(_, action)
+            if type(action) == "table" and rawget(action, "exec") then print(action.exec) end
+        end }
+        rawset(hl.dsp, "exec_cmd", function(cmd) return { exec = cmd } end)
+        dofile(arg[1])' "$HYPR/deadlock/keybinds.lua" 2>&1)
+    ipc=$(qs -c notch ipc show 2>/dev/null)
+    while IFS= read -r cmd; do
+        [[ -z "$cmd" ]] && continue
+        n=$((n + 1))
+        prog=${cmd%% *}
+        PATH="$HOME/.local/bin:$PATH" command -v "$prog" >/dev/null || missing+="$cmd"$'\n'
+        if [[ "$cmd" =~ ^qs\ -c\ notch\ ipc\ call\ ([^ ]+)\ ([^ ]+) ]]; then
+            target=${BASH_REMATCH[1]} fn=${BASH_REMATCH[2]}
+            awk -v t="$target" -v f="$fn" '$1 == "target" { cur = $2 }
+                cur == t && $1 == "function" && index($2, f "(") == 1 { found = 1 }
+                END { exit !found }' <<<"$ipc" || missing+="$cmd"$'\n'
+        fi
+    done <<<"$cmds"
+    assert_eq "keybinds file yields exec binds to check" "yes" "$([[ $n -gt 0 ]] && echo yes || echo "no ($cmds)")"
+    assert_eq "every exec keybind runs an existing command or IPC target" "" "${missing%$'\n'}"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
