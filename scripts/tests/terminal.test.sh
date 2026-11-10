@@ -97,6 +97,41 @@ PY
     rm -rf "$tmp"
 }
 
+test_zellij_normal_mode_captures_only_the_prefix() {
+    # Every key zellij binds in normal mode is stolen from the shell and nvim.
+    # Only the Ctrl b prefix may be bound there (defaults cleared, no Alt keys,
+    # no single-key quit).
+    local cfg="$HOME/.config/zellij/config.kdl"
+    assert_eq "zellij accepts the config" "" \
+        "$(zellij --config "$cfg" setup --check 2>&1 | rg -i -m1 'error|failed')"
+    assert_eq "zellij keys bound in normal mode" "Ctrl b" "$(python3 -I - "$cfg" <<'PY'
+import re, sys
+lines = open(sys.argv[1]).read().splitlines()
+keys, depth, in_kb, applies = set(), 0, False, False
+for raw in lines:
+    line = raw.split("//", 1)[0].strip()
+    if not line:
+        continue
+    if depth == 0 and line.startswith("keybinds"):
+        in_kb = True
+        if "clear-defaults=true" not in line:
+            keys.add("<zellij defaults>")
+    elif in_kb and depth == 1:
+        modes = re.findall(r'"([^"]+)"', line)
+        head = line.split()[0]
+        applies = (head in ("normal", "shared")
+                   or (head == "shared_except" and "normal" not in modes)
+                   or (head == "shared_among" and "normal" in modes))
+    elif in_kb and depth == 2 and applies and line.startswith("bind "):
+        keys.update(re.findall(r'"([^"]+)"', line.split("{", 1)[0]))
+    depth += line.count("{") - line.count("}")
+    if depth == 0:
+        in_kb = False
+print("\n".join(sorted(keys)))
+PY
+)"
+}
+
 main() {
     local tests=("$@") t
     if ((${#tests[@]} == 0)); then
