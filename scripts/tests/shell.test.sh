@@ -108,6 +108,22 @@ test_sudo_widget_and_git_aliases() {
     assert_eq "glog alias" "glog=git log --oneline --graph --decorate" "$(grep '^glog=' <<<"$out")"
 }
 
+test_starship_follows_terminal_palette() {
+    local cfg="$HOME/.config/starship/starship.toml"
+    # Colors must be ANSI names so kitty's matugen palette drives them.
+    assert_eq "no hex colors in starship.toml" 0 \
+        "$(grep -v '^\s*#' "$cfg" | grep -cE '#[0-9a-fA-F]{6}')"
+    # Right prompt lists only the toolchains installed on this machine, once each.
+    local right
+    right=$(python3 -I -c 'import sys, tomllib; print(tomllib.load(open(sys.argv[1], "rb"))["right_format"].replace("\n", ""))' "$cfg")
+    # shellcheck disable=SC2016 # literal starship module names
+    assert_eq "right_format modules" \
+        '$c$cpp$golang$java$lua$nodejs$deno$python$rust$cmd_duration$status$time' "$right"
+    # No cloud/infra noise in a plain directory.
+    assert_eq "no gcloud segment in home" 0 \
+        "$(cd "$HOME" && starship prompt --right 2>/dev/null | grep -c gcloud)"
+}
+
 main() {
     local tests=("$@")
     if ((${#tests[@]} == 0)); then
