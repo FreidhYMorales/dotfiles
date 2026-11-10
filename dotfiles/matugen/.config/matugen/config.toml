@@ -36,6 +36,11 @@ output_path = "~/.config/zellij/themes/matugen.kdl"
 input_path  = "~/.config/matugen/templates/userContent.css"
 output_path = "~/.config/matugen/output/userContent.css"
 
+# Vesktop — Vencord watches its themes/ dir and reloads on change, no post-hook
+[templates.vesktop]
+input_path  = "~/.config/matugen/templates/vesktop.theme.css"
+output_path = "~/.config/vesktop/themes/matugen.theme.css"
+
 # Obsidian — post-hook copies to .obsidian/themes/Quickshell/ in every vault
 # registered in ~/.config/obsidian/obsidian.json
 [templates.obsidian]

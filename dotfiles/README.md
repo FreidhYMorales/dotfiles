@@ -34,7 +34,6 @@ scripts/.local/bin/ →  ~/.local/bin/
 
 | Paquete | Destino |
 |---|---|
-| `betterdiscord` | `~/.config/BetterDiscord/` |
 | `btop` | `~/.config/btop/` |
 | `fastfetch` | `~/.config/fastfetch/` |
 | `fonts` | `~/.local/share/fonts/` |
@@ -49,7 +48,6 @@ scripts/.local/bin/ →  ~/.local/bin/
 | `nvim` | `~/.config/nvim/` |
 | `quickshell` | `~/.config/quickshell/` |
 | `scripts` | `~/.local/bin/`, `~/.local/share/webapps/` — ver `scripts/README.md` |
-| `spicetify` | `~/.config/spicetify/` |
 | `starship` | `~/.config/starship.toml` |
 | `systemd` | `~/.config/systemd/user/` |
 | `termfilechooser` | `~/.config/xdg-desktop-portal-termfilechooser/` |
