@@ -51,6 +51,16 @@ stow_flags=(-v --target="$TARGET" --dir="$DOTFILES_DIR")
 [[ "$DRY_RUN" == false ]] && stow_flags+=(--adopt)
 [[ "$DRY_RUN" == true ]]  && stow_flags+=(--simulate)
 
+# Apps that write runtime data next to their settings: create their config dir
+# first so stow links only the tracked files into it instead of folding the
+# whole directory into the repo (vesktop: sessionData, Crashpad, state.json).
+REAL_DIRS=(.config/vesktop)
+if [[ "$DRY_RUN" == false ]]; then
+    for dir in "${REAL_DIRS[@]}"; do
+        mkdir -p "$TARGET/$dir"
+    done
+fi
+
 if [[ "${#packages[@]}" -gt 0 ]]; then
     # Deploy specific packages
     for pkg in "${packages[@]}"; do
