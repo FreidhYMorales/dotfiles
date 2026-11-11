@@ -125,6 +125,22 @@ test_mime_defaults_open_intended_app() {
         "${actual% }"
 }
 
+test_mime_compressed_archives_open_in_yazi() {
+    # Compressed archives and tarballs (.gz .tgz .tar.gz .xz .tar.xz .bz2
+    # .tar.bz2 .zst .tar.zst .7z .rar, types from shared-mime-info) open in
+    # yazi too; with no default, xdg-open falls back to the browser list.
+    local mime actual=""
+    for mime in application/gzip application/x-compressed-tar application/x-xz \
+        application/x-xz-compressed-tar application/x-bzip2 \
+        application/x-bzip2-compressed-tar application/zstd \
+        application/x-zstd-compressed-tar application/x-7z-compressed \
+        application/vnd.rar; do
+        actual+="$(XDG_CONFIG_HOME="$DOTFILES/mimeapps/.config" xdg-mime query default "$mime") "
+    done
+    assert_eq "compressed archives open in yazi" \
+        "$(printf 'yazi.desktop %.0s' {1..10})" "$actual"
+}
+
 test_live_terminal_exec_picks_kitty() {
     # Terminal=true entries (nvim.desktop, yazi.desktop) reach a terminal
     # through xdg-terminal-exec. With the repo's preference list, kitty wins
