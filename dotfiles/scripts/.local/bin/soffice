@@ -1,3 +1,0 @@
-#!/bin/bash
-# Alias to the libreoffice wrapper (same binary underneath, adds the UNO socket).
-exec "$(dirname "$0")/libreoffice" "$@"

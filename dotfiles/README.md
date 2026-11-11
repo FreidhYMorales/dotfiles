@@ -48,7 +48,6 @@ scripts/.local/bin/ →  ~/.local/bin/
 | `quickshell` | `~/.config/quickshell/` |
 | `scripts` | `~/.local/bin/`, `~/.local/share/webapps/` — ver `scripts/README.md` |
 | `starship` | `~/.config/starship.toml` |
-| `systemd` | `~/.config/systemd/user/` |
 | `termfilechooser` | `~/.config/xdg-desktop-portal-termfilechooser/` |
 | `uwsm` | `~/.config/uwsm/` — PATH fix for `~/.local/bin` in the graphical session, see `scripts/README.md` |
 | `vesktop` | `~/.config/vesktop/` |

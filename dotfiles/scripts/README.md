@@ -132,16 +132,46 @@ screenshot smart slurp --editor=gimp  # editor custom
 
 Binds: `PRINT` → `screenshot fullscreen`, `SUPER+PRINT` → `screenshot region`. `SUPER+SHIFT+PRINT` (captura instantánea de la ventana activa, sin interacción) sigue usando `grim`/`jq` crudo — el script no tiene un modo equivalente sin click.
 
-## wsaction
+## notification-send
 
-Navegación de workspaces en grupos de 10. Workspace 1-10 = grupo 1, 11-20 = grupo 2, etc.
+Envoltorio de `notify-send` con formato uniforme: glifo + título, y descripción indentada.
 
-**Deps:** `fish`, `jq`
+**Deps:** `libnotify` (`notify-send`). Usado por `reminder`.
 
 ```bash
-wsaction workspace 1        # ir al workspace 1 del grupo actual
-wsaction workspace 5        # ir al workspace 5 del grupo actual
-wsaction -g workspace 1     # saltar al mismo slot en el grupo siguiente
+notification-send "󰔛" "Recordatorio" "Revisar el horno" -u critical
 ```
 
-**Sin keybind** — disponible pero no adoptado como flujo de trabajo actual.
+## webapp-install
+
+Crea un lanzador `.desktop` para una web app, con ícono descargado del servicio de favicons de Google.
+
+**Deps:** `curl`; `gum` opcional para el modo interactivo.
+
+```bash
+webapp-install                          # interactivo (nombre + URL)
+webapp-install WhatsApp web.whatsapp.com
+```
+
+También lo llama el comando `>webapp` del launcher de Quickshell (`WebAppForm.qml`).
+
+## webapp-launch
+
+Abre una URL como app independiente (`--app=`) en el navegador por defecto si es Chromium-based; si no (Zen), usa `chromium`. Es el `Exec=` de los `.desktop` que genera `webapp-install`.
+
+**Deps:** `xdg-settings`, `uwsm-app`, `chromium`
+
+## webapp-remove
+
+Borra el lanzador y el ícono de una o varias web apps.
+
+**Deps:** `gum` opcional para elegir de la lista.
+
+```bash
+webapp-remove            # interactivo
+webapp-remove WhatsApp
+```
+
+## webapp-restore
+
+Instala todas las web apps declaradas en `~/.local/share/webapps/apps` (formato `nombre | url [| ícono]`), salteando las que ya tienen `.desktop`. Lo corre `bootstrap.sh` después del deploy.
