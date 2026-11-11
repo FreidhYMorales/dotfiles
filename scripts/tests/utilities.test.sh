@@ -75,6 +75,18 @@ test_btop_package_holds_only_config() {
         "$(rg -o -r '$1' '^color_theme = (.*)$' "$DOTFILES/btop/.config/btop/btop.conf")"
 }
 
+FASTFETCH_CONF="$DOTFILES/fastfetch/.config/fastfetch/config.jsonc"
+
+test_fastfetch_logo_resolves() {
+    # The kitty logo source must point at the deployed logo folder. Outside a
+    # real kitty the image cannot be drawn (no pixel size), but a source that
+    # does not exist fails earlier, at resolving it.
+    local out
+    out=$(fastfetch --config "$FASTFETCH_CONF" --pipe false --show-errors 2>&1 </dev/null)
+    assert_eq "fastfetch resolves its logo source" "" \
+        "$(printf '%s\n' "$out" | rg -a -o 'Failed to resolve logo source.*')"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
