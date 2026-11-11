@@ -1,6 +1,0 @@
-[Unit]
-Description=Reload kitty theme when caelestia scheme changes
-
-[Service]
-Type=oneshot
-ExecStart=%h/.config/caelestia/scripts/kitty-theme-reload.sh
