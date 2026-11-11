@@ -65,6 +65,18 @@ test_btop_shows_battery() {
     assert_eq "btop draws cpu, mem, net, proc and the battery" "cpu mem net proc BAT" "${actual% }"
 }
 
+test_btop_draws_net_box() {
+    # The net box is the only one that draws its download and upload graphs;
+    # a bare "net" also matches process names elsewhere on screen.
+    local home out actual=""
+    home=$(btop_home)
+    out=$(run_btop "$home" q | sed 's/\x1b\[[0-9;?]*[A-Za-z]//g')
+    rm -rf "$home"
+    printf '%s' "$out" | rg -q 'download' && actual+="download "
+    printf '%s' "$out" | rg -q 'upload' && actual+="upload"
+    assert_eq "btop draws the net box graphs" "download upload" "${actual% }"
+}
+
 test_btop_package_holds_only_config() {
     # btop uses the matugen theme (generated, gitignored); the package tracks
     # only btop.conf, no unused themes.
