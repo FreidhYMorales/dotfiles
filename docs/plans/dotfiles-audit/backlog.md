@@ -16,7 +16,7 @@
 04. [x] 9acf5c0 As the owner, I want my Hyprland session (hypr, uwsm, xdg-portal, termfilechooser) audited so that the desktop starts and behaves reliably.
 05. [x] 022d1aa As the owner, I want the theming pipeline (matugen, spicetify, vesktop, betterdiscord, stylus, chromium-extension) audited so that every app follows the wallpaper.
 06. [x] 382ad58 As the owner, I want my media setup (mpv, mpd, ncmpcpp, wiremix) audited so that playback and audio just work.
-07. [ ] As the owner, I want my utilities (btop, fastfetch, git, mimeapps, fonts) audited so that defaults are correct on this ThinkPad.
+07. [~] As the owner, I want my utilities (btop, fastfetch, git, mimeapps, fonts) audited so that defaults are correct on this ThinkPad.
 08. [ ] As the owner, I want my scripts and user systemd units audited so that nothing is dead, duplicated or broken.
 09. [ ] As the owner, I want system/ configs (logind, pam.d, udev, systemd) audited so that root-level behavior is correct and safe.
 10. [ ] As the owner, I want bootstrap.sh and deploy.sh reconciled with stories 01-09 so that a fresh install reproduces this machine.
