@@ -65,7 +65,38 @@ test_dropped_scripts_gone() {
     assert_eq "dropped scripts are gone (9 checked)" "9 none" "${#DROPPED_SCRIPTS[@]} ${left[*]:-none}"
 }
 
-all_tests=(test_unit_paths_exist test_live_units_running test_dropped_scripts_gone)
+# Kept scripts and the commands each needs (from their headers and scripts/README.md).
+declare -A KEPT_DEPS=(
+    [clipboard]="cliphist wl-copy fuzzel"
+    [launch-or-focus]="hyprctl jq setsid"
+    [mute-toggle]="wpctl"
+    [notification-send]="notify-send"
+    [ocr]="grim slurp hyprpicker tesseract wl-copy"
+    [record]="gpu-screen-recorder slurp jq"
+    [reminder]="systemd-run notify-send notification-send"
+    [screenshot]="grim slurp hyprpicker wl-copy satty"
+    [webapp-install]="curl"
+    [webapp-launch]="xdg-settings uwsm-app chromium"
+    [webapp-remove]="find"
+    [webapp-restore]="webapp-install"
+)
+
+test_live_kept_scripts_work() {
+    # Every kept script is in the package, its commands are installed, and it
+    # passes shellcheck at error level.
+    local s d broken=()
+    for s in "${!KEPT_DEPS[@]}"; do
+        [[ -x $DOTFILES/scripts/.local/bin/$s ]] || { broken+=("$s:missing"); continue; }
+        for d in ${KEPT_DEPS[$s]}; do
+            command -v "$d" >/dev/null || broken+=("$s:needs-$d")
+        done
+        shellcheck -S error "$DOTFILES/scripts/.local/bin/$s" >/dev/null || broken+=("$s:shellcheck")
+    done
+    assert_eq "12 kept scripts have their deps and pass shellcheck" \
+        "12 none" "${#KEPT_DEPS[@]} ${broken[*]:-none}"
+}
+
+all_tests=(test_unit_paths_exist test_live_units_running test_dropped_scripts_gone test_live_kept_scripts_work)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
