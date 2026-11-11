@@ -36,7 +36,6 @@ scripts/.local/bin/ →  ~/.local/bin/
 |---|---|
 | `btop` | `~/.config/btop/` |
 | `fastfetch` | `~/.config/fastfetch/` |
-| `fonts` | `~/.local/share/fonts/` |
 | `git` | `~/.gitconfig` |
 | `hypr` | `~/.config/hypr/` |
 | `kitty` | `~/.config/kitty/` |
