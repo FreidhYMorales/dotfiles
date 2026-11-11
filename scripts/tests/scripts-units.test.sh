@@ -105,8 +105,18 @@ test_live_no_dangling_links() {
     assert_eq "no dangling symlinks in bin, applications, user units" "none" "${dangling:-none}"
 }
 
+test_readme_lists_scripts() {
+    # The scripts README has one "## <name>" section per script in the
+    # package, no more and no fewer.
+    local documented
+    documented=$(sed -n 's/^## \([a-z-]*\)$/\1/p' "$DOTFILES/scripts/README.md" | sort | tr '\n' ' ')
+    assert_eq "scripts README documents exactly the kept scripts" \
+        "clipboard launch-or-focus mute-toggle notification-send ocr record reminder screenshot webapp-install webapp-launch webapp-remove webapp-restore " \
+        "$documented"
+}
+
 all_tests=(test_unit_paths_exist test_live_units_running test_dropped_scripts_gone
-    test_live_kept_scripts_work test_live_no_dangling_links)
+    test_live_kept_scripts_work test_live_no_dangling_links test_readme_lists_scripts)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
