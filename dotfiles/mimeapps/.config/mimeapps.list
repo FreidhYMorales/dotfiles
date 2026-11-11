@@ -34,6 +34,12 @@ image/x-portable-pixmap=swayimg.desktop
 image/x-targa=swayimg.desktop
 image/x-tga=swayimg.desktop
 application/pdf=org.pwmt.zathura.desktop
+text/plain=nvim.desktop
+application/json=nvim.desktop
+application/x-shellscript=nvim.desktop
+inode/directory=yazi.desktop
+application/zip=yazi.desktop
+application/x-tar=yazi.desktop
 
 [Added Associations]
 x-scheme-handler/http=zen.desktop;
@@ -69,3 +75,9 @@ image/x-portable-pixmap=swayimg.desktop;
 image/x-targa=swayimg.desktop;
 image/x-tga=swayimg.desktop;
 application/pdf=org.pwmt.zathura.desktop;
+text/plain=nvim.desktop;
+application/json=nvim.desktop;
+application/x-shellscript=nvim.desktop;
+inode/directory=yazi.desktop;
+application/zip=yazi.desktop;
+application/x-tar=yazi.desktop;
