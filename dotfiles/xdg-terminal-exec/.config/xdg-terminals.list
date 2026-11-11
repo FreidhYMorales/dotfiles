@@ -1,0 +1,4 @@
+# Preferred terminal for Terminal=true desktop entries (nvim.desktop,
+# yazi.desktop...) launched through xdg-open; glib hands them to
+# xdg-terminal-exec, which picks the first entry listed here.
+kitty.desktop
