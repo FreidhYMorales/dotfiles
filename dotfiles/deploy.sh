@@ -54,7 +54,9 @@ stow_flags=(-v --target="$TARGET" --dir="$DOTFILES_DIR")
 # Apps that write runtime data next to their settings: create their config dir
 # first so stow links only the tracked files into it instead of folding the
 # whole directory into the repo (vesktop: sessionData, Crashpad, state.json).
-REAL_DIRS=(.config/vesktop)
+# systemd ignores a drop-in directory that is a symlink, so drop-in dirs must
+# be real too (mpd.service.d creates mpd's state dirs).
+REAL_DIRS=(.config/vesktop .config/systemd/user/mpd.service.d)
 if [[ "$DRY_RUN" == false ]]; then
     for dir in "${REAL_DIRS[@]}"; do
         mkdir -p "$TARGET/$dir"
