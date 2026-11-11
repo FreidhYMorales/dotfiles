@@ -98,6 +98,21 @@ test_fastfetch_no_empty_fields() {
         "$(printf '%s\n' "$out" | rg ' : (.*\s)?$')"
 }
 
+test_mime_defaults_open_intended_app() {
+    # With the repo's mimeapps.list, xdg-open sends text and code to nvim,
+    # folders and archives to yazi, and keeps browser, images and PDF as they
+    # were.
+    local mime actual=""
+    for mime in text/plain application/json application/x-shellscript \
+        inode/directory application/zip application/x-tar \
+        x-scheme-handler/https image/png application/pdf; do
+        actual+="$mime=$(XDG_CONFIG_HOME="$DOTFILES/mimeapps/.config" xdg-mime query default "$mime") "
+    done
+    assert_eq "xdg-open default per type" \
+        "text/plain=nvim.desktop application/json=nvim.desktop application/x-shellscript=nvim.desktop inode/directory=yazi.desktop application/zip=yazi.desktop application/x-tar=yazi.desktop x-scheme-handler/https=zen.desktop image/png=swayimg.desktop application/pdf=org.pwmt.zathura.desktop" \
+        "${actual% }"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
