@@ -36,7 +36,6 @@ scripts/.local/bin/ →  ~/.local/bin/
 |---|---|
 | `btop` | `~/.config/btop/` |
 | `fastfetch` | `~/.config/fastfetch/` |
-| `fonts` | `~/.local/share/fonts/` |
 | `git` | `~/.gitconfig` |
 | `hypr` | `~/.config/hypr/` |
 | `kitty` | `~/.config/kitty/` |
@@ -55,6 +54,7 @@ scripts/.local/bin/ →  ~/.local/bin/
 | `vesktop` | `~/.config/vesktop/` |
 | `wiremix` | `~/.config/wiremix/` |
 | `xdg-portal` | `~/.config/xdg-desktop-portal/` |
+| `xdg-terminal-exec` | `~/.config/xdg-terminals.list` — kitty for Terminal=true apps (nvim, yazi) opened through xdg-open |
 | `yazi` | `~/.config/yazi/` |
 | `zsh` | `~/.zshrc`, `~/.zshenv`, `~/.p10k.zsh` |
 
