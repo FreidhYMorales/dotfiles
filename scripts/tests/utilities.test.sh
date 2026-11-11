@@ -129,6 +129,15 @@ test_live_terminal_exec_picks_kitty() {
     assert_eq "xdg-terminal-exec picks kitty over other terminals" "kitty.desktop" "$actual"
 }
 
+test_no_unused_fonts() {
+    # Nothing in the repo or the desktop asks for Roboto or the CustomTkinter
+    # shapes font, so the repo bundles no fonts; on this machine
+    # ~/.local/share/fonts is not left behind as a dangling link.
+    assert_eq "fonts bundled in the repo" "" "$(git -C "$ROOT" ls-files dotfiles/fonts | xargs)"
+    assert_eq "live ~/.local/share/fonts is not a dangling link" "fine" \
+        "$([[ -L "$HOME/.local/share/fonts" && ! -e "$HOME/.local/share/fonts" ]] && echo dangling || echo fine)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
