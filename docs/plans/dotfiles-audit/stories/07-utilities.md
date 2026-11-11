@@ -45,3 +45,5 @@ Risk: item 5, 6 (stow packages and runtime config; fastfetch output and opening 
 
 - L1 request: "/flow:story 07"
 - L2 approval: "si" (story and assumptions approved as written).
+- L3 pair finding: yazi already opens text/code (nvim), archives (ouch) and folders (its own rules) without mimeapps; the gap is everything going through xdg-open. nvim.desktop and yazi.desktop are Terminal=true, and glib 2.90 launches those only through xdg-terminal-exec (or gnome-terminal), neither installed. Probing btop in a pty, btop ignored XDG_CONFIG_HOME and rewrote the repo btop.conf (restored to the owner's values), confirming C1 live.
+- L4 decision (owner: "el 1"): install xdg-terminal-exec (extra) with a stowed xdg-terminals.list pointing at kitty, so every Terminal=true entry opens in kitty; story 10 adds it to bootstrap.sh. Test list approved ("si").
