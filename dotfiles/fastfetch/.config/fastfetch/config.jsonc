@@ -27,7 +27,7 @@
         {
             "type": "chassis",
             "key": "  󰇺 Chassis",
-            "format": "{1} {2} {3}"
+            "format": "{1} {2}"
         },
         {
             "type": "os",
