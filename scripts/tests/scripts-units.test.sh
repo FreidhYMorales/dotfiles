@@ -38,7 +38,20 @@ test_unit_paths_exist() {
     assert_eq "repo user units only reference existing paths" "none" "${missing[*]:-none}"
 }
 
-all_tests=(test_unit_paths_exist)
+test_live_units_running() {
+    # Every repo unit that installs itself must be enabled and running in the
+    # user session; a deployed unit that is off or failed is dead or broken.
+    local unit name state=()
+    while read -r unit; do
+        grep -q '^\[Install\]' "$unit" || continue
+        name=$(basename "$unit")
+        state+=("$name:$(systemctl --user is-enabled "$name" 2>/dev/null)/$(systemctl --user is-active "$name" 2>/dev/null)")
+    done < <(repo_units)
+    assert_eq "repo user units are enabled and running" \
+        "matugen-server.service:enabled/active" "${state[*]:-none}"
+}
+
+all_tests=(test_unit_paths_exist test_live_units_running)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
