@@ -87,6 +87,17 @@ test_fastfetch_logo_resolves() {
         "$(printf '%s\n' "$out" | rg -a -o 'Failed to resolve logo source.*')"
 }
 
+test_fastfetch_no_empty_fields() {
+    # Every "key : value" line has a value with nothing missing at its end;
+    # a format field this machine does not report leaves a trailing gap.
+    local out
+    out=$(fastfetch --config "$FASTFETCH_CONF" --pipe --logo none 2>&1 </dev/null)
+    assert_eq "fastfetch prints info lines" "yes" \
+        "$( (($(printf '%s\n' "$out" | rg -c ' : ') >= 10)) && echo yes || echo no)"
+    assert_eq "fastfetch lines with a missing field" "" \
+        "$(printf '%s\n' "$out" | rg ' : (.*\s)?$')"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
