@@ -52,6 +52,16 @@ test_btop_quit_keeps_config() {
     assert_eq "btop leaves its config untouched after a change and quit" "unchanged" "$actual"
 }
 
+test_btop_package_holds_only_config() {
+    # btop uses the matugen theme (generated, gitignored); the package tracks
+    # only btop.conf, no unused themes.
+    assert_eq "btop package tracks only its config" \
+        "dotfiles/btop/.config/btop/btop.conf" \
+        "$(git -C "$ROOT" ls-files dotfiles/btop | xargs)"
+    assert_eq "btop uses the matugen theme" '"matugen"' \
+        "$(rg -o -r '$1' '^color_theme = (.*)$' "$DOTFILES/btop/.config/btop/btop.conf")"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
