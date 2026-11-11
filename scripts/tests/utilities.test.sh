@@ -113,6 +113,22 @@ test_mime_defaults_open_intended_app() {
         "${actual% }"
 }
 
+test_live_terminal_exec_picks_kitty() {
+    # Terminal=true entries (nvim.desktop, yazi.desktop) reach a terminal
+    # through xdg-terminal-exec. With the repo's preference list, kitty wins
+    # even when another terminal emulator is installed and sorts first.
+    local data actual
+    data=$(mktemp -d)
+    mkdir -p "$data/applications"
+    printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=AAA Term' \
+        'Exec=true' 'Categories=System;TerminalEmulator;' >"$data/applications/aaa-term.desktop"
+    actual=$(XDG_CONFIG_HOME="$DOTFILES/xdg-terminal-exec/.config" \
+        XDG_DATA_HOME="$data" XDG_DATA_DIRS="$data:/usr/share" \
+        xdg-terminal-exec --print-id 2>/dev/null)
+    rm -rf "$data"
+    assert_eq "xdg-terminal-exec picks kitty over other terminals" "kitty.desktop" "$actual"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
