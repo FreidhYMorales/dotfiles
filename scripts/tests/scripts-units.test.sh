@@ -51,7 +51,21 @@ test_live_units_running() {
         "matugen-server.service:enabled/active" "${state[*]:-none}"
 }
 
-all_tests=(test_unit_paths_exist test_live_units_running)
+DROPPED_SCRIPTS=(battery-remaining battery-status battery-time brightness-display
+    brightness-keyboard wsaction get-location libreoffice soffice)
+
+test_dropped_scripts_gone() {
+    # Scripts nothing calls, dropped by the owner, must be gone from both the
+    # package and the deployed ~/.local/bin.
+    local s left=()
+    for s in "${DROPPED_SCRIPTS[@]}"; do
+        [[ -e $DOTFILES/scripts/.local/bin/$s ]] && left+=("repo:$s")
+        [[ -e $HOME/.local/bin/$s || -L $HOME/.local/bin/$s ]] && left+=("home:$s")
+    done
+    assert_eq "dropped scripts are gone (9 checked)" "9 none" "${#DROPPED_SCRIPTS[@]} ${left[*]:-none}"
+}
+
+all_tests=(test_unit_paths_exist test_live_units_running test_dropped_scripts_gone)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
