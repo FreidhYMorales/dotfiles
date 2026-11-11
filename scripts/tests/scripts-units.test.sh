@@ -96,7 +96,17 @@ test_live_kept_scripts_work() {
         "12 none" "${#KEPT_DEPS[@]} ${broken[*]:-none}"
 }
 
-all_tests=(test_unit_paths_exist test_live_units_running test_dropped_scripts_gone test_live_kept_scripts_work)
+test_live_no_dangling_links() {
+    # A symlink left behind by a removed package shows up as a broken command,
+    # launcher entry or unit; none may point at a missing target.
+    local dangling
+    dangling=$(find -L "$HOME/.local/bin" "$HOME/.local/share/applications" \
+        "$HOME/.config/systemd/user" -maxdepth 1 -type l 2>/dev/null | sort | tr '\n' ' ')
+    assert_eq "no dangling symlinks in bin, applications, user units" "none" "${dangling:-none}"
+}
+
+all_tests=(test_unit_paths_exist test_live_units_running test_dropped_scripts_gone
+    test_live_kept_scripts_work test_live_no_dangling_links)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
