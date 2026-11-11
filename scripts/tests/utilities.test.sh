@@ -52,6 +52,19 @@ test_btop_quit_keeps_config() {
     assert_eq "btop leaves its config untouched after a change and quit" "unchanged" "$actual"
 }
 
+test_btop_shows_battery() {
+    # On the ThinkPad the CPU box carries the battery meter (BAT0), next to the
+    # cpu, mem, net and proc boxes.
+    local home out actual="" box
+    home=$(btop_home)
+    out=$(run_btop "$home" q | sed 's/\x1b\[[0-9;?]*[A-Za-z]//g')
+    rm -rf "$home"
+    for box in cpu mem net proc BAT; do
+        printf '%s' "$out" | rg -q "$box" && actual+="$box "
+    done
+    assert_eq "btop draws cpu, mem, net, proc and the battery" "cpu mem net proc BAT" "${actual% }"
+}
+
 test_btop_package_holds_only_config() {
     # btop uses the matugen theme (generated, gitignored); the package tracks
     # only btop.conf, no unused themes.
