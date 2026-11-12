@@ -1,8 +1,8 @@
 # Login flow plan for the clean reinstall
 
 Status: decided, not implemented. Applies at the next clean reinstall; until
-then SDDM (or the current greetd greeter) stays as is. Feeds stories 09, 10,
-13 and 14.
+then the current login (greetd notch greeter) stays as is. Feeds stories 09,
+10, 13 and 14.
 
 ## Problem
 
@@ -18,18 +18,20 @@ Full-disk encryption is the authentication; the session starts without a
 greeter.
 
 1. LUKS2 passphrase at boot, asked by Plymouth with a themed image. This is
-   the only password typed.
-2. greetd `initial_session` starts `uwsm start -e -D Hyprland hyprland.desktop`
-   directly: no greeter, no lock at boot.
+   the only password typed at boot.
+2. SDDM autologin starts the Hyprland (uwsm) session directly: no greeter,
+   no lock at boot.
 3. Plymouth keeps its last frame (`--retain-splash`) until Hyprland takes the
    display: image -> desktop, no black gap and no console text.
-4. `pam_systemd_loadkey` hands the LUKS passphrase to `pam_gnome_keyring`, so
-   the keyring unlocks without a second password.
+4. `pam_systemd_loadkey` in `sddm-autologin` hands the LUKS passphrase to
+   `pam_gnome_keyring`, so the keyring unlocks without a second password.
 5. The Quickshell lockscreen covers idle, suspend and manual lock. Required:
    LUKS does not protect a running or suspended machine.
-6. `initial_session` runs once per greetd start. After a logout greetd shows
-   `default_session`: the notch greeter (cage + `greetd-shell.qml`) stays as
-   the logout screen.
+6. Logout: `Relogin=false`, so autologin runs once per boot and a logout
+   shows the SDDM greeter (notch-lock theme). The black gap returns on this
+   path only; it is rare (broken session, session restart).
+7. One secret: LUKS passphrase = user password = keyring password, so boot,
+   the logout greeter, the lockscreen and sudo all unlock the same things.
 
 Why: single user, single machine. Without encryption the login password only
 stops someone at the keyboard; booting a USB reads the disk anyway. With
@@ -37,13 +39,23 @@ encryption the post-boot login is redundant, which is what lets it go.
 
 Rejected:
 
+- greetd `initial_session`: greetd starts it without `pam_authenticate`
+  (`start_unauthenticated_session`, `authenticate = false` in greetd's
+  `context.rs`), so no `auth` module runs and the keyring cannot be unlocked
+  from the LUKS passphrase. SDDM autologin runs the `sddm-autologin` auth
+  stack; `man pam_systemd_loadkey` uses it as its example.
+- `Relogin=true`: systemd's cached passphrase expires (about 2.5 min, verify
+  on install), so an automatic relogin after a logout would start with the
+  keyring locked.
+- Keyring with an empty password: works with any display manager, but SDDM
+  makes it unnecessary.
+- Unlocking the keyring with the fingerprint: impossible, a fingerprint match
+  yields no secret to derive the keyring key from.
 - TPM2 auto-unlock: the disk would unlock by itself and autologin would give
   the desktop to anyone holding the laptop.
 - Autologin without LUKS: no authentication at all.
 - Autologin + lock at session start: a short unlocked window before the lock
   maps, and two passwords once LUKS exists.
-- SDDM: it can autologin too, but greetd is lighter and already has a greeter
-  matching the notch.
 
 ## Install checklist
 
@@ -52,7 +64,8 @@ Partitioning:
 - [ ] ESP (unencrypted) + LUKS2 root (`cryptsetup luksFormat --type luks2
       --pbkdf argon2id`), passphrase only.
 - [ ] Hibernation: the swap must live inside the encrypted volume (swapfile on
-      root with `resume=` + `resume_offset=`, or LVM on LUKS).
+      root, or LVM on LUKS). Today's swap is a separate plain partition, which
+      would leave RAM contents unencrypted on hibernate.
 
 initramfs (`/etc/mkinitcpio.conf`), systemd-based so the fsck/udev text of
 the busybox hooks disappears:
@@ -61,53 +74,65 @@ the busybox hooks disappears:
 HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole plymouth block sd-encrypt filesystems fsck)
 ```
 
-Kernel cmdline:
+Kernel cmdline (`resume_offset` only for a swapfile, from
+`filefrag -v /swapfile`):
 
 ```
-rd.luks.name=<luks-uuid>=root root=/dev/mapper/root rw quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=auto vt.global_cursor_default=0 nowatchdog
+rd.luks.name=<luks-uuid>=root root=/dev/mapper/root rw resume=/dev/mapper/root resume_offset=<offset> quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=auto vt.global_cursor_default=0 nowatchdog
 ```
 
 Plymouth:
 
-- [ ] Theme with the notch image; set it with `plymouth-set-default-theme -R`.
-- [ ] greetd must stop Plymouth with `--retain-splash` instead of the default
-      quit. Verify on install how the greetd unit orders against
+- [ ] Install `plymouth`; theme with the notch image; set it with
+      `plymouth-set-default-theme -R`.
+- [ ] Plymouth must quit with `--retain-splash` instead of the default quit.
+      Verify on install how `sddm.service` orders against
       `plymouth-quit.service`; a drop-in with
       `ExecStartPre=-/usr/bin/plymouth quit --retain-splash` is the starting
       point.
 
-greetd (`/etc/greetd/config.toml`):
+SDDM (`/etc/sddm.conf.d/`):
 
-```toml
-[terminal]
-vt = 1
+```ini
+[Autologin]
+User=deadlock
+Session=hyprland-uwsm.desktop
+Relogin=false
 
-[initial_session]
-command = "uwsm start -e -D Hyprland hyprland.desktop"
-user = "deadlock"
-
-[default_session]
-command = "/usr/local/share/quickshell-notch-greetd/greetd/launch-greeter.sh"
-user = "greeter"
+[Theme]
+Current=notch-lock
 ```
 
-PAM (`/etc/pam.d/greetd`), keyring unlocked from the LUKS passphrase:
+- [ ] Disable greetd, enable sddm.
+- [ ] Session: `hyprland-uwsm.desktop` (present today in
+      `/usr/share/wayland-sessions/`).
+
+PAM (`/etc/pam.d/sddm-autologin`), keyring unlocked from the LUKS
+passphrase; add before the existing `pam_gnome_keyring` line:
 
 ```
-auth     optional  pam_systemd_loadkey.so
-auth     optional  pam_gnome_keyring.so
-session  optional  pam_gnome_keyring.so auto_start
+-auth       optional    pam_systemd_loadkey.so
+-auth       optional    pam_gnome_keyring.so
+-session    optional    pam_gnome_keyring.so auto_start
+```
+
+`sddm.service` drop-in, so it can read root's keyring (required by
+`man pam_systemd_loadkey`):
+
+```ini
+[Service]
+KeyringMode=inherit
 ```
 
 - [ ] Verify on install that systemd-cryptsetup leaves the passphrase in the
-      kernel keyring (key `cryptsetup`) for `pam_systemd_loadkey`, and that
-      the keyring password equals the LUKS passphrase.
+      kernel keyring (key `cryptsetup`) and that the keyring password equals
+      the LUKS passphrase.
 
 Lock (story 09):
 
 - [ ] Lock before suspend through a logind delay inhibitor held by the
-      session, not a system-sleep hook.
-- [ ] hypridle: lock on idle and `before_sleep_cmd`.
+      session, not a system-sleep hook. Idle stays in Quickshell's
+      IdleManager (no hypridle).
 
 Hyprland:
 
@@ -121,5 +146,6 @@ Hyprland:
   eye).
 - Keyring unlocked after boot without a prompt.
 - Lid close, idle and `systemctl suspend`: lockscreen up on resume.
-- Logout: notch greeter appears and logs back in.
+- Logout: SDDM notch greeter appears; logging in with the password unlocks
+  the keyring.
 - TTY3 login still works as recovery.
