@@ -613,6 +613,18 @@ test_grub_gone() {
     assert_eq "bootstrap has no GRUB flags" no "$(runs '(--no-grub|--grub-res|SKIP_GRUB)')"
 }
 
+test_docs_describe_the_uki_boot() {
+    # Story 22: the firmware boots the UKI and bootstrap has no GRUB. The
+    # docs a reinstall follows (CLAUDE.md, the repo README, post-install.md)
+    # must not tell the reader to install or configure GRUB.
+    local stale
+    stale=$(rg -n -i 'grub-install|grub-mkconfig|no-grub|grub-res|GRUB_DEFAULT|Star Wars|os-prober' \
+        "$ROOT/CLAUDE.md" "$ROOT/README.md" "$ROOT/backup/references/post-install.md")
+    assert_eq "reinstall docs give no GRUB steps" "" "$stale"
+    assert_eq "CLAUDE.md describes the UKI firmware entry" yes \
+        "$(rg -q 'arch-linux\.efi' "$ROOT/CLAUDE.md" && rg -q 'efibootmgr' "$ROOT/CLAUDE.md" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
