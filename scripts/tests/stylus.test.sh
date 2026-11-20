@@ -132,6 +132,18 @@ test_template_renders_rgb_triplets() {
     rm -rf "$dir"
 }
 
+test_whatsapp_rgb_twins_follow_bubbles() {
+    # The message chevron's fade uses the -RGB twin of the bubble color; it
+    # stayed stock green because only the hex was overridden. Each twin must
+    # name the same palette role as its bubble.
+    local f="$STYLUS/whatsapp-matugen.user.css" b role
+    for b in outgoing incoming; do
+        role=$(grep -oP -- "--WDS-systems-bubble-surface-$b:\s*var\(--mat-\K[\w-]+(?=\))" "$f")
+        assert_eq "$b bubble -RGB twin follows its color" "var(--mat-$role-rgb)" \
+            "$(grep -oP -- "--WDS-systems-bubble-surface-$b-RGB:\s*\Kvar\([^)]*\)" "$f" || echo missing)"
+    done
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
