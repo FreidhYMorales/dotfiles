@@ -118,6 +118,17 @@ print(json.load(open(os.path.expanduser("~/.config/matugen/colors.json")))["colo
     assert_eq "Zen userContent.css carries the current primary" "$primary" "$zen"
 }
 
+test_post_hook_leaves_hyprpaper_and_greeter_to_the_notch() {
+    # The notch writes its own hyprpaper config and stages the SDDM greeter
+    # (story 19). The post-hook must not read the old Quickshell wallpaper
+    # state, write a second hyprpaper.conf or drive the removed silent theme.
+    local hook stale
+    hook="$(git rev-parse --show-toplevel)/dotfiles/matugen/.config/matugen/post-hook.sh"
+    stale=$(grep -nE '\.local/state/quickshell/|hyprpaper\.conf|sddm-theme-sync|silent theme|custom\.conf' "$hook")
+    assert_eq "post-hook leaves hyprpaper and the greeter to the notch" "" "$stale"
+    assert_eq "post-hook still themes kitty" yes "$(grep -q 'kitty' "$hook" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
