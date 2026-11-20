@@ -369,6 +369,28 @@ if [[ -d "$SDDM_THEME_SRC" ]]; then
     sudo chmod -R a+rX /usr/share/sddm/themes/silent
 fi
 
+step "SDDM: install notch-lock theme"
+# The greeter is the notch shell's own SDDM theme. The notch publishes the
+# current wallpaper and palette to a shared data dir the user owns and the
+# sddm group can read (setgid keeps new files in that group); the theme's
+# theme.conf.user is a link into it. sddm-target.txt tells the notch where
+# to publish. The notch's installer refuses to replace an existing theme, so
+# a re-run leaves an installed notch-lock as it is.
+NOTCH_REPO="$SCRIPT_DIR/quickshell/.config/quickshell/notch-repo"
+SDDM_DATA_DIR=/var/lib/quickshell-notch-sddm
+[[ -f "$NOTCH_REPO/sddm/notch/Main.qml" ]] ||
+    git -C "$REPO_ROOT" submodule update --init -- dotfiles/quickshell/.config/quickshell/notch-repo
+sudo install -d -o "$USER" -g sddm -m 2750 "$SDDM_DATA_DIR"
+sudo test -e "$SDDM_DATA_DIR/theme.conf.user" ||
+    sudo install -o "$USER" -g sddm -m 640 /dev/null "$SDDM_DATA_DIR/theme.conf.user"
+if sudo test -d /usr/share/sddm/themes/notch-lock; then
+    echo "notch-lock already installed — leaving it in place"
+else
+    sudo python3 "$NOTCH_REPO/scripts/install-sddm-theme.py" /usr/share/sddm/themes "$SDDM_DATA_DIR"
+fi
+mkdir -p "$HOME/.local/state/quickshell-notch"
+echo "$SDDM_DATA_DIR" >"$HOME/.local/state/quickshell-notch/sddm-target.txt"
+
 step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
