@@ -182,6 +182,178 @@ test_live_every_explicit_package_accounted_for() {
     assert_eq "explicit packages neither in bootstrap nor excluded" "" "$missing"
 }
 
+SDDM_STEP='SDDM: install notch-lock theme'
+
+sddm_sandbox() { # dir -> fake sudo that runs commands with /usr/share, /var/lib and /etc under dir/root
+    # Ownership flags are logged but dropped (no root here); everything else
+    # really runs, so the notch's own installer copies the theme.
+    mkdir -p "$1/bin" "$1/root/usr/share/sddm/themes" "$1/root/var/lib" "$1/home"
+    cat >"$1/bin/sudo" <<SUDO
+#!/usr/bin/env bash
+echo "\$*" >>"$1/sudo.log"
+args=()
+while [[ \$# -gt 0 ]]; do
+    case "\$1" in
+        -o|-g) shift 2; continue ;;
+    esac
+    a="\$1"; a="\${a//\/usr\/share\//$1/root/usr/share/}"; a="\${a//\/var\/lib\//$1/root/var/lib/}"; a="\${a//\/etc\//$1/root/etc/}"
+    args+=("\$a"); shift
+done
+exec "\${args[@]}"
+SUDO
+    chmod +x "$1/bin/sudo"
+}
+
+run_bootstrap_step() { # dir step-title -> runs that bootstrap.sh step in the sandbox, prints the last line
+    { awk -v t="step \"$2\"" '$0 == t {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo REACHED_NEXT_STEP'; } >"$1/step.sh"
+    HOME="$1/home" USER=deadlock PATH="$1/bin:$PATH" SCRIPT_DIR="$ROOT/dotfiles" REPO_ROOT="$ROOT" \
+        bash -euo pipefail "$1/step.sh" 2>"$1/stderr" | tail -1
+}
+
+test_sddm_step_installs_notch_lock() {
+    # A fresh install gets the live setup: the notch-lock theme from the notch
+    # submodule, its theme.conf.user linked to a shared data dir the user
+    # owns and the sddm group reads (setgid, 2750), and the notch told to
+    # publish the greeter wallpaper there.
+    local dir r
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    r="$dir/root"
+    assert_eq "notch-lock step finishes" REACHED_NEXT_STEP "$(run_bootstrap_step "$dir" "$SDDM_STEP")"
+    assert_eq "notch-lock theme installed" yes \
+        "$([[ -f $r/usr/share/sddm/themes/notch-lock/Main.qml ]] && echo yes || echo no)"
+    assert_eq "theme.conf.user links into the shared data dir" \
+        "$r/var/lib/quickshell-notch-sddm/theme.conf.user" \
+        "$(readlink "$r/usr/share/sddm/themes/notch-lock/theme.conf.user")"
+    assert_eq "shared data dir is setgid and closed to others" 2750 \
+        "$(stat -c %a "$r/var/lib/quickshell-notch-sddm" 2>/dev/null)"
+    assert_eq "shared data dir is owned by the user, group sddm" yes \
+        "$(grep -qE 'install .*-o deadlock -g sddm -m 2750 /var/lib/quickshell-notch-sddm' "$dir/sudo.log" 2>/dev/null && echo yes || echo no)"
+    assert_eq "notch publishes the greeter to the shared data dir" /var/lib/quickshell-notch-sddm \
+        "$(cat "$dir/home/.local/state/quickshell-notch/sddm-target.txt" 2>/dev/null)"
+    rm -rf "$dir"
+}
+
+test_sddm_step_rerun_keeps_installed_greeter() {
+    # On a re-run the theme and the staged greeter data are already there:
+    # the notch's installer refuses to replace a theme, so the step must leave
+    # both alone and let bootstrap go on instead of aborting under set -e.
+    local dir r
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    r="$dir/root"
+    mkdir -p "$r/usr/share/sddm/themes/notch-lock" "$r/var/lib/quickshell-notch-sddm"
+    echo installed >"$r/usr/share/sddm/themes/notch-lock/marker"
+    echo 'background=file:///var/lib/quickshell-notch-sddm/background-a' \
+        >"$r/var/lib/quickshell-notch-sddm/theme.conf.user"
+    assert_eq "re-run finishes the notch-lock step" REACHED_NEXT_STEP "$(run_bootstrap_step "$dir" "$SDDM_STEP")"
+    assert_eq "re-run keeps the installed theme" installed \
+        "$(cat "$r/usr/share/sddm/themes/notch-lock/marker" 2>/dev/null)"
+    assert_eq "re-run keeps the staged greeter config" \
+        'background=file:///var/lib/quickshell-notch-sddm/background-a' \
+        "$(cat "$r/var/lib/quickshell-notch-sddm/theme.conf.user" 2>/dev/null)"
+    rm -rf "$dir"
+}
+
+test_repo_sddm_config_selects_notch_lock() {
+    # The repo config bootstrap copies to /etc/sddm.conf.d is the one that
+    # picks the greeter: notch-lock, with no import path into the silent theme.
+    local conf="$ROOT/system/sddm/sddm.conf.d/deadlock.conf"
+    assert_eq "repo SDDM config selects notch-lock" "Current=notch-lock" \
+        "$(grep -E '^Current=' "$conf")"
+    assert_eq "repo SDDM config names no silent theme path" "" \
+        "$(grep -n 'themes/silent' "$conf")"
+}
+
+test_silent_theme_and_sync_helper_gone() {
+    # notch-lock replaced the silent theme (story 19): its files, its root
+    # sync helper and the NOPASSWD sudoers entry for it are not shipped or
+    # installed any more.
+    local left="" f
+    for f in system/sddm/themes/silent dotfiles/matugen/.config/matugen/sddm-theme-sync; do
+        [[ -e "$ROOT/$f" ]] && left+="$f "
+    done
+    assert_eq "silent theme and sync helper are not in the repo" "" "$left"
+    assert_eq "bootstrap installs no sddm-theme-sync helper" no "$(runs 'sddm-theme-sync')"
+    assert_eq "bootstrap writes no sudoers entry" no "$(runs '/etc/sudoers\.d')"
+    assert_eq "bootstrap installs no silent theme" no "$(runs 'themes/silent')"
+}
+
+STATE_STEP='Post-install: default Quickshell state'
+
+state_step_fresh() { # dir -> runs the default-state step in the sandbox, prints FRESH_WALLPAPER_STATE
+    { awk -v t="step \"$STATE_STEP\"" '$0 == t {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo "$FRESH_WALLPAPER_STATE"'; } >"$1/step.sh"
+    HOME="$1/home" PATH="$1/bin:$PATH" bash -euo pipefail "$1/step.sh" 2>"$1/stderr" | tail -1
+}
+
+test_fresh_install_seeds_notch_state() {
+    # The notch reads its wallpaper and theme mode from its own state dir; a
+    # fresh install seeds both there (default wallpaper, content scheme, dark)
+    # and nothing in the old Quickshell state dir. A re-run keeps the pick.
+    local dir h n
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    h="$dir/home"
+    n="$h/.local/state/quickshell-notch"
+    mkdir -p "$h/.config/hypr/assets"
+    echo png >"$h/.config/hypr/assets/arch.png"
+    assert_eq "fresh install is detected" true "$(state_step_fresh "$dir")"
+    assert_eq "notch wallpaper seeded with the default" "$h/Pictures/Wallpaper/arch.png" \
+        "$(cat "$n/wallpaper.txt" 2>/dev/null)"
+    assert_eq "notch theme seeded dark content scheme" '{"mode":"scheme-content","variant":"dark"}' \
+        "$(cat "$n/theme.json" 2>/dev/null)"
+    assert_eq "old Quickshell state dir not created" no \
+        "$([[ -e $h/.local/state/quickshell ]] && echo yes || echo no)"
+    echo "$h/Pictures/Wallpaper/tiger.jpg" >"$n/wallpaper.txt"
+    echo '{"mode":"scheme-tonal-spot","variant":"light"}' >"$n/theme.json"
+    assert_eq "re-run is not a fresh install" false "$(state_step_fresh "$dir")"
+    assert_eq "re-run keeps the picked wallpaper" "$h/Pictures/Wallpaper/tiger.jpg" "$(cat "$n/wallpaper.txt")"
+    assert_eq "re-run keeps the picked theme" '{"mode":"scheme-tonal-spot","variant":"light"}' "$(cat "$n/theme.json")"
+    rm -rf "$dir"
+}
+
+test_docs_describe_the_notch_lock_greeter() {
+    # Story 19 replaced the silent theme with notch-lock and moved the
+    # first-boot state to the notch: the project docs must not describe the
+    # removed theme, its sudo helper or the old shell's wallpaper services.
+    local stale
+    stale=$(grep -noiE 'silent|sddm-theme-sync|custom\.conf|qs-current|Wallpapers\.qml|ColoursEngine' \
+        "$ROOT/CLAUDE.md" "$ROOT/system/sddm/README.md")
+    assert_eq "docs name no silent theme, sync helper or old wallpaper services" "" "$stale"
+    assert_eq "SDDM README describes notch-lock" yes \
+        "$(grep -q 'notch-lock' "$ROOT/system/sddm/README.md" && echo yes || echo no)"
+}
+
+test_sddm_step_greeter_config_readable_only_by_sddm() {
+    # The greeter reads theme.conf.user through the sddm group; the user (the
+    # notch) writes it. Nobody else may read it, and the sddm group may not
+    # write it.
+    local dir r
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    r="$dir/root"
+    run_bootstrap_step "$dir" "$SDDM_STEP" >/dev/null
+    assert_eq "greeter config is 640" 640 \
+        "$(stat -c %a "$r/var/lib/quickshell-notch-sddm/theme.conf.user" 2>/dev/null)"
+    assert_eq "greeter config is owned by the user, group sddm" yes \
+        "$(grep -qE 'install -o deadlock -g sddm -m 640 /dev/null /var/lib/quickshell-notch-sddm/theme.conf.user' "$dir/sudo.log" && echo yes || echo no)"
+    rm -rf "$dir"
+}
+
+test_reference_docs_describe_the_notch_pipeline() {
+    # The repo README and the matugen pipeline reference (a read-first doc in
+    # CLAUDE.md) must not describe the removed silent theme, its sudo helper,
+    # the old Quickshell state dir or the old shell's theming service.
+    local stale
+    stale=$(grep -noiE 'silent|sddm-theme-sync|custom\.conf|qs-current|local/state/quickshell/|ColoursEngine' \
+        "$ROOT/README.md" "$ROOT/backup/references/matugen-pipeline-reference.md")
+    assert_eq "reference docs name no silent theme, sync helper or old shell state" "" "$stale"
+    assert_eq "matugen reference describes the notch-lock greeter" yes \
+        "$(grep -q 'notch-lock' "$ROOT/backup/references/matugen-pipeline-reference.md" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')

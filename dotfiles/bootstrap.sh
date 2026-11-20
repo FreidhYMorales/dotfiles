@@ -361,29 +361,31 @@ sudo pacman -S --needed --noconfirm btop fastfetch htop nvtop
 step "SDDM (display manager)"
 sudo pacman -S --needed --noconfirm sddm qt6-virtualkeyboard
 
-step "SDDM: install silent theme"
-SDDM_THEME_SRC="$REPO_ROOT/system/sddm/themes/silent"
-if [[ -d "$SDDM_THEME_SRC" ]]; then
-    sudo cp -r "$SDDM_THEME_SRC" /usr/share/sddm/themes/
-    sudo chown -R root:root /usr/share/sddm/themes/silent
-    sudo chmod -R a+rX /usr/share/sddm/themes/silent
+step "SDDM: install notch-lock theme"
+# The greeter is the notch shell's own SDDM theme. The notch publishes the
+# current wallpaper and palette to a shared data dir the user owns and the
+# sddm group can read (setgid keeps new files in that group); the theme's
+# theme.conf.user is a link into it. sddm-target.txt tells the notch where
+# to publish. The notch's installer refuses to replace an existing theme, so
+# a re-run leaves an installed notch-lock as it is.
+NOTCH_REPO="$SCRIPT_DIR/quickshell/.config/quickshell/notch-repo"
+SDDM_DATA_DIR=/var/lib/quickshell-notch-sddm
+[[ -f "$NOTCH_REPO/sddm/notch/Main.qml" ]] ||
+    git -C "$REPO_ROOT" submodule update --init -- dotfiles/quickshell/.config/quickshell/notch-repo
+sudo install -d -o "$USER" -g sddm -m 2750 "$SDDM_DATA_DIR"
+sudo test -e "$SDDM_DATA_DIR/theme.conf.user" ||
+    sudo install -o "$USER" -g sddm -m 640 /dev/null "$SDDM_DATA_DIR/theme.conf.user"
+if sudo test -d /usr/share/sddm/themes/notch-lock; then
+    echo "notch-lock already installed — leaving it in place"
+else
+    sudo python3 "$NOTCH_REPO/scripts/install-sddm-theme.py" /usr/share/sddm/themes "$SDDM_DATA_DIR"
 fi
+mkdir -p "$HOME/.local/state/quickshell-notch"
+echo "$SDDM_DATA_DIR" >"$HOME/.local/state/quickshell-notch/sddm-target.txt"
 
 step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
-
-step "SDDM: bootstrap default custom config (replaced on first matugen run)"
-# Skip on a re-run over an already-configured system — otherwise this
-# regresses the login theme back to stock colors until the next wallpaper
-# change (same persistence-loss pattern as FRESH_WALLPAPER_STATE below).
-if [[ -f /usr/share/sddm/themes/silent/configs/custom.conf ]]; then
-    echo "custom.conf already exists — leaving current SDDM theme in place"
-elif [[ -f "$SDDM_THEME_SRC/configs/default.conf" ]]; then
-    sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/configs/custom.conf
-else
-    echo "Warning: $SDDM_THEME_SRC/configs/default.conf not found — theme wasn't installed above, skipping custom.conf bootstrap"
-fi
 
 step "SDDM: enable service"
 sudo systemctl enable sddm
@@ -738,26 +740,23 @@ step "Post-install: restore web apps"
 webapp-restore || echo "Warning: webapp-restore failed — run it manually later"
 
 step "Post-install: default Quickshell state"
-mkdir -p "$HOME/.local/state/quickshell"
-# Wallpapers.qml scans Paths.wallpapersDir (~/Pictures/Wallpaper) with a Qt
-# FolderListModel — if the dir doesn't exist yet when Quickshell first
-# launches, its filesystem watcher never attaches, and creating the dir
-# later doesn't get picked up without a Quickshell/session restart. Create
-# it now and seed the default wallpaper so it's there from the first launch.
+# The notch reads its wallpaper and theme mode from its own state dir.
+NOTCH_STATE="$HOME/.local/state/quickshell-notch"
+mkdir -p "$NOTCH_STATE"
+# The notch's wallpaper picker scans ~/Pictures/Wallpaper; create it and seed
+# the default wallpaper so it is there from the first launch.
 mkdir -p "$HOME/Pictures/Wallpaper"
 cp -n "$HOME/.config/hypr/assets/arch.png" "$HOME/Pictures/Wallpaper/arch.png"
 # FRESH_WALLPAPER_STATE tracks whether this is a real fresh install (no
 # wallpaper/theme chosen yet) — on a re-run over an already-configured
 # system, don't reset the user's wallpaper/theme pick back to default.
 FRESH_WALLPAPER_STATE=false
-if [[ ! -f "$HOME/.local/state/quickshell/wallpaper.txt" ]]; then
+if [[ ! -f "$NOTCH_STATE/wallpaper.txt" ]]; then
     FRESH_WALLPAPER_STATE=true
-    # Default wallpaper — Quickshell reads this on first launch
-    echo "$HOME/Pictures/Wallpaper/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
+    echo "$HOME/Pictures/Wallpaper/arch.png" >"$NOTCH_STATE/wallpaper.txt"
 fi
-if [[ ! -f "$HOME/.local/state/quickshell/theme.json" ]]; then
-    # Default theme state — dynamic:true so changing the wallpaper triggers matugen
-    echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
+if [[ ! -f "$NOTCH_STATE/theme.json" ]]; then
+    echo '{"mode":"scheme-content","variant":"dark"}' >"$NOTCH_STATE/theme.json"
 fi
 
 step "Post-install: matugen post-hook permissions"
@@ -766,25 +765,9 @@ chmod +x "$HOME/.config/matugen/post-hook.sh"
 step "Post-install: termfilechooser wrapper"
 chmod +x "$HOME/.config/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh"
 
-step "Post-install: SDDM theme sync helper + sudoers"
-SDDM_SYNC_SRC="$HOME/.config/matugen/sddm-theme-sync"
-if [[ -f "$SDDM_SYNC_SRC" ]]; then
-    sudo cp "$SDDM_SYNC_SRC" /usr/local/bin/sddm-theme-sync
-    sudo chown root:root /usr/local/bin/sddm-theme-sync
-    sudo chmod 755 /usr/local/bin/sddm-theme-sync
-fi
-SUDOERS_FILE="/etc/sudoers.d/sddm-theme-sync"
-if [[ ! -f "$SUDOERS_FILE" ]]; then
-    echo "$USER ALL=(root) NOPASSWD: /usr/local/bin/sddm-theme-sync" |
-        sudo tee "$SUDOERS_FILE" >/dev/null
-    sudo chmod 440 "$SUDOERS_FILE"
-fi
-
 step "Post-install: generate theme from default wallpaper"
-# The custom.conf bootstrapped above (step 24) is just the theme's stock
-# default until matugen actually runs once — same command ColoursEngine.qml
-# runs when a wallpaper is picked from the launcher, so first boot ends up
-# themed identically to a manual pick instead of staying on stock colors.
+# Runs matugen once on the default wallpaper so first boot is themed (kitty,
+# Hyprland, browsers) instead of staying on stock colors until the first pick.
 # Only on a real fresh install — see FRESH_WALLPAPER_STATE above — otherwise
 # this would re-theme everything back to the default wallpaper on a re-run.
 if [[ "$FRESH_WALLPAPER_STATE" == true ]]; then
