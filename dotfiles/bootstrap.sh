@@ -599,7 +599,7 @@ fi
 RESUME_ARG=""
 SWAP_PART=$(swapon --show=NAME,TYPE --noheadings | awk '$2 == "partition" && $1 !~ /zram/ {print $1; exit}')
 if [[ -n "$SWAP_PART" ]]; then
-    RESUME_ARG=" resume=UUID=$(blkid -s UUID -o value "$SWAP_PART")"
+    RESUME_ARG=" resume=UUID=$(sudo blkid -s UUID -o value "$SWAP_PART")"
 fi
 sudo mkdir -p /etc/kernel
 echo "$KERNEL_ROOT rw zswap.enabled=0 quiet loglevel=3 nowatchdog splash$RESUME_ARG$LUKS_ARG" |
