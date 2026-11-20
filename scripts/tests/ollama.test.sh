@@ -31,7 +31,27 @@ test_bootstrap_installs_dropins() {
             awk '{print ($1 > 0) ? "yes" : "no"}')"
 }
 
-all_tests=(test_bootstrap_installs_dropins)
+STORY12_DROPINS="igpu.conf" # device/acceleration settings: story 12 decides them
+
+test_live_dropins_match_repo() {
+    # Every drop-in this machine runs Ollama with is in the repo, byte for
+    # byte, and the repo ships nothing the machine does not run - except the
+    # acceleration drop-ins left to story 12.
+    local live repo f diffs=""
+    live=$(find "$LIVE_DROPINS" -maxdepth 1 -name '*.conf' -printf '%f\n' 2>/dev/null |
+        grep -vxF "$STORY12_DROPINS" | sort | tr '\n' ' ')
+    repo=$(find "$REPO_DROPINS" -maxdepth 1 -name '*.conf' -printf '%f\n' 2>/dev/null | sort | tr '\n' ' ')
+    assert_eq "live drop-ins (minus story 12's) = repo drop-ins" "download.conf " "$live"
+    assert_eq "repo drop-ins" "download.conf " "$repo"
+    for f in $repo; do
+        cmp -s "$LIVE_DROPINS/$f" "$REPO_DROPINS/$f" || diffs+="$f "
+    done
+    assert_eq "live drop-ins identical to the repo" none "${diffs:-none}"
+    assert_eq "ollama.service enabled" enabled "$(systemctl is-enabled ollama 2>/dev/null)"
+    assert_eq "ollama.service active" active "$(systemctl is-active ollama 2>/dev/null)"
+}
+
+all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
