@@ -84,8 +84,19 @@ test_repo_ships_igpu_dropin() {
         "$(grep -h '^Environment=' "$REPO_DROPINS/igpu.conf" 2>/dev/null || echo missing)"
 }
 
+IGPU_MODEL="${IGPU_MODEL:-gpt-oss:20b}"
+
+test_live_model_runs_on_igpu() {
+    # Story 12: a loaded model runs fully on the Arc iGPU, not on the CPU.
+    curl -s --max-time 300 http://127.0.0.1:11434/api/generate \
+        -d "{\"model\":\"$IGPU_MODEL\",\"prompt\":\"hi\",\"stream\":false,\"keep_alive\":\"60s\",\"options\":{\"num_predict\":1}}" \
+        >/dev/null
+    assert_eq "$IGPU_MODEL runs on the GPU" "100% GPU" \
+        "$(ollama ps 2>/dev/null | awk -v m="$IGPU_MODEL" '$1 == m { for (i = 1; i <= NF; i++) if ($i == "GPU" || $i == "CPU" || $i == "CPU/GPU") { print $(i - 1), $i; exit } }')"
+}
+
 all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo test_live_models_doc
-    test_bootstrap_installs_vulkan_backend test_repo_ships_igpu_dropin)
+    test_bootstrap_installs_vulkan_backend test_repo_ships_igpu_dropin test_live_model_runs_on_igpu)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
