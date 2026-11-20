@@ -648,6 +648,44 @@ LSBLK
     assert_eq "resume names the swap UUID read as root" "resume=UUID=5555-swap" "${out:-missing}"
 }
 
+test_uki_lands_on_the_reported_esp() {
+    # The ESP is whatever bootctl reports (a reinstall may mount it at /efi
+    # or /boot), never a fixed /boot/efi.
+    local dir preset
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    printf '#!/usr/bin/env bash\necho /efi\n' >"$dir/bin/bootctl"
+    printf '#!/usr/bin/env bash\n[[ "${@: -1}" == /efi ]] && echo /dev/nvme0n1p1 || echo /dev/nvme0n1p5\n' >"$dir/bin/findmnt"
+    cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PKNAME*) echo nvme0n1 ;;
+    *PARTN*) echo 1 ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    printf '#!/usr/bin/env bash\n[[ $# -gt 0 ]] && exit 0\necho "BootOrder: 0004"\n' >"$dir/bin/efibootmgr"
+    chmod +x "$dir"/bin/*
+    preset="$dir/root/etc/mkinitcpio.d/linux.preset"
+    mkdir -p "${preset%/*}"
+    printf '%s\n' "PRESETS=('default')" '#default_uki="/efi/EFI/Linux/arch-linux.efi"' >"$preset"
+    run_step_with_detection "$dir" "$UKI_ENTRY_STEP" >/dev/null
+    assert_eq "UKI built on the ESP bootctl reports" 'default_uki="/efi/EFI/Linux/arch-linux.efi"' \
+        "$(rg '^#?default_uki=' "$preset")"
+    rm -rf "$dir"
+}
+
+test_uki_rebuilt_after_its_cmdline_and_preset() {
+    # The firmware entry points at the UKI, so the image must be rebuilt
+    # after the cmdline and preset steps wrote what goes into it.
+    local cmdline_line preset_line build_line
+    cmdline_line=$(rg -n -F 'step "Boot: kernel cmdline for the UKI"' "$BOOTSTRAP" | cut -d: -f1)
+    preset_line=$(rg -n -F 'step "Boot: UKI from the firmware"' "$BOOTSTRAP" | cut -d: -f1)
+    build_line=$(rg -n '^sudo mkinitcpio -P$' "$BOOTSTRAP" | tail -1 | cut -d: -f1)
+    assert_eq "mkinitcpio -P runs after both UKI steps" yes \
+        "$([[ -n $build_line && $build_line -gt ${cmdline_line:-0} && $build_line -gt ${preset_line:-0} ]] && echo yes || echo "no (cmdline $cmdline_line, preset $preset_line, build ${build_line:-none})")"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
