@@ -57,7 +57,33 @@ test_live_lockscreen_pam_stacks() {
         "auth required pam_fprintd.so max-tries=1" "$(auth_lines "$PAM_DIR/quickshell-fprint")"
 }
 
-all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks)
+auth_chain() { # service -> the auth modules it runs, following includes, in order
+    local kind control module
+    while read -r kind control module _; do
+        if [[ $control == include || $control == substack ]]; then
+            auth_chain "$module"
+        else
+            echo "$module"
+        fi
+    done < <(auth_lines "$PAM_DIR/$1" | sed 's/\[[^]]*\]/bracket/')
+}
+
+test_live_sudo_tty_fprint_or_password() {
+    # sudo and a TTY login accept the fingerprint or the password: a
+    # sufficient pam_fprintd runs before pam_unix in both chains.
+    local svc chain got=()
+    for svc in sudo login; do
+        chain=$(auth_chain "$svc" | grep -E '^pam_(fprintd|unix)\.so$' | tr '\n' ' ')
+        got+=("$svc: $chain")
+    done
+    assert_eq "sudo and login try fingerprint, then password" \
+        "sudo: pam_fprintd.so pam_unix.so |login: pam_fprintd.so pam_unix.so " "$(IFS='|'; echo "${got[*]}")"
+    assert_eq "system-auth fingerprint is sufficient" "sufficient" \
+        "$(auth_lines "$PAM_DIR/system-auth" | awk '$3 == "pam_fprintd.so" {print $2}')"
+}
+
+all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks
+    test_live_sudo_tty_fprint_or_password)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
