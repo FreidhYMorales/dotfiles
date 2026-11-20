@@ -59,6 +59,14 @@ test_removed_things_not_installed() {
     assert_eq "bootstrap does not clone zsh-256color" no "$(runs zsh-256color)"
 }
 
+test_pacman_files_database() {
+    # Story 01: the command-not-found handler reads pacman's files database,
+    # downloaded once at install and kept fresh by its timer.
+    assert_eq "bootstrap downloads the pacman files database" yes "$(runs 'pacman -Fy')"
+    assert_eq "bootstrap enables pacman-filesdb-refresh.timer" yes \
+        "$(runs 'systemctl enable .*pacman-filesdb-refresh\.timer')"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
