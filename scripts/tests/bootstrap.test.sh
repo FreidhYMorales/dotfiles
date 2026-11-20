@@ -536,6 +536,65 @@ test_docs_describe_both_login_paths() {
         "$(rg -n 'theme with the notch image' "$plan")"
 }
 
+UKI_CMDLINE_STEP='Boot: kernel cmdline for the UKI'
+
+uki_cmdline_result() { # yes|no swap|noswap -> /etc/kernel/cmdline after the step ran twice
+    # Fakes: findmnt names the root device, lsblk answers its PARTUUID and its
+    # device chain (crypt mapping "root" on a crypto_LUKS partition, or a
+    # plain partition), swapon lists a swap partition (or none), blkid its UUID.
+    local dir
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    if [[ $1 == yes ]]; then
+        printf '#!/usr/bin/env bash\necho /dev/mapper/root\n' >"$dir/bin/findmnt"
+        cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *" -sPno "*) echo 'NAME="root" TYPE="crypt" FSTYPE="ext4" UUID="aaaa-root"'
+                 echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="crypto_LUKS" UUID="1111-luks"' ;;
+    *PARTUUID*) echo "" ;;
+    *) printf 'crypt\npart\ndisk\n' ;;
+esac
+LSBLK
+    else
+        cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PARTUUID*) echo pppp-part ;;
+    *" -sPno "*) echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="ext4" UUID="bbbb-root"' ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    fi
+    if [[ $2 == swap ]]; then
+        printf '#!/usr/bin/env bash\necho "/dev/zram0 partition"\necho "/dev/nvme0n1p6 partition"\n' >"$dir/bin/swapon"
+        printf '#!/usr/bin/env bash\necho zram-uuid\n' >"$dir/bin/zram-unused"
+        printf '#!/usr/bin/env bash\n[[ "${@: -1}" == /dev/nvme0n1p6 ]] && echo 5555-swap\n' >"$dir/bin/blkid"
+    else
+        printf '#!/usr/bin/env bash\necho "/dev/zram0 partition"\n' >"$dir/bin/swapon"
+        printf '#!/usr/bin/env bash\nexit 2\n' >"$dir/bin/blkid"
+    fi
+    chmod +x "$dir"/bin/*
+    run_step_with_detection "$dir" "$UKI_CMDLINE_STEP" >/dev/null
+    run_step_with_detection "$dir" "$UKI_CMDLINE_STEP" >/dev/null
+    cat "$dir/root/etc/kernel/cmdline" 2>/dev/null || echo missing
+    rm -rf "$dir"
+}
+
+test_uki_cmdline_on_both_paths() {
+    # The UKI carries the whole cmdline: root, rw, today's options (zswap off
+    # for zram, quiet boot), the splash, resume to the real swap partition
+    # (never zram) and, on LUKS only, the mapping sd-encrypt opens. A re-run
+    # writes the same line again.
+    local opts='rw zswap.enabled=0 quiet loglevel=3 nowatchdog splash'
+    assert_eq "plain install with swap" "root=PARTUUID=pppp-part $opts resume=UUID=5555-swap" \
+        "$(uki_cmdline_result no swap)"
+    assert_eq "LUKS install with swap" "root=/dev/mapper/root $opts resume=UUID=5555-swap rd.luks.name=1111-luks=root" \
+        "$(uki_cmdline_result yes swap)"
+    assert_eq "plain install without a swap partition" "root=PARTUUID=pppp-part $opts" \
+        "$(uki_cmdline_result no noswap)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
