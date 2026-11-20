@@ -144,6 +144,23 @@ test_whatsapp_rgb_twins_follow_bubbles() {
     done
 }
 
+WEBAPP_STYLES="github whatsapp notion youtube"
+
+test_styles_palette_only_and_chromium() {
+    # Stylus runs in the Chromium webapps (story 05), with the vars injected by
+    # the matugen-vars extension; a hard-coded color never follows the wallpaper.
+    local s f hard zen chromium
+    for s in $WEBAPP_STYLES; do
+        f="$STYLUS/$s-matugen.user.css"
+        hard=$(grep -v '^\s*/\?\*' "$f" | grep -cE '#[0-9a-fA-F]{3,8}\b|rgba?\([0-9]')
+        zen=$(grep -ciE '\bzen\b|userContent' "$f")
+        chromium=$(grep -ci 'chromium' "$f")
+        assert_eq "$s: no hard-coded colors" 0 "$hard"
+        assert_eq "$s: instructions do not mention Zen or userContent.css" 0 "$zen"
+        assert_eq "$s: instructions name Chromium" yes "$( ((chromium > 0)) && echo yes || echo no)"
+    done
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
