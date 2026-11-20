@@ -703,7 +703,8 @@ step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then
     # Every third-party plugin (incl. lpnh/fr, which replaced the archived
     # fg.yazi git clone) is pinned in package.toml — no manual clones needed.
-    ya pkg install
+    ya pkg install ||
+        echo "Warning: ya pkg install failed — run it manually later (a corrupt cache clears with rm -rf ~/.cache/yazi/packages)"
 fi
 
 step "Post-install: MPD service"
