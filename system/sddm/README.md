@@ -1,8 +1,8 @@
 # system/sddm
 
-Tema SDDM [Silent](https://github.com/uiriansan/SilentSDDM) + config, para `/usr/share/sddm/themes/` y `/etc/sddm.conf.d/`. No es un paquete Stow — `dotfiles/bootstrap.sh` (paso 24) ya automatiza todo lo de acá abajo en cada instalación. Esta guía es solo referencia/troubleshooting manual, por si algo falla o hace falta reinstalar el tema a mano sin correr el bootstrap completo.
+Config de SDDM para `/etc/sddm.conf.d/`. No es un paquete Stow: `dotfiles/bootstrap.sh` (paso 24) automatiza todo lo de acá abajo en cada instalación. Esta guía es solo referencia/troubleshooting manual.
 
-`themes/silent/README.md` es la documentación propia del tema upstream (presets, showcases) — no la dupliques acá, esto es solo sobre cómo queda deployado en este repo.
+El greeter es `notch-lock`, el tema SDDM del notch shell. Vive en el repo del notch (`dotfiles/quickshell/.config/quickshell/notch-repo/sddm/notch/`, con su propio `README.md` para previsualizarlo); acá solo queda cómo se deploya.
 
 ## 1. Dependencias
 
@@ -10,50 +10,51 @@ Tema SDDM [Silent](https://github.com/uiriansan/SilentSDDM) + config, para `/usr
 sudo pacman -S sddm qt6-virtualkeyboard
 ```
 
-## 2. Copiar el tema
+## 2. Directorio compartido del greeter
+
+El notch publica el wallpaper actual y la paleta de matugen a un directorio del usuario que el grupo `sddm` puede leer (setgid, así los archivos nuevos heredan el grupo):
 
 ```bash
-sudo cp -r system/sddm/themes/silent /usr/share/sddm/themes/
-sudo chown -R root:root /usr/share/sddm/themes/silent
-sudo chmod -R a+rX /usr/share/sddm/themes/silent
+sudo install -d -o "$USER" -g sddm -m 2750 /var/lib/quickshell-notch-sddm
+sudo install -o "$USER" -g sddm -m 640 /dev/null /var/lib/quickshell-notch-sddm/theme.conf.user
+mkdir -p ~/.local/state/quickshell-notch
+echo /var/lib/quickshell-notch-sddm >~/.local/state/quickshell-notch/sddm-target.txt
 ```
 
-## 3. Copiar la configuración
+## 3. Instalar notch-lock
+
+```bash
+N=dotfiles/quickshell/.config/quickshell/notch-repo
+sudo python3 "$N/scripts/install-sddm-theme.py" /usr/share/sddm/themes /var/lib/quickshell-notch-sddm
+```
+
+El instalador nunca reemplaza un tema ya instalado. Para actualizarlo: `sudo python3 "$N/scripts/update-sddm-theme.py" /usr/share/sddm/themes /var/lib/quickshell-notch-sddm` (guarda el anterior en `notch-lock-backup/`).
+
+## 4. Copiar la configuración
 
 ```bash
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp system/sddm/sddm.conf.d/deadlock.conf /etc/sddm.conf.d/
 ```
 
-`deadlock.conf` incluye `QT_SCREEN_SCALE_FACTORS=eDP-1=2` — debe coincidir a mano con la escala configurada en `dotfiles/hypr/.config/hypr/monitors.lua` (SDDM arranca antes que Hyprland, no puede leer ese archivo). Si cambia la escala del monitor, actualizar acá también.
-
-## 4. Perfil visual activo
-
-`themes/silent/metadata.desktop` → `ConfigFile=configs/custom.conf`. `custom.conf` **no** es estático — lo reescribe `sddm-theme-sync` (helper privilegiado, ver más abajo) cada vez que corre matugen, con los colores del wallpaper actual. El bootstrap lo bootstrapea al `default.conf` de fábrica en la primera instalación (antes del primer run real de matugen).
+`deadlock.conf` selecciona `Current=notch-lock` e incluye `QT_SCREEN_SCALE_FACTORS=eDP-1=2`, que debe coincidir a mano con la escala de `dotfiles/hypr/.config/hypr/monitors.lua` (SDDM arranca antes que Hyprland, no puede leer ese archivo).
 
 ## 5. Activar el servicio
 
 ```bash
 sudo systemctl enable sddm
-sudo systemctl start sddm
 ```
 
-## 6. Probar el tema sin reiniciar
+## 6. Si el greeter no carga
 
-```bash
-sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/themes/silent
-```
-
-## 7. Theming dinámico (matugen)
-
-`sddm-theme-sync` (`/usr/local/bin/`, instalado por el bootstrap con una entrada `sudoers` para correr sin password) escribe `configs/custom.conf` y copia el wallpaper actual a `backgrounds/qs-current.<ext>` — se llama desde el post-hook de matugen (`~/.config/matugen/post-hook.sh`), no hay que correrlo a mano.
+El paquete `sddm` trae temas de fábrica (`elarun`, `maldives`, `maya`): cambiar `Current=` a uno de ellos en `/etc/sddm.conf.d/deadlock.conf` desde una TTY recupera el login.
 
 ## Notas
 
 | Detalle | Valor |
 |---|---|
-| Tema activo | `silent` |
-| Perfil visual | `configs/custom.conf` (dinámico, matugen) |
+| Tema activo | `notch-lock` |
+| Datos del greeter | `/var/lib/quickshell-notch-sddm/` (publicados por el notch) |
 | Config SDDM | `/etc/sddm.conf.d/deadlock.conf` |
 | Teclado virtual | `qtvirtualkeyboard` vía Qt6 |
 | Autologin | desactivado |
