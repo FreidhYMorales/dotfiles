@@ -388,6 +388,62 @@ test_live_root_is_not_on_luks() {
     assert_eq "this machine takes the plain path" no "${out:-missing}"
 }
 
+BOOT_SPLASH_STEP='Boot splash: Plymouth (bgrt) and a systemd initramfs'
+
+luks_sandbox() { # dir yes|no -> sandbox whose root is (or is not) on LUKS, with inert boot tools
+    sddm_sandbox "$1"
+    mkdir -p "$1/root/etc/default"
+    if [[ $2 == yes ]]; then
+        printf '#!/usr/bin/env bash\necho /dev/mapper/root\n' >"$1/bin/findmnt"
+        printf '#!/usr/bin/env bash\nprintf "crypt\\npart\\ndisk\\n"\n' >"$1/bin/lsblk"
+    else
+        printf '#!/usr/bin/env bash\necho /dev/nvme0n1p5\n' >"$1/bin/findmnt"
+        printf '#!/usr/bin/env bash\nprintf "part\\ndisk\\n"\n' >"$1/bin/lsblk"
+    fi
+    local tool
+    for tool in pacman plymouth-set-default-theme mkinitcpio grub-mkconfig; do
+        printf '#!/usr/bin/env bash\nexit 0\n' >"$1/bin/$tool"
+    done
+    chmod +x "$1"/bin/*
+}
+
+run_step_with_detection() { # dir step-title -> like run_bootstrap_step, with root_on_luks defined
+    { awk '/^root_on_luks\(\) \{/ {on = 1} on {print} on && /^\}/ {exit}' "$BOOTSTRAP"
+      awk -v t="step \"$2\"" '$0 == t {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo REACHED_NEXT_STEP'; } >"$1/step.sh"
+    HOME="$1/home" USER=deadlock PATH="$1/bin:$PATH" SCRIPT_DIR="$ROOT/dotfiles" REPO_ROOT="$ROOT" \
+        bash -euo pipefail "$1/step.sh" 2>"$1/stderr" | tail -1
+}
+
+boot_splash_result() { # yes|no -> "<last line>|<HOOKS line>|<COMPRESSION line>|<plymouth installed>|<bgrt set>"
+    local dir conf
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    conf="$dir/root/etc/mkinitcpio.conf"
+    printf '%s\n' 'MODULES=()' \
+        'HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block resume filesystems fsck)' \
+        'COMPRESSION="lz4"' >"$conf"
+    local last
+    last=$(run_step_with_detection "$dir" "$BOOT_SPLASH_STEP")
+    printf '%s|%s|%s|%s|%s\n' "$last" "$(grep '^HOOKS=' "$conf")" "$(grep '^COMPRESSION=' "$conf")" \
+        "$(grep -qE 'pacman -S .*plymouth' "$dir/sudo.log" 2>/dev/null && echo yes || echo no)" \
+        "$(grep -qx 'plymouth-set-default-theme bgrt' "$dir/sudo.log" 2>/dev/null && echo yes || echo no)"
+    rm -rf "$dir"
+}
+
+test_boot_splash_on_both_paths() {
+    # Both installs show the bgrt splash from a systemd initramfs (sd-vconsole
+    # keeps the TTY font, systemd handles resume); only a LUKS root adds
+    # sd-encrypt, so Plymouth asks the passphrase. Other settings are kept.
+    local base='base systemd autodetect microcode modconf kms keyboard sd-vconsole plymouth block'
+    assert_eq "LUKS install: bgrt splash, sd-encrypt initramfs" \
+        "REACHED_NEXT_STEP|HOOKS=($base sd-encrypt filesystems fsck)|COMPRESSION=\"lz4\"|yes|yes" \
+        "$(boot_splash_result yes)"
+    assert_eq "plain install: bgrt splash, systemd initramfs without sd-encrypt" \
+        "REACHED_NEXT_STEP|HOOKS=($base filesystems fsck)|COMPRESSION=\"lz4\"|yes|yes" \
+        "$(boot_splash_result no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
