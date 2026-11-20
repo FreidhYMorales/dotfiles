@@ -19,9 +19,10 @@
 07. [x] 0cfe6d9 As the owner, I want my utilities (btop, fastfetch, git, mimeapps, fonts) audited so that defaults are correct on this ThinkPad.
 08. [x] 2d3bbed As the owner, I want my scripts and user systemd units audited so that nothing is dead, duplicated or broken.
 09. [x] b12513c As the owner, I want system/ configs (logind, pam.d, udev, systemd) audited so that root-level behavior is correct and safe.
-10. [~] As the owner, I want bootstrap.sh and deploy.sh reconciled with stories 01-09 so that a fresh install reproduces this machine.
+10. [x] 551c424 As the owner, I want bootstrap.sh and deploy.sh reconciled with stories 01-09 so that a fresh install reproduces this machine.
 11. [ ] As the owner, I want Ollama running local models with a clear model storage location so that I can use LLMs offline.
 12. [ ] As the owner, I want local inference to use the Intel NPU/iGPU so that models run fast without draining the battery. Requires: #11
 13. [ ] As the owner, I want boot to go LUKS passphrase -> Plymouth -> SDDM autologin -> Hyprland so that I type one password and never see a black screen (see login-reinstall-plan.md).
 14. [ ] As the owner, I want the notch shell cutover finished so that the new Quickshell fully replaces the old bar.
 15. [ ] As the owner, I want the Stylus userstyles to cover every surface of the sites I use so that no page keeps stock colors after a wallpaper change. Requires: #05
+16. [ ] As the owner, I want a larger console font on the plain TTYs (no TTY replacement) so that text is readable on the 2K screen before any desktop starts.
