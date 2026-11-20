@@ -161,6 +161,24 @@ test_styles_palette_only_and_chromium() {
     done
 }
 
+POST_INSTALL="${POST_INSTALL:-$ROOT/backup/references/post-install.md}"
+
+test_install_steps_use_file_url() {
+    # Owner, live: Stylus Manage -> Import did not update installed styles;
+    # opening the file:// URL in Chromium and pressing Install/Reinstall did.
+    local section s
+    section=$(awk '/^## 6\. Chromium/ {on = 1; print; next} on && /^## / {exit} on' "$POST_INSTALL")
+    assert_eq "post-install Chromium section exists" yes "$([[ -n $section ]] && echo yes || echo no)"
+    assert_eq "Chromium section installs styles from a file:// URL" yes \
+        "$(grep -q 'file://' <<<"$section" && echo yes || echo no)"
+    assert_eq "Chromium section says to press Reinstall to update" yes \
+        "$(grep -qi 'reinstall' <<<"$section" && echo yes || echo no)"
+    assert_eq "Chromium section no longer uses Manage -> Import" 0 "$(grep -c 'Manage → Import' <<<"$section")"
+    for s in $WEBAPP_STYLES; do
+        assert_eq "$s: how-to does not say Import" 0 "$(grep -ciw 'import' "$STYLUS/$s-matugen.user.css")"
+    done
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
