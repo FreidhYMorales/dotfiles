@@ -740,26 +740,23 @@ step "Post-install: restore web apps"
 webapp-restore || echo "Warning: webapp-restore failed — run it manually later"
 
 step "Post-install: default Quickshell state"
-mkdir -p "$HOME/.local/state/quickshell"
-# Wallpapers.qml scans Paths.wallpapersDir (~/Pictures/Wallpaper) with a Qt
-# FolderListModel — if the dir doesn't exist yet when Quickshell first
-# launches, its filesystem watcher never attaches, and creating the dir
-# later doesn't get picked up without a Quickshell/session restart. Create
-# it now and seed the default wallpaper so it's there from the first launch.
+# The notch reads its wallpaper and theme mode from its own state dir.
+NOTCH_STATE="$HOME/.local/state/quickshell-notch"
+mkdir -p "$NOTCH_STATE"
+# The notch's wallpaper picker scans ~/Pictures/Wallpaper; create it and seed
+# the default wallpaper so it is there from the first launch.
 mkdir -p "$HOME/Pictures/Wallpaper"
 cp -n "$HOME/.config/hypr/assets/arch.png" "$HOME/Pictures/Wallpaper/arch.png"
 # FRESH_WALLPAPER_STATE tracks whether this is a real fresh install (no
 # wallpaper/theme chosen yet) — on a re-run over an already-configured
 # system, don't reset the user's wallpaper/theme pick back to default.
 FRESH_WALLPAPER_STATE=false
-if [[ ! -f "$HOME/.local/state/quickshell/wallpaper.txt" ]]; then
+if [[ ! -f "$NOTCH_STATE/wallpaper.txt" ]]; then
     FRESH_WALLPAPER_STATE=true
-    # Default wallpaper — Quickshell reads this on first launch
-    echo "$HOME/Pictures/Wallpaper/arch.png" >"$HOME/.local/state/quickshell/wallpaper.txt"
+    echo "$HOME/Pictures/Wallpaper/arch.png" >"$NOTCH_STATE/wallpaper.txt"
 fi
-if [[ ! -f "$HOME/.local/state/quickshell/theme.json" ]]; then
-    # Default theme state — dynamic:true so changing the wallpaper triggers matugen
-    echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
+if [[ ! -f "$NOTCH_STATE/theme.json" ]]; then
+    echo '{"mode":"scheme-content","variant":"dark"}' >"$NOTCH_STATE/theme.json"
 fi
 
 step "Post-install: matugen post-hook permissions"
