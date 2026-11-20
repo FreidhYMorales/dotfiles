@@ -1,8 +1,8 @@
 # Login flow plan for the clean reinstall
 
-Status: decided, not implemented. Applies at the next clean reinstall; until
-then the current login (greetd notch greeter) stays as is. Feeds stories 09,
-10, 13 and 14.
+Status: decided, pending. Waits on the owner's choice of drive (this M.2 or
+a new one) and applies at that clean install. Until then the login is the
+SDDM notch greeter with a password and no LUKS. Feeds stories 10, 13 and 14.
 
 ## Problem
 
@@ -32,6 +32,18 @@ greeter.
    path only; it is rare (broken session, session restart).
 7. One secret: LUKS passphrase = user password = keyring password, so boot,
    the logout greeter, the lockscreen and sudo all unlock the same things.
+   It is a long random passphrase (5-6 diceware words): with argon2id that
+   makes an offline attack on a stolen disk impractical.
+8. Secure Boot with the owner's own keys, signed GRUB and a signed unified
+   kernel image (UKI). LUKS leaves the ESP and the kernel unencrypted, so
+   without this someone with brief physical access (evil maid) can plant an
+   initramfs that records the passphrase. The UKI carries the kernel
+   cmdline inside the signature, so it cannot be edited at the GRUB menu.
+   A firmware supervisor password keeps Secure Boot from being turned off.
+9. Suspend-then-hibernate with the swap inside LUKS: after
+   `HibernateDelaySec` the disk key leaves RAM and resume asks for the
+   passphrase. This machine only has s2idle, so while merely suspended the
+   key stays in memory and the lockscreen is the only barrier.
 
 Why: single user, single machine. Without encryption the login password only
 stops someone at the keyboard; booting a USB reads the disk anyway. With
@@ -56,6 +68,11 @@ Rejected:
 - Autologin without LUKS: no authentication at all.
 - Autologin + lock at session start: a short unlocked window before the lock
   maps, and two passwords once LUKS exists.
+- A greeter password on top of LUKS: one person, one machine; it only stops
+  someone who knows the LUKS passphrase but not the user password.
+- Swapping the SDDM X11 greeter for Wayland (weston/kwin) or greetd to kill
+  the black gap: every greeter exits before Hyprland paints, so the gap
+  stays; only autologin + `--retain-splash` removes it.
 
 ## Install checklist
 
@@ -128,6 +145,27 @@ KeyringMode=inherit
       kernel keyring (key `cryptsetup`) and that the keyring password equals
       the LUKS passphrase.
 
+Secure Boot (`sbctl`):
+
+- [ ] Firmware: set a supervisor password, clear the Secure Boot keys (setup
+      mode).
+- [ ] `sbctl create-keys`, then `sbctl enroll-keys -m`: `-m` keeps
+      Microsoft's keys, needed for firmware option ROMs and for the other
+      installed distros (Fedora, openSUSE, Debian), which boot through a
+      Microsoft-signed shim.
+- [ ] UKI: kernel cmdline in `/etc/kernel/cmdline`, mkinitcpio preset with
+      `default_uki=` writing to `<esp>/EFI/Linux/`; GRUB boots it with
+      `chainloader`, so the signed cmdline is the one used.
+- [ ] GRUB: `grub-install ... --modules="tpm" --disable-shim-lock`, then
+      `sbctl sign -s` on `grubx64.efi` and the UKI; `sbctl verify` lists
+      nothing unsigned. `-s` registers them, so the sbctl pacman hook
+      re-signs on every kernel or GRUB update.
+- [ ] fwupd: sign its EFI binary (`sbctl sign -s -o
+      /usr/lib/fwupd/efi/fwupdx64.efi.signed /usr/lib/fwupd/efi/fwupdx64.efi`)
+      or firmware updates stop working.
+- [ ] Turn Secure Boot on; `sbctl status` shows it enabled with the owner's
+      keys.
+
 Lock (story 09):
 
 - [ ] Lock before suspend through a logind delay inhibitor held by the
@@ -149,3 +187,7 @@ Hyprland:
 - Logout: SDDM notch greeter appears; logging in with the password unlocks
   the keyring.
 - TTY3 login still works as recovery.
+- Secure Boot: `sbctl status` enabled; an unsigned EFI binary is refused by
+  the firmware; the other distros still boot from the GRUB menu; editing the
+  Arch entry at the GRUB menu does not change the kernel cmdline.
+- Hibernate: after `HibernateDelaySec`, resume asks for the LUKS passphrase.

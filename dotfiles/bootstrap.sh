@@ -65,8 +65,7 @@ sudo timedatectl set-ntp true
 step "/etc/hosts: hostname entry"
 # archinstall/pacstrap don't always add this. Without it, sudo hangs doing a
 # hostname lookup for its audit log on EVERY invocation — slow always, and a
-# real problem for anything sudo-based that runs during network transitions
-# (e.g. the system-sleep hook that locks the screen before suspend).
+# real problem for anything sudo-based that runs during network transitions.
 HOSTNAME_VALUE=$(cat /etc/hostname)
 grep -q "$HOSTNAME_VALUE" /etc/hosts ||
     printf '127.0.1.1\t%s\n' "$HOSTNAME_VALUE" | sudo tee -a /etc/hosts >/dev/null
@@ -424,11 +423,6 @@ if loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}' |
 else
     sudo systemctl restart systemd-logind 2>/dev/null || true
 fi
-
-step "systemd-sleep: lock before suspend"
-sudo cp "$REPO_ROOT/system/systemd/system-sleep/lock-before-sleep" /usr/lib/systemd/system-sleep/
-sudo chown root:root /usr/lib/systemd/system-sleep/lock-before-sleep
-sudo chmod 755 /usr/lib/systemd/system-sleep/lock-before-sleep
 
 step "systemd-sleep: suspend-then-hibernate delay"
 sudo mkdir -p /etc/systemd/sleep.conf.d
