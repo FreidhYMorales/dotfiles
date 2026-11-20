@@ -128,9 +128,28 @@ test_comments_reference_existing_paths() {
         "none" "${missing[*]:-none}"
 }
 
+test_live_hibernate_prereqs() {
+    # Lid close runs suspend-then-hibernate (this machine only has s2idle,
+    # which drains the battery): the kernel must know where to resume from,
+    # that swap must be active, and logind must agree it can do it.
+    local resume swaps
+    resume=$(grep -oE 'resume=UUID=[0-9a-f-]+' /proc/cmdline | cut -d= -f3)
+    # swapon hides UUIDs without root; lsblk reads them per active device.
+    swaps=$(swapon --show=NAME --noheadings | xargs -r lsblk -no UUID 2>/dev/null)
+    assert_eq "resume= names an active swap" "yes" \
+        "$([[ -n $resume ]] && grep -qx "$resume" <<<"$swaps" && echo yes || echo "no (resume=${resume:-unset})")"
+    assert_eq "mkinitcpio runs the resume hook" "yes" \
+        "$(grep -E '^HOOKS=' /etc/mkinitcpio.conf | grep -qw resume && echo yes || echo no)"
+    assert_eq "only s2idle is available" "[s2idle]" "$(</sys/power/mem_sleep)"
+    assert_eq "lid close on battery and AC" "suspend-then-hibernate suspend-then-hibernate" \
+        "$(grep -E '^HandleLidSwitch(ExternalPower)?=' "$SYSTEM/logind/logind.conf.d/deadlock.conf" | cut -d= -f2 | tr '\n' ' ' | sed 's/ $//')"
+    assert_eq "logind can suspend-then-hibernate" '"yes"' \
+        "$(busctl call org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CanSuspendThenHibernate 2>/dev/null | cut -d' ' -f2)"
+}
+
 all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks
     test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only test_live_matches_repo
-    test_comments_reference_existing_paths)
+    test_comments_reference_existing_paths test_live_hibernate_prereqs)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
