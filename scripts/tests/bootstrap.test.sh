@@ -523,6 +523,19 @@ sddm.service: -" \
         "$(luks_login_result no)"
 }
 
+test_docs_describe_both_login_paths() {
+    # Story 20: bootstrap sets up the bgrt splash on every install and SDDM
+    # autologin only on a LUKS root. CLAUDE.md and the login plan say so; the
+    # plan no longer promises a notch-themed splash that does not exist.
+    local claude="$ROOT/CLAUDE.md" plan="$ROOT/docs/plans/dotfiles-audit/login-reinstall-plan.md"
+    assert_eq "CLAUDE.md names the bgrt splash and the LUKS-only autologin" "yes yes" \
+        "$(rg -q 'bgrt' "$claude" && echo yes || echo no) $(rg -q 'luks-autologin\.conf' "$claude" && echo yes || echo no)"
+    assert_eq "login plan uses bgrt and names the plain path" "yes yes" \
+        "$(rg -q 'bgrt' "$plan" && echo yes || echo no) $(rg -qi 'without LUKS' "$plan" && echo yes || echo no)"
+    assert_eq "login plan promises no notch-themed splash" "" \
+        "$(rg -n 'theme with the notch image' "$plan")"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
