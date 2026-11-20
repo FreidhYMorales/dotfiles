@@ -50,6 +50,14 @@ test_notch_docs_describe_the_notch_as_the_only_shell() {
         "$(rg -q 'qs -c notch' "$n/docs/development.md" && echo yes || echo no)"
 }
 
+test_claude_md_describes_the_notch_as_the_only_shell() {
+    # The project CLAUDE.md is read at the start of every session: it must not
+    # describe the old bar as the running shell.
+    assert_eq "CLAUDE.md points at no old bar or rollback" "" "$(old_bar_refs "$ROOT/CLAUDE.md")"
+    assert_eq "CLAUDE.md names qs -c notch as the shell" "yes" \
+        "$(rg -q 'qs -c notch' "$ROOT/CLAUDE.md" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
