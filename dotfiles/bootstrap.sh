@@ -33,6 +33,15 @@ step() {
     echo "==> $*"
 }
 
+# True when / sits on a dm-crypt mapping, directly or under LVM. Autologin and
+# the LUKS initramfs/cmdline pieces only run then: autologin on an
+# unencrypted disk would be no authentication at all.
+root_on_luks() {
+    local src
+    src=$(findmnt -no SOURCE /)
+    [[ $'\n'$(lsblk -sno TYPE "${src%%\[*}" 2>/dev/null)$'\n' == *$'\n'crypt$'\n'* ]]
+}
+
 # Cache sudo credentials once and keep them alive for the full run
 sudo -v
 while true; do
@@ -387,6 +396,17 @@ step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
 
+step "Login: SDDM autologin on a LUKS root"
+# On a LUKS root the disk passphrase is the authentication: SDDM logs in once
+# per boot with no greeter and unlocks the keyring from that passphrase. A
+# plain root keeps the notch-lock greeter with its password (no autologin).
+# See docs/plans/dotfiles-audit/login-reinstall-plan.md.
+if root_on_luks; then
+    sudo install -Dm644 "$REPO_ROOT/system/sddm/sddm.conf.d/luks-autologin.conf" /etc/sddm.conf.d/luks-autologin.conf
+    sudo install -Dm644 "$REPO_ROOT/system/pam.d/sddm-autologin" /etc/pam.d/sddm-autologin
+    sudo install -Dm644 "$REPO_ROOT/system/systemd/sddm.service.d/luks.conf" /etc/systemd/system/sddm.service.d/luks.conf
+fi
+
 step "SDDM: enable service"
 sudo systemctl enable sddm
 
@@ -625,6 +645,45 @@ if [[ "$SKIP_GRUB" == false ]]; then
     step "GRUB: regenerate config"
     sudo grub-mkconfig -o /boot/grub/grub.cfg
 fi
+
+step "GRUB: boot splash and LUKS kernel cmdline"
+# splash lets Plymouth draw (next step). On a LUKS root, sd-encrypt needs the
+# LUKS device and the mapping name; grub-mkconfig adds root= itself.
+# GRUB_CMDLINE_LINUX so recovery entries unlock too. Skipped with --no-grub.
+if [[ "${SKIP_GRUB:-false}" == false ]]; then
+    GRUB_DEFAULTS="${GRUB_DEFAULTS:-/etc/default/grub}"
+    CMDLINE_CHANGED=false
+    if ! sudo grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bsplash\b' "$GRUB_DEFAULTS"; then
+        sudo sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=".*\)"$/\1 splash"/' "$GRUB_DEFAULTS"
+        CMDLINE_CHANGED=true
+    fi
+    if root_on_luks && ! sudo grep -q 'rd\.luks\.name=' "$GRUB_DEFAULTS"; then
+        ROOT_SRC=$(findmnt -no SOURCE /)
+        ROOT_CHAIN=$(lsblk -sPno NAME,TYPE,FSTYPE,UUID "${ROOT_SRC%%\[*}")
+        CRYPT_NAME=$(awk -F'"' '$4 == "crypt" {print $2; exit}' <<<"$ROOT_CHAIN")
+        LUKS_UUID=$(awk -F'"' '$6 == "crypto_LUKS" {print $8; exit}' <<<"$ROOT_CHAIN")
+        sudo sed -i "s/^\(GRUB_CMDLINE_LINUX=\".*\)\"$/\1 rd.luks.name=$LUKS_UUID=$CRYPT_NAME\"/" "$GRUB_DEFAULTS"
+        CMDLINE_CHANGED=true
+    fi
+    if [[ "$CMDLINE_CHANGED" == true ]]; then
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    fi
+fi
+
+step "Boot splash: Plymouth (bgrt) and a systemd initramfs"
+# Plymouth draws the stock bgrt splash (firmware logo) on every install; on a
+# LUKS root it also asks the passphrase, through sd-encrypt. The systemd
+# hooks replace udev/keymap/consolefont/resume: sd-vconsole loads the TTY
+# font and keymap, and systemd resumes from hibernation by itself. The whole
+# HOOKS line is rewritten here, after the hibernation step, and the
+# mkinitcpio -P below rebuilds the images.
+sudo pacman -S --needed --noconfirm plymouth
+sudo plymouth-set-default-theme bgrt
+INITRAMFS_HOOKS="base systemd autodetect microcode modconf kms keyboard sd-vconsole plymouth block filesystems fsck"
+if root_on_luks; then
+    INITRAMFS_HOOKS="${INITRAMFS_HOOKS/block/block sd-encrypt}"
+fi
+sudo sed -i "s/^HOOKS=.*/HOOKS=($INITRAMFS_HOOKS)/" /etc/mkinitcpio.conf
 
 # ── 31. Boot optimization ────────────────────────────────────────────────────
 step "Boot optimization: systemd services"

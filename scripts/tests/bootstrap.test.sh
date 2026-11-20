@@ -354,6 +354,188 @@ test_reference_docs_describe_the_notch_pipeline() {
         "$(grep -q 'notch-lock' "$ROOT/backup/references/matugen-pipeline-reference.md" && echo yes || echo no)"
 }
 
+root_on_luks_says() { # findmnt-source "lsblk -s types" -> yes|no from bootstrap.sh's root_on_luks
+    # findmnt and lsblk are faked: findmnt reports the given root source and
+    # lsblk lists the given device types only for the bracket-free device.
+    local dir out
+    dir=$(mktemp -d)
+    mkdir -p "$dir/bin"
+    printf '#!/usr/bin/env bash\necho "%s"\n' "$1" >"$dir/bin/findmnt"
+    printf '#!/usr/bin/env bash\n[[ "${@: -1}" == "%s" ]] && printf "%%b\\n" "%s"\n' "${1%%\[*}" "$2" >"$dir/bin/lsblk"
+    chmod +x "$dir/bin/findmnt" "$dir/bin/lsblk"
+    { awk '/^root_on_luks\(\) \{/ {on = 1} on {print} on && /^\}/ {exit}' "$BOOTSTRAP"
+      echo 'root_on_luks && echo yes || echo no'; } >"$dir/fn.sh"
+    out=$(PATH="$dir/bin:$PATH" bash -euo pipefail "$dir/fn.sh" 2>/dev/null)
+    rm -rf "$dir"
+    echo "${out:-missing}"
+}
+
+test_root_on_luks_detection() {
+    # Every encryption-only step (autologin, sd-encrypt, rd.luks) hangs on
+    # this answer; a wrong yes would give an unencrypted machine autologin.
+    assert_eq "root on a LUKS mapping is encrypted" yes "$(root_on_luks_says /dev/mapper/root 'crypt\npart\ndisk')"
+    assert_eq "root on LVM inside LUKS is encrypted" yes "$(root_on_luks_says /dev/mapper/vg-root 'lvm\ncrypt\npart\ndisk')"
+    assert_eq "btrfs subvolume on LUKS is encrypted" yes "$(root_on_luks_says '/dev/mapper/root[/@]' 'crypt\npart\ndisk')"
+    assert_eq "root on a plain partition is not encrypted" no "$(root_on_luks_says /dev/nvme0n1p5 'part\ndisk')"
+}
+
+test_live_root_is_not_on_luks() {
+    # This ThinkPad's root is a plain ext4 partition today: the real tools
+    # must take the plain path (no autologin).
+    local out
+    out=$({ awk '/^root_on_luks\(\) \{/ {on = 1} on {print} on && /^\}/ {exit}' "$BOOTSTRAP"
+            echo 'root_on_luks && echo yes || echo no'; } | bash -euo pipefail 2>/dev/null)
+    assert_eq "this machine takes the plain path" no "${out:-missing}"
+}
+
+BOOT_SPLASH_STEP='Boot splash: Plymouth (bgrt) and a systemd initramfs'
+
+luks_sandbox() { # dir yes|no -> sandbox whose root is (or is not) on LUKS, with inert boot tools
+    sddm_sandbox "$1"
+    mkdir -p "$1/root/etc/default"
+    if [[ $2 == yes ]]; then
+        printf '#!/usr/bin/env bash\necho /dev/mapper/root\n' >"$1/bin/findmnt"
+        printf '#!/usr/bin/env bash\nprintf "crypt\\npart\\ndisk\\n"\n' >"$1/bin/lsblk"
+    else
+        printf '#!/usr/bin/env bash\necho /dev/nvme0n1p5\n' >"$1/bin/findmnt"
+        printf '#!/usr/bin/env bash\nprintf "part\\ndisk\\n"\n' >"$1/bin/lsblk"
+    fi
+    local tool
+    for tool in pacman plymouth-set-default-theme mkinitcpio grub-mkconfig; do
+        printf '#!/usr/bin/env bash\nexit 0\n' >"$1/bin/$tool"
+    done
+    chmod +x "$1"/bin/*
+}
+
+run_step_with_detection() { # dir step-title -> like run_bootstrap_step, with root_on_luks defined
+    { awk '/^root_on_luks\(\) \{/ {on = 1} on {print} on && /^\}/ {exit}' "$BOOTSTRAP"
+      awk -v t="step \"$2\"" '$0 == t {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo REACHED_NEXT_STEP'; } >"$1/step.sh"
+    HOME="$1/home" USER=deadlock PATH="$1/bin:$PATH" SCRIPT_DIR="$ROOT/dotfiles" REPO_ROOT="$ROOT" \
+        bash -euo pipefail "$1/step.sh" 2>"$1/stderr" | tail -1
+}
+
+boot_splash_result() { # yes|no -> "<last line>|<HOOKS line>|<COMPRESSION line>|<plymouth installed>|<bgrt set>"
+    local dir conf
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    conf="$dir/root/etc/mkinitcpio.conf"
+    printf '%s\n' 'MODULES=()' \
+        'HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block resume filesystems fsck)' \
+        'COMPRESSION="lz4"' >"$conf"
+    local last
+    last=$(run_step_with_detection "$dir" "$BOOT_SPLASH_STEP")
+    printf '%s|%s|%s|%s|%s\n' "$last" "$(grep '^HOOKS=' "$conf")" "$(grep '^COMPRESSION=' "$conf")" \
+        "$(grep -qE 'pacman -S .*plymouth' "$dir/sudo.log" 2>/dev/null && echo yes || echo no)" \
+        "$(grep -qx 'plymouth-set-default-theme bgrt' "$dir/sudo.log" 2>/dev/null && echo yes || echo no)"
+    rm -rf "$dir"
+}
+
+test_boot_splash_on_both_paths() {
+    # Both installs show the bgrt splash from a systemd initramfs (sd-vconsole
+    # keeps the TTY font, systemd handles resume); only a LUKS root adds
+    # sd-encrypt, so Plymouth asks the passphrase. Other settings are kept.
+    local base='base systemd autodetect microcode modconf kms keyboard sd-vconsole plymouth block'
+    assert_eq "LUKS install: bgrt splash, sd-encrypt initramfs" \
+        "REACHED_NEXT_STEP|HOOKS=($base sd-encrypt filesystems fsck)|COMPRESSION=\"lz4\"|yes|yes" \
+        "$(boot_splash_result yes)"
+    assert_eq "plain install: bgrt splash, systemd initramfs without sd-encrypt" \
+        "REACHED_NEXT_STEP|HOOKS=($base filesystems fsck)|COMPRESSION=\"lz4\"|yes|yes" \
+        "$(boot_splash_result no)"
+}
+
+CMDLINE_STEP='GRUB: boot splash and LUKS kernel cmdline'
+
+cmdline_result() { # yes|no -> "<DEFAULT line>|<LINUX line>" after the cmdline step ran twice
+    # lsblk -P answers the device chain under /: the crypt mapping "root"
+    # on a crypto_LUKS partition (LUKS), or a plain ext4 partition.
+    local dir grub
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    if [[ $1 == yes ]]; then
+        cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+if [[ " $* " == *" -sPno "* ]]; then
+    echo 'NAME="root" TYPE="crypt" FSTYPE="ext4" UUID="aaaa-root"'
+    echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="crypto_LUKS" UUID="1111-luks"'
+    echo 'NAME="nvme0n1" TYPE="disk" FSTYPE="" UUID=""'
+else
+    printf 'crypt\npart\ndisk\n'
+fi
+LSBLK
+    fi
+    grub="$dir/root/etc/default/grub"
+    printf '%s\n' 'GRUB_DEFAULT=0' \
+        'GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog resume=UUID=5555-swap"' \
+        'GRUB_CMDLINE_LINUX=""' >"$grub"
+    run_step_with_detection "$dir" "$CMDLINE_STEP" >/dev/null
+    run_step_with_detection "$dir" "$CMDLINE_STEP" >/dev/null
+    printf '%s|%s\n' "$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' "$grub")" \
+        "$(grep '^GRUB_CMDLINE_LINUX=' "$grub" | tr -s ' ' | sd '=" ' '="')"
+    rm -rf "$dir"
+}
+
+test_kernel_cmdline_on_both_paths() {
+    # Both installs boot with the splash; only a LUKS root names its LUKS
+    # device and mapping for sd-encrypt. A re-run adds nothing twice.
+    local default='GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog resume=UUID=5555-swap splash"'
+    assert_eq "LUKS install: splash plus the LUKS device and mapping" \
+        "$default|GRUB_CMDLINE_LINUX=\"rd.luks.name=1111-luks=root\"" "$(cmdline_result yes)"
+    assert_eq "plain install: splash only" \
+        "$default|GRUB_CMDLINE_LINUX=\"\"" "$(cmdline_result no)"
+}
+
+LOGIN_STEP='Login: SDDM autologin on a LUKS root'
+
+luks_login_result() { # yes|no -> one line per installed piece, "-" when absent
+    local dir r conf pam dropin
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    r="$dir/root"
+    run_step_with_detection "$dir" "$LOGIN_STEP" >"$dir/last"
+    conf="$r/etc/sddm.conf.d/luks-autologin.conf"
+    pam="$r/etc/pam.d/sddm-autologin"
+    dropin="$r/etc/systemd/system/sddm.service.d/luks.conf"
+    echo "step: $(cat "$dir/last")"
+    echo "autologin: $( [[ -f $conf ]] && grep -E '^(User|Session|Relogin)=' "$conf" | xargs || echo -)"
+    echo "keyring auth: $( [[ -f $pam ]] && awk '$1 ~ /auth/ && /pam_(systemd_loadkey|gnome_keyring)/ {print $3}' "$pam" | xargs || echo -)"
+    echo "sddm.service: $( [[ -f $dropin ]] && grep -E '^(KeyringMode|ExecStartPre)=' "$dropin" | xargs || echo -)"
+    rm -rf "$dir"
+}
+
+test_luks_login_only_on_luks() {
+    # A LUKS root logs in once per boot with no greeter (Relogin=false keeps
+    # the logout greeter), the keyring unlocked from the LUKS passphrase
+    # (pam_systemd_loadkey before pam_gnome_keyring, SDDM allowed to read
+    # root's keyring) and Plymouth's last frame kept until the session paints.
+    # A plain root gets none of it: autologin there would be no login at all.
+    assert_eq "LUKS install: autologin, keyring unlock, retained splash" \
+        "step: REACHED_NEXT_STEP
+autologin: User=deadlock Session=hyprland-uwsm.desktop Relogin=false
+keyring auth: pam_systemd_loadkey.so pam_gnome_keyring.so
+sddm.service: KeyringMode=inherit ExecStartPre=-/usr/bin/plymouth quit --retain-splash" \
+        "$(luks_login_result yes)"
+    assert_eq "plain install: no autologin pieces" \
+        "step: REACHED_NEXT_STEP
+autologin: -
+keyring auth: -
+sddm.service: -" \
+        "$(luks_login_result no)"
+}
+
+test_docs_describe_both_login_paths() {
+    # Story 20: bootstrap sets up the bgrt splash on every install and SDDM
+    # autologin only on a LUKS root. CLAUDE.md and the login plan say so; the
+    # plan no longer promises a notch-themed splash that does not exist.
+    local claude="$ROOT/CLAUDE.md" plan="$ROOT/docs/plans/dotfiles-audit/login-reinstall-plan.md"
+    assert_eq "CLAUDE.md names the bgrt splash and the LUKS-only autologin" "yes yes" \
+        "$(rg -q 'bgrt' "$claude" && echo yes || echo no) $(rg -q 'luks-autologin\.conf' "$claude" && echo yes || echo no)"
+    assert_eq "login plan uses bgrt and names the plain path" "yes yes" \
+        "$(rg -q 'bgrt' "$plan" && echo yes || echo no) $(rg -qi 'without LUKS' "$plan" && echo yes || echo no)"
+    assert_eq "login plan promises no notch-themed splash" "" \
+        "$(rg -n 'theme with the notch image' "$plan")"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
