@@ -148,3 +148,16 @@ ollama list                   # confirm both are back
 ```
 
 Once pulled, models run with no network: `ollama run gpt-oss:20b "hi"` answers with Wi-Fi off.
+
+### iGPU (Vulkan) vs CPU
+
+Bootstrap installs `ollama-vulkan` and the repo's `igpu.conf` (`OLLAMA_IGPU_ENABLE=1`): without that setting Ollama logs "dropping integrated GPU" and runs on the CPU. Check with `ollama ps`: a loaded model shows `100% GPU`.
+
+Measured on this ThinkPad (Core Ultra 200V, Arc 140V, 32 GB), on battery, `balanced` profile, 2026-11-20: `gpt-oss:20b`, fixed prompt, 200 tokens, temperature 0, two runs each. W is the mean of `/sys/class/power_supply/BAT0/power_now` while generating (whole system, screen on; idle was 4-6 W).
+
+| Run | Speed | Battery draw |
+|---|---|---|
+| iGPU (default) | 22.0 tok/s | 8.6 W |
+| CPU only | 11.3 tok/s | 12.1 W |
+
+The iGPU is about twice as fast and draws less, so each token costs roughly a third of the energy (0.4 J against 1.1 J). It stays the default; to compare by hand, pass `"options": {"num_gpu": 0}` to `/api/generate` for a CPU-only run.

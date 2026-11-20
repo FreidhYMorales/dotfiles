@@ -10,6 +10,3 @@ linux-firmware  # pacstrap
 mkinitcpio      # pacstrap (pulled in by linux)
 sudo            # pacstrap; bootstrap.sh itself needs it
 yay             # built from the AUR by bootstrap.sh's yay step (makepkg, not pacman -S)
-
-# Decided by a later story
-ollama-vulkan   # Vulkan backend for Ollama; story 11 decides the local-model setup
