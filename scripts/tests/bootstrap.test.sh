@@ -60,6 +60,13 @@ test_removed_things_not_installed() {
     assert_eq "bootstrap does not clone zsh-256color" no "$(runs zsh-256color)"
 }
 
+test_no_magick_rock() {
+    # snacks.image converts images with ImageMagick's `magick` binary; nothing
+    # in the nvim config loads the magick Lua rock (that was image.nvim's).
+    assert_eq "bootstrap does not install the magick Lua rock" no "$(runs 'luarocks .*install.*magick')"
+    assert_eq "bootstrap installs ImageMagick for snacks.image" yes "$(installs imagemagick)"
+}
+
 test_pacman_files_database() {
     # Story 01: the command-not-found handler reads pacman's files database,
     # downloaded once at install and kept fresh by its timer.
