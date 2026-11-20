@@ -326,6 +326,22 @@ test_docs_describe_the_notch_lock_greeter() {
         "$(grep -q 'notch-lock' "$ROOT/system/sddm/README.md" && echo yes || echo no)"
 }
 
+test_sddm_step_greeter_config_readable_only_by_sddm() {
+    # The greeter reads theme.conf.user through the sddm group; the user (the
+    # notch) writes it. Nobody else may read it, and the sddm group may not
+    # write it.
+    local dir r
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    r="$dir/root"
+    run_bootstrap_step "$dir" "$SDDM_STEP" >/dev/null
+    assert_eq "greeter config is 640" 640 \
+        "$(stat -c %a "$r/var/lib/quickshell-notch-sddm/theme.conf.user" 2>/dev/null)"
+    assert_eq "greeter config is owned by the user, group sddm" yes \
+        "$(grep -qE 'install -o deadlock -g sddm -m 640 /dev/null /var/lib/quickshell-notch-sddm/theme.conf.user' "$dir/sudo.log" && echo yes || echo no)"
+    rm -rf "$dir"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
