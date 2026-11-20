@@ -95,8 +95,26 @@ test_live_model_runs_on_igpu() {
         "$(ollama ps 2>/dev/null | awk -v m="$IGPU_MODEL" '$1 == m { for (i = 1; i <= NF; i++) if ($i == "GPU" || $i == "CPU" || $i == "CPU/GPU") { print $(i - 1), $i; exit } }')"
 }
 
+doc_row() { # label -> "tok/s W" from the post-install benchmark table row "| <label> | N tok/s | N W |"
+    awk -F'|' -v l="$1" '{ gsub(/^ +| +$/, "", $2) } $2 == l {
+        t = $3; w = $4; gsub(/[^0-9.]/, "", t); gsub(/[^0-9.]/, "", w); print t, w; exit }' "$POST_INSTALL"
+}
+
+test_models_doc_has_igpu_vs_cpu() {
+    # Story 12: the doc gives tokens/s and battery draw on the iGPU and on the
+    # CPU alone, and the default (the iGPU) is the faster one.
+    local igpu cpu
+    igpu=$(doc_row "iGPU (default)")
+    cpu=$(doc_row "CPU only")
+    assert_eq "iGPU row has tok/s and W" yes "$([[ $igpu =~ ^[0-9.]+\ [0-9.]+$ ]] && echo yes || echo "no (${igpu:-missing})")"
+    assert_eq "CPU row has tok/s and W" yes "$([[ $cpu =~ ^[0-9.]+\ [0-9.]+$ ]] && echo yes || echo "no (${cpu:-missing})")"
+    assert_eq "the iGPU default is faster than the CPU" yes \
+        "$(awk -v a="${igpu%% *}" -v b="${cpu%% *}" 'BEGIN { print (a + 0 > b + 0 && b + 0 > 0) ? "yes" : "no" }')"
+}
+
 all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo test_live_models_doc
-    test_bootstrap_installs_vulkan_backend test_repo_ships_igpu_dropin test_live_model_runs_on_igpu)
+    test_bootstrap_installs_vulkan_backend test_repo_ships_igpu_dropin test_live_model_runs_on_igpu
+    test_models_doc_has_igpu_vs_cpu)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
