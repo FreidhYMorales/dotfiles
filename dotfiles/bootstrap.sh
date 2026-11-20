@@ -117,7 +117,7 @@ if [[ "$SKIP_GPU" == false ]]; then
     if [[ "$HAS_INTEL" == true ]]; then
         step "GPU: Intel"
         sudo pacman -S --needed --noconfirm \
-            mesa vulkan-intel intel-media-driver libva-intel-driver \
+            mesa vulkan-intel intel-media-driver \
             lib32-vulkan-intel vulkan-tools
     fi
 
