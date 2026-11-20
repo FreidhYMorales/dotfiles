@@ -107,6 +107,31 @@ test_github_youtube_pairs_readable() {
             '--yt-sys-color-baseline--primary-container --yt-sys-color-baseline--on-primary-container')"
 }
 
+TEMPLATE="${TEMPLATE:-$ROOT/dotfiles/matugen/.config/matugen/templates/userContent.css}"
+
+rgb_of() { # rendered-file role -> "r, g, b" from its hex line, then "|" and its -rgb line
+    local hex
+    hex=$(grep -oP -- "--mat-$2:\s*#\K[0-9a-fA-F]{6}" "$1")
+    printf '%d, %d, %d|%s' "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" \
+        "$(grep -oP -- "--mat-$2-rgb:\s*\K[0-9, ]+(?=;)" "$1")"
+}
+
+test_template_renders_rgb_triplets() {
+    # WhatsApp builds gradients from rgba(var(--WDS-*-RGB), a): the palette
+    # must also come as "r, g, b" triplets, equal to the hex of the same role.
+    local dir got want
+    dir=$(mktemp -d)
+    printf '[config]\n[templates.t]\ninput_path = "%s"\noutput_path = "%s/out.css"\n' "$TEMPLATE" "$dir" >"$dir/c.toml"
+    timeout 30 matugen -c "$dir/c.toml" image "$WALLPAPER" --type scheme-content --mode dark \
+        --source-color-index 0 >/dev/null 2>&1
+    for role in secondary-container surface-container; do
+        got=$(rgb_of "$dir/out.css" "$role")
+        want=${got%%|*}
+        assert_eq "--mat-$role-rgb equals --mat-$role" "$want" "${got#*|}"
+    done
+    rm -rf "$dir"
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
