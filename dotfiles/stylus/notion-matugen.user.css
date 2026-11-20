@@ -31,7 +31,7 @@
     --bg-beta:                var(--mat-surface-container-low)     !important;
     --bg-tooltip:             var(--mat-surface-container-high)    !important;
     --bg-hover:               var(--mat-surface-container)         !important;
-    --bg-selected:            var(--mat-primary-container)         !important;
+    --bg-selected:            var(--mat-secondary-container)       !important;
     --bg-board-card:          var(--mat-surface-container)         !important;
     --bg-nested-dark:         var(--mat-surface-container-low)     !important;
     --bg-code-block:          var(--mat-surface-container-high)    !important;
