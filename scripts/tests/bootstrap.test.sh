@@ -485,6 +485,44 @@ test_kernel_cmdline_on_both_paths() {
         "$default|GRUB_CMDLINE_LINUX=\"\"" "$(cmdline_result no)"
 }
 
+LOGIN_STEP='Login: SDDM autologin on a LUKS root'
+
+luks_login_result() { # yes|no -> one line per installed piece, "-" when absent
+    local dir r conf pam dropin
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    r="$dir/root"
+    run_step_with_detection "$dir" "$LOGIN_STEP" >"$dir/last"
+    conf="$r/etc/sddm.conf.d/luks-autologin.conf"
+    pam="$r/etc/pam.d/sddm-autologin"
+    dropin="$r/etc/systemd/system/sddm.service.d/luks.conf"
+    echo "step: $(cat "$dir/last")"
+    echo "autologin: $( [[ -f $conf ]] && grep -E '^(User|Session|Relogin)=' "$conf" | xargs || echo -)"
+    echo "keyring auth: $( [[ -f $pam ]] && awk '$1 ~ /auth/ && /pam_(systemd_loadkey|gnome_keyring)/ {print $3}' "$pam" | xargs || echo -)"
+    echo "sddm.service: $( [[ -f $dropin ]] && grep -E '^(KeyringMode|ExecStartPre)=' "$dropin" | xargs || echo -)"
+    rm -rf "$dir"
+}
+
+test_luks_login_only_on_luks() {
+    # A LUKS root logs in once per boot with no greeter (Relogin=false keeps
+    # the logout greeter), the keyring unlocked from the LUKS passphrase
+    # (pam_systemd_loadkey before pam_gnome_keyring, SDDM allowed to read
+    # root's keyring) and Plymouth's last frame kept until the session paints.
+    # A plain root gets none of it: autologin there would be no login at all.
+    assert_eq "LUKS install: autologin, keyring unlock, retained splash" \
+        "step: REACHED_NEXT_STEP
+autologin: User=deadlock Session=hyprland-uwsm.desktop Relogin=false
+keyring auth: pam_systemd_loadkey.so pam_gnome_keyring.so
+sddm.service: KeyringMode=inherit ExecStartPre=-/usr/bin/plymouth quit --retain-splash" \
+        "$(luks_login_result yes)"
+    assert_eq "plain install: no autologin pieces" \
+        "step: REACHED_NEXT_STEP
+autologin: -
+keyring auth: -
+sddm.service: -" \
+        "$(luks_login_result no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
