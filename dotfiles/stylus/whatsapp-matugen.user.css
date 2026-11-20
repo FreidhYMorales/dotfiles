@@ -73,6 +73,9 @@
     /* Message bubbles */
     --WDS-systems-bubble-surface-incoming:     var(--mat-surface-container)                         !important;
     --WDS-systems-bubble-surface-outgoing:     var(--mat-secondary-container)                       !important;
+    /* -RGB twins: the message chevron fades with rgba(var(--…-RGB), a) */
+    --WDS-systems-bubble-surface-incoming-RGB: var(--mat-surface-container-rgb)                     !important;
+    --WDS-systems-bubble-surface-outgoing-RGB: var(--mat-secondary-container-rgb)                   !important;
     --WDS-systems-bubble-content-deemphasized: var(--mat-on-surface-variant)                        !important;
     --WDS-systems-bubble-surface-overlay:      var(--mat-surface-container-low)                     !important;
     --WDS-systems-bubble-surface-system:       var(--mat-surface-container-low)                     !important;
