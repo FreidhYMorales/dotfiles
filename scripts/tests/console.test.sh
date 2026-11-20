@@ -57,6 +57,20 @@ test_step_sets_font() {
     rm -f "$f"
 }
 
+test_rerun_changes_nothing() {
+    # A second bootstrap run must not stack FONT= lines or touch anything.
+    local f once twice
+    f=$(mktemp)
+    printf '%s\n' "$KEYMAP_LINES" >"$f"
+    run_console_step "$f" >/dev/null
+    once=$(cat "$f")
+    run_console_step "$f" 2 >/dev/null
+    twice=$(cat "$f")
+    assert_eq "file after three runs equals the file after one" "$once" "$twice"
+    assert_eq "exactly one FONT= line after three runs" 1 "$(grep -c '^FONT=' "$f")"
+    rm -f "$f"
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
