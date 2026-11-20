@@ -4,6 +4,15 @@ Status: decided, pending. Waits on the owner's choice of drive (this M.2 or
 a new one) and applies at that clean install. Until then the login is the
 SDDM notch greeter with a password and no LUKS. Feeds stories 10, 13 and 14.
 
+Story 20 prepared bootstrap.sh for both outcomes, chosen by whether / sits
+on LUKS. Every install gets the stock `bgrt` Plymouth splash (firmware logo)
+on a systemd initramfs with `splash` on the cmdline. Only a LUKS root adds
+`sd-encrypt` and `rd.luks.name=`, SDDM autologin
+(`system/sddm/sddm.conf.d/luks-autologin.conf`), the `sddm-autologin` PAM
+stack with `pam_systemd_loadkey` and the `sddm.service` drop-in. Without
+LUKS there is no autologin: the notch-lock greeter asks for the password.
+Story 21 is the reinstall itself (partitioning, Secure Boot, UKI).
+
 ## Problem
 
 Every display manager (SDDM, greetd, GDM, ly, LightDM) runs the login screen
@@ -100,8 +109,8 @@ rd.luks.name=<luks-uuid>=root root=/dev/mapper/root rw resume=/dev/mapper/root r
 
 Plymouth:
 
-- [ ] Install `plymouth`; theme with the notch image; set it with
-      `plymouth-set-default-theme -R`.
+- [x] Install `plymouth` with the stock `bgrt` theme (bootstrap.sh, story
+      20); a notch-themed splash is a later idea.
 - [ ] Plymouth must quit with `--retain-splash` instead of the default quit.
       Verify on install how `sddm.service` orders against
       `plymouth-quit.service`; a drop-in with
