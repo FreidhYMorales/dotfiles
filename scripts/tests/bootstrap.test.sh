@@ -31,6 +31,12 @@ installs() { # pkg -> yes|no
     bootstrap_packages | grep -qxF -- "$1" && echo yes || echo no
 }
 
+runs() { # pattern -> yes|no: a non-comment line of bootstrap.sh matches it
+    # grep -c, not grep -q: under pipefail an early-exiting grep -q kills the
+    # writer with SIGPIPE and turns a match into "no".
+    [[ $(bootstrap_lines | grep -v '^\s*#' | grep -cE -- "$1") -gt 0 ]] && echo yes || echo no
+}
+
 test_zsh_plugins_without_omz() {
     # Story 01: .zshrc loads the plugins from /usr/share/zsh/plugins (pacman)
     # and fzf-tab from ~/.local/share/zsh/plugins/fzf-tab.
@@ -40,6 +46,17 @@ test_zsh_plugins_without_omz() {
     done
     assert_eq "bootstrap clones fzf-tab into ~/.local/share/zsh/plugins/fzf-tab" yes \
         "$(bootstrap_lines | grep -E 'git clone .*Aloxaf/fzf-tab' | grep -q '\.local/share/zsh/plugins/fzf-tab' && echo yes || echo no)"
+}
+
+test_removed_things_not_installed() {
+    # Stories 01 and 05 removed Oh My Zsh with its powerlevel10k theme and
+    # zsh-256color plugin, and Spotify with spicetify.
+    local p
+    for p in zsh-theme-powerlevel10k spotify spicetify-cli; do
+        assert_eq "bootstrap does not install $p" no "$(installs "$p")"
+    done
+    assert_eq "bootstrap does not run the Oh My Zsh installer" no "$(runs ohmyzsh)"
+    assert_eq "bootstrap does not clone zsh-256color" no "$(runs zsh-256color)"
 }
 
 tests=("$@")
