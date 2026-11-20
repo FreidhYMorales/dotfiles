@@ -171,6 +171,10 @@ sudo pacman -S --needed --noconfirm \
     rsync caligula aria2 7zip tealdeer procs dust qrencode poppler \
     pacman-contrib transmission-cli atuin
 sudo systemctl enable paccache.timer
+# The zsh not-found handler looks commands up with `pacman -F`; the timer
+# (pacman-contrib) keeps the files database fresh after this first download.
+sudo pacman -Fy
+sudo systemctl enable pacman-filesdb-refresh.timer
 
 step "CLI tools: AUR"
 yay -S --needed --noconfirm gping
