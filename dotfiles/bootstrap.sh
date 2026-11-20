@@ -699,10 +699,6 @@ xdg-user-dirs-update
 step "Post-install: font cache"
 fc-cache -fv
 
-step "Post-install: luarocks magick (nvim snacks.image)"
-luarocks install --local magick ||
-    echo "Warning: luarocks magick failed — install manually: luarocks install --local magick"
-
 step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then
     # Every third-party plugin (incl. lpnh/fr, which replaced the archived
