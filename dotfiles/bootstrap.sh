@@ -199,7 +199,7 @@ step "Audio (PipeWire + MPD)"
 sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
     pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
-    mpd ncmpcpp wiremix sof-firmware playerctl
+    mpd mpd-mpris ncmpcpp wiremix sof-firmware playerctl
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
 step "Screenshot tools"
@@ -240,7 +240,7 @@ sudo pacman -S --needed --noconfirm \
 # ── 18. System utils ──────────────────────────────────────────────────────────
 step "System utils"
 sudo pacman -S --needed --noconfirm \
-    upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon \
+    upower curl xdg-utils xdg-terminal-exec xdg-user-dirs ntfs-3g power-profiles-daemon \
     geoclue python-gobject
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
@@ -680,7 +680,7 @@ if command -v ya &>/dev/null; then
 fi
 
 step "Post-install: MPD service"
-systemctl --user enable --now mpd
+systemctl --user enable --now mpd mpd-mpris
 
 step "Post-install: restore web apps"
 webapp-restore || echo "Warning: webapp-restore failed — run it manually later"
