@@ -132,3 +132,19 @@ After everything is set up, trigger a full theme sync by changing the wallpaper 
 ```
 
 This regenerates all CSS files, reloads Kitty/btop/Hyprland, syncs SDDM, and updates the Chromium vars file.
+
+---
+
+## 9. Ollama — local models
+
+Bootstrap installs Ollama, copies the repo's service drop-ins (`system/systemd/ollama.service.d/`) and enables `ollama.service`. It does not pull models (tens of GB); pull them by hand once the network is up.
+
+Models live in the packaged default, `/var/lib/ollama` (owned by the `ollama` user, on `/`). The unit sets `OLLAMA_MODELS` there and `ProtectHome=yes`, so a path under `/home` would need its own drop-in. Space used today: about 29G (`sudo du -sh /var/lib/ollama`).
+
+```bash
+ollama pull qwen3-coder:30b   # 18 GB
+ollama pull gpt-oss:20b       # 12 GB
+ollama list                   # confirm both are back
+```
+
+Once pulled, models run with no network: `ollama run gpt-oss:20b "hi"` answers with Wi-Fi off.
