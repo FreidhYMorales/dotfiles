@@ -1,8 +1,8 @@
 # Login flow plan for the clean reinstall
 
-Status: decided, not implemented. Applies at the next clean reinstall; until
-then the current login (greetd notch greeter) stays as is. Feeds stories 09,
-10, 13 and 14.
+Status: decided, pending. Waits on the owner's choice of drive (this M.2 or
+a new one) and applies at that clean install. Until then the login is the
+SDDM notch greeter with a password and no LUKS. Feeds stories 10, 13 and 14.
 
 ## Problem
 

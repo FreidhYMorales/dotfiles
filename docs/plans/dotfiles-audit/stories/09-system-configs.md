@@ -7,8 +7,8 @@
 ## Acceptance criteria
 
 - [ ] Given an unlocked session, when the machine suspends by any trigger (lid close, idle timeout, dashboard button, `systemctl suspend`), then on resume the Quickshell lockscreen is already up and asks for the password, with no unlocked desktop visible.
-- [ ] Given the lockscreen, sudo and a TTY login, when I authenticate, then each behaves as intended: lockscreen password never waits on or is bypassed by the fingerprint reader, lockscreen fingerprint works only while the lockscreen fingerprint setting is on, sudo/TTY accept fingerprint or password.
-- [ ] Given the repo and this ThinkPad, when I compare each system/ file in live use with its installed copy, then they match, every comment describes current behavior, AC plug/unplug and the mute LEDs still work, and the SDDM files in the repo reflect the decided state (fingerprint off at the greeter) even though SDDM stays disabled until the reinstall.
+- [ ] Given the lockscreen, the SDDM greeter, sudo and a TTY login, when I authenticate, then each behaves as intended: lockscreen password never waits on or is bypassed by the fingerprint reader, lockscreen fingerprint works only while the lockscreen fingerprint setting is on, SDDM requires the password (no fingerprint) and unlocks the keyring, sudo/TTY accept fingerprint or password.
+- [ ] Given the repo and this ThinkPad, when I compare each system/ file in live use with its installed copy, then they match, every comment describes current behavior, and AC plug/unplug and the mute LEDs still work.
 
 ## Plan
 
@@ -21,7 +21,7 @@
 ## Out of scope
 
 - SDDM autologin, the `sddm-autologin` PAM change, the `KeyringMode=inherit` drop-in, LUKS and Plymouth: login-reinstall-plan.md says autologin without LUKS is no authentication, so they land together at the reinstall (story 13).
-- Switching greetd off or SDDM on, and the greetd notch greeter (story 13/14).
+- The SDDM notch-lock theme and the greetd notch greeter (notch repo, story 14).
 - /etc/sddm.conf.d/zz-notch-lock.conf and /etc/udev/rules.d/01-ttyusb.rules (live, not in repo): not ours unless the owner claims them.
 - bootstrap.sh install steps, beyond removing the hook's own step if the hook is dropped (story 10).
 - TPM2 / Secure Boot.
@@ -50,3 +50,4 @@ Risk: item 2, 5, 6 (PAM auth stacks and suspend lock; root-level runtime config;
 - L5 approval: "si" (story, assumptions and backlog line 13 rewording approved as written).
 - L6 pair stop (plan vs code mismatch): the running shell is the notch shell (`qs -p shell/shell.qml` from the notch checkout), and its services/SleepLock.qml already holds a logind delay inhibitor and locks on PrepareForSleep (live: `systemd-inhibit --list` shows "notch ... Lock the session before sleep ... delay"). The plan's "replace the hook with an inhibitor" is already built; the remaining work is pinning it with a test and dropping the dead hook. The notch lockscreen uses the same quickshell-password/quickshell-fprint PAM services; its fingerprint setting is read by LockSecurity (notch file, falling back to the old `>security` file). Waiting for the owner's call.
 - L7 re-scope (owner: "si"): criterion 1 is characterization of the notch SleepLock inhibitor plus dropping the dead hook and its bootstrap step; criterion 2 says "lockscreen fingerprint setting" instead of the `>security` toggle.
+- L8 owner (2026-11-19): SDDM is enabled live again (notch-lock greeter, X11), greetd disabled; LUKS/Secure Boot wait on a drive decision ("vamos a seguir con sddm sin luks"), so SDDM PAM is back in criterion 2. Test list approved ("si"): 1 live sleep inhibitor (characterization), 2 hook dropped, 3 lockscreen PAM stacks (characterization), 4 sudo/TTY fprint-or-password (characterization), 5 SDDM PAM password-only with keyring, 6 live files match repo, 7 comments reference existing paths, 8 hibernate prerequisites (characterization), 9 manual (real suspend, lockscreen password+fingerprint on real PAM, SDDM login, sudo fingerprint, AC plug, mute LEDs). No automated wrong-password PAM runs (faillock). Mode C.
