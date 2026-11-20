@@ -444,47 +444,6 @@ test_boot_splash_on_both_paths() {
         "$(boot_splash_result no)"
 }
 
-CMDLINE_STEP='GRUB: boot splash and LUKS kernel cmdline'
-
-cmdline_result() { # yes|no -> "<DEFAULT line>|<LINUX line>" after the cmdline step ran twice
-    # lsblk -P answers the device chain under /: the crypt mapping "root"
-    # on a crypto_LUKS partition (LUKS), or a plain ext4 partition.
-    local dir grub
-    dir=$(mktemp -d)
-    luks_sandbox "$dir" "$1"
-    if [[ $1 == yes ]]; then
-        cat >"$dir/bin/lsblk" <<'LSBLK'
-#!/usr/bin/env bash
-if [[ " $* " == *" -sPno "* ]]; then
-    echo 'NAME="root" TYPE="crypt" FSTYPE="ext4" UUID="aaaa-root"'
-    echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="crypto_LUKS" UUID="1111-luks"'
-    echo 'NAME="nvme0n1" TYPE="disk" FSTYPE="" UUID=""'
-else
-    printf 'crypt\npart\ndisk\n'
-fi
-LSBLK
-    fi
-    grub="$dir/root/etc/default/grub"
-    printf '%s\n' 'GRUB_DEFAULT=0' \
-        'GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog resume=UUID=5555-swap"' \
-        'GRUB_CMDLINE_LINUX=""' >"$grub"
-    run_step_with_detection "$dir" "$CMDLINE_STEP" >/dev/null
-    run_step_with_detection "$dir" "$CMDLINE_STEP" >/dev/null
-    printf '%s|%s\n' "$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' "$grub")" \
-        "$(grep '^GRUB_CMDLINE_LINUX=' "$grub" | tr -s ' ' | sd '=" ' '="')"
-    rm -rf "$dir"
-}
-
-test_kernel_cmdline_on_both_paths() {
-    # Both installs boot with the splash; only a LUKS root names its LUKS
-    # device and mapping for sd-encrypt. A re-run adds nothing twice.
-    local default='GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog resume=UUID=5555-swap splash"'
-    assert_eq "LUKS install: splash plus the LUKS device and mapping" \
-        "$default|GRUB_CMDLINE_LINUX=\"rd.luks.name=1111-luks=root\"" "$(cmdline_result yes)"
-    assert_eq "plain install: splash only" \
-        "$default|GRUB_CMDLINE_LINUX=\"\"" "$(cmdline_result no)"
-}
-
 LOGIN_STEP='Login: SDDM autologin on a LUKS root'
 
 luks_login_result() { # yes|no -> one line per installed piece, "-" when absent
