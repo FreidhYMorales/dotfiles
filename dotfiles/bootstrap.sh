@@ -117,12 +117,21 @@ if [[ "$SKIP_GPU" == false ]]; then
     if [[ "$HAS_INTEL" == true ]]; then
         step "GPU: Intel"
         sudo pacman -S --needed --noconfirm \
-            mesa vulkan-intel intel-media-driver libva-intel-driver
+            mesa vulkan-intel intel-media-driver libva-intel-driver \
+            lib32-vulkan-intel vulkan-tools
     fi
 
     if [[ "$HAS_NVIDIA" == false && "$HAS_AMD" == false && "$HAS_INTEL" == false ]]; then
         echo "No recognized GPU found — skipping GPU drivers"
     fi
+fi
+
+# ── 4a. CPU microcode ─────────────────────────────────────────────────────────
+# pacstrap leaves microcode out unless asked; GRUB picks it up on the
+# grub-mkconfig run in step 30.
+if grep -q GenuineIntel /proc/cpuinfo; then
+    step "CPU microcode (Intel)"
+    sudo pacman -S --needed --noconfirm intel-ucode
 fi
 
 # ── 4b. NPU (Intel AI Boost — Lunar Lake / Core Ultra 2xxV and newer) ─────────
@@ -157,33 +166,24 @@ if [[ "$SHELL" != "$(which zsh)" ]]; then
     sudo usermod --shell "$(which zsh)" "$USER"
 fi
 
-step "Oh My Zsh"
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    RUNZSH=no CHSH=no sh -c \
-        "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-fi
-
-yay -S --needed --noconfirm zsh-theme-powerlevel10k
-
 step "Zsh plugins"
-PLUGINS_DIR="$HOME/.oh-my-zsh/custom/plugins"
-declare -A ZSH_PLUGINS=(
-    [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
-    [zsh-syntax-highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
-    [zsh-256color]="https://github.com/chrissicool/zsh-256color"
-    [zsh-completions]="https://github.com/zsh-users/zsh-completions"
-)
-for plugin in "${!ZSH_PLUGINS[@]}"; do
-    [[ -d "$PLUGINS_DIR/$plugin" ]] || git clone "${ZSH_PLUGINS[$plugin]}" "$PLUGINS_DIR/$plugin"
-done
+# .zshrc sources these from /usr/share/zsh/plugins; fzf-tab has no package in
+# the official repos, so it is cloned to ~/.local/share/zsh/plugins.
+sudo pacman -S --needed --noconfirm zsh-autosuggestions zsh-syntax-highlighting zsh-completions
+[[ -d "$HOME/.local/share/zsh/plugins/fzf-tab" ]] ||
+    git clone --depth 1 https://github.com/Aloxaf/fzf-tab "$HOME/.local/share/zsh/plugins/fzf-tab"
 
 # ── 6. CLI Tools ──────────────────────────────────────────────────────────────
 step "CLI tools"
 sudo pacman -S --needed --noconfirm \
     eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
     rsync caligula aria2 7zip tealdeer procs dust qrencode poppler \
-    pacman-contrib transmission-cli atuin
+    pacman-contrib transmission-cli atuin tree wget unrar man-db
 sudo systemctl enable paccache.timer
+# The zsh not-found handler looks commands up with `pacman -F`; the timer
+# (pacman-contrib) keeps the files database fresh after this first download.
+sudo pacman -Fy
+sudo systemctl enable pacman-filesdb-refresh.timer
 
 step "CLI tools: AUR"
 yay -S --needed --noconfirm gping
@@ -207,8 +207,8 @@ step "Audio (PipeWire + MPD)"
 # Remove known conflicting packages so pacman doesn't pause asking for confirmation
 sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
-    pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
-    mpd ncmpcpp wiremix sof-firmware playerctl
+    pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber alsa-utils \
+    mpd mpd-mpris ncmpcpp wiremix sof-firmware playerctl
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
 step "Screenshot tools"
@@ -232,13 +232,13 @@ step "Screen recording"
 yay -S --needed --noconfirm gpu-screen-recorder-git
 
 # ── 15. Theming ───────────────────────────────────────────────────────────────
-step "Theming (matugen + spicetify)"
-yay -S --needed --noconfirm matugen spicetify-cli spotify
+step "Theming (matugen)"
+yay -S --needed --noconfirm matugen
 
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
 yay -S --needed --noconfirm vesktop zen-browser-bin chromium obsidian nordzy-cursors nordzy-hyprcursors nwg-displays
-sudo pacman -S --needed --noconfirm mpv yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh gnome-keyring libsecret steam
+sudo pacman -S --needed --noconfirm mpv cava gimp yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh coin-or-mp gnome-keyring libsecret steam
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
@@ -249,7 +249,8 @@ sudo pacman -S --needed --noconfirm \
 # ── 18. System utils ──────────────────────────────────────────────────────────
 step "System utils"
 sudo pacman -S --needed --noconfirm \
-    upower curl xdg-utils xdg-user-dirs ntfs-3g power-profiles-daemon \
+    upower curl xdg-utils xdg-terminal-exec xdg-user-dirs ntfs-3g power-profiles-daemon \
+    dosfstools exfatprogs ntfsprogs gptfdisk \
     geoclue python-gobject
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
@@ -348,7 +349,7 @@ fi
 
 # ── 23. System info ───────────────────────────────────────────────────────────
 step "System info"
-sudo pacman -S --needed --noconfirm btop fastfetch htop
+sudo pacman -S --needed --noconfirm btop fastfetch htop nvtop
 
 # ── 24. SDDM ─────────────────────────────────────────────────────────────────
 step "SDDM (display manager)"
@@ -416,9 +417,12 @@ sudo cp "$REPO_ROOT/system/logind/logind.conf.d/deadlock.conf" /etc/systemd/logi
 # a fresh install with no session yet. Detect an active wayland/x11 session
 # and skip the live restart when re-running on an already-installed desktop;
 # the conf.d file is already written and takes effect on the next reboot.
-if loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}' |
-    xargs -I{} loginctl show-session {} -p Type --value 2>/dev/null |
-    grep -qE '^(wayland|x11)$'; then
+# Types are collected first: `| grep -q` would exit on the first match and,
+# under pipefail, the SIGPIPE it leaves on the next session turns "found"
+# into "not found" — which restarted logind under a live desktop.
+SESSION_TYPES=$(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}' |
+    xargs -I{} loginctl show-session {} -p Type --value 2>/dev/null || true)
+if [[ $'\n'"$SESSION_TYPES"$'\n' =~ $'\n'(wayland|x11)$'\n' ]]; then
     echo "  → sesión gráfica activa detectada — se salta el restart en caliente (mataría la sesión). Aplica en el próximo reinicio."
 else
     sudo systemctl restart systemd-logind 2>/dev/null || true
@@ -446,7 +450,8 @@ yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git
 
 # ── 27. Network & Bluetooth TUIs ─────────────────────────────────────────────
 step "Network (iwd + impala)"
-sudo pacman -S --needed --noconfirm iwd
+# wireless-regdb: regulatory domain, so iwd uses the right channels and power
+sudo pacman -S --needed --noconfirm iwd wireless-regdb
 yay -S --needed --noconfirm impala
 sudo systemctl enable iwd
 
@@ -477,13 +482,29 @@ sudo pacman -S --needed --noconfirm pnpm
 
 step "Dev tools"
 sudo pacman -S --needed --noconfirm \
-    git-delta hyperfine tokei watchexec xh sqlite direnv
+    git-delta hyperfine tokei watchexec xh sqlite direnv \
+    shellcheck shfmt actionlint gitleaks act trivy osv-scanner mise typst ast-grep go-yq
+# Backups (engram-backup) and the DOTFILES IA tooling (pi-box) need these
+sudo pacman -S --needed --noconfirm restic rclone socat
+
+step "Dev: devices (Android + Arduino)"
+sudo pacman -S --needed --noconfirm android-tools arduino-cli
+yay -S --needed --noconfirm arduino-ide-bin
 
 step "Dev: Docker"
 sudo pacman -S --needed --noconfirm docker docker-compose
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
 yay -S --needed --noconfirm lazydocker
+
+step "Virtualization (libvirt/QEMU) + remote desktop"
+# Lab VMs (kali, metasploitable, windows server) under virt-manager; dnsmasq
+# serves libvirt's default NAT network. freerdp/tigervnc reach the VMs and
+# other machines; anydesk for remote support.
+sudo pacman -S --needed --noconfirm libvirt qemu-desktop virt-manager dnsmasq freerdp tigervnc
+sudo systemctl enable libvirtd
+sudo usermod -aG libvirt "$USER"
+yay -S --needed --noconfirm anydesk-bin
 
 # ── 29. AI tools ─────────────────────────────────────────────────────────────
 # Previously commented out: these used to abort the whole bootstrap run and
@@ -648,14 +669,15 @@ fi
 # conflicts on -Syu).
 step "Cybersecurity"
 sudo pacman -S --needed --noconfirm \
-    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool bandwhich
+    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool bandwhich \
+    cfr mingw-w64-gcc
 sudo usermod -aG wireshark "$USER"
 yay -S --needed --noconfirm seclists burpsuite
 
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"
 # Remove auto-generated files that would conflict with Stow symlinks.
-# These are created by tools installed above (OMZ → .zshrc, git → .gitconfig).
+# Any pre-existing copy (from /etc/skel or an earlier setup) blocks Stow.
 # On a fresh install there's nothing to preserve — our dotfiles replace them.
 rm -f \
     "$HOME/.zshrc" \
@@ -677,19 +699,16 @@ xdg-user-dirs-update
 step "Post-install: font cache"
 fc-cache -fv
 
-step "Post-install: luarocks magick (nvim snacks.image)"
-luarocks install --local magick ||
-    echo "Warning: luarocks magick failed — install manually: luarocks install --local magick"
-
 step "Post-install: yazi plugins"
 if command -v ya &>/dev/null; then
     # Every third-party plugin (incl. lpnh/fr, which replaced the archived
     # fg.yazi git clone) is pinned in package.toml — no manual clones needed.
-    ya pkg install
+    ya pkg install ||
+        echo "Warning: ya pkg install failed — run it manually later (a corrupt cache clears with rm -rf ~/.cache/yazi/packages)"
 fi
 
 step "Post-install: MPD service"
-systemctl --user enable --now mpd
+systemctl --user enable --now mpd mpd-mpris
 
 step "Post-install: restore web apps"
 webapp-restore || echo "Warning: webapp-restore failed — run it manually later"
@@ -716,8 +735,6 @@ if [[ ! -f "$HOME/.local/state/quickshell/theme.json" ]]; then
     # Default theme state — dynamic:true so changing the wallpaper triggers matugen
     echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
 fi
-# weather-loc.json is NOT written here — get-location uses GeoClue2 (WiFi) automatically.
-# To pin a location manually: echo '{"loc":"lat,lon","city":"Name"}' > ~/.local/state/quickshell/weather-loc.json
 
 step "Post-install: matugen post-hook permissions"
 chmod +x "$HOME/.config/matugen/post-hook.sh"

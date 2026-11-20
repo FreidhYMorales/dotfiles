@@ -1,0 +1,15 @@
+# Packages explicitly installed on the ThinkPad that bootstrap.sh does not
+# install, each with the reason. scripts/tests/bootstrap.test.sh checks that
+# every `pacman -Qqe` package is either installed by bootstrap.sh or listed here.
+# Format: <package>  # <reason>
+
+# Installed before bootstrap.sh runs
+base            # pacstrap
+linux           # pacstrap
+linux-firmware  # pacstrap
+mkinitcpio      # pacstrap (pulled in by linux)
+sudo            # pacstrap; bootstrap.sh itself needs it
+yay             # built from the AUR by bootstrap.sh's yay step (makepkg, not pacman -S)
+
+# Decided by a later story
+ollama-vulkan   # Vulkan backend for Ollama; story 11 decides the local-model setup

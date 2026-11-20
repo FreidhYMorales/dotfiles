@@ -55,7 +55,8 @@ scripts/.local/bin/ →  ~/.local/bin/
 | `xdg-portal` | `~/.config/xdg-desktop-portal/` |
 | `xdg-terminal-exec` | `~/.config/xdg-terminals.list` — kitty for Terminal=true apps (nvim, yazi) opened through xdg-open |
 | `yazi` | `~/.config/yazi/` |
-| `zsh` | `~/.zshrc`, `~/.zshenv`, `~/.p10k.zsh` |
+| `zellij` | `~/.config/zellij/` |
+| `zsh` | `~/.zshrc`, `~/.zshenv`, `~/.config/zsh/` |
 
 **No deployados por Stow** (`PENDING` en `deploy.sh`):
 
