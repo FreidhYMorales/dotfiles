@@ -3,7 +3,7 @@
 @namespace    github.com/FreidhYMorales/dotfiles
 @version      2.0.0
 @description  Themes GitHub with the active matugen Material 3 palette.
-              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+              For the Chromium webapps; needs the matugen-vars extension for --mat-* vars.
 @author       deadlock
 @match        https://github.com/*
 @match        https://gist.github.com/*

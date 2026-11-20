@@ -44,5 +44,10 @@
     --mat-inverse-surface:    {{colors.inverse_surface.default.hex}};
     --mat-inverse-on-surface: {{colors.inverse_on_surface.default.hex}};
     --mat-inverse-primary:    {{colors.inverse_primary.default.hex}};
+
+    /* "r, g, b" triplets for sites that build colors as rgba(var(--x-RGB), a)
+       (WhatsApp's --WDS-*-RGB) */
+    --mat-secondary-container-rgb: {{colors.secondary_container.default.red}}, {{colors.secondary_container.default.green}}, {{colors.secondary_container.default.blue}};
+    --mat-surface-container-rgb:   {{colors.surface_container.default.red}}, {{colors.surface_container.default.green}}, {{colors.surface_container.default.blue}};
   }
 }
