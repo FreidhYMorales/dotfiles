@@ -67,6 +67,16 @@ test_pacman_files_database() {
         "$(runs 'systemctl enable .*pacman-filesdb-refresh\.timer')"
 }
 
+test_story_packages_installed() {
+    # Story 06: mpd-mpris exposes mpd to playerctl and the shell's media
+    # widgets as a user service. Story 07: xdg-terminal-exec opens
+    # Terminal=true entries (nvim, yazi) in kitty.
+    assert_eq "bootstrap installs mpd-mpris" yes "$(installs mpd-mpris)"
+    assert_eq "bootstrap enables the mpd-mpris user service" yes \
+        "$(runs 'systemctl --user enable .*mpd-mpris')"
+    assert_eq "bootstrap installs xdg-terminal-exec" yes "$(installs xdg-terminal-exec)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
