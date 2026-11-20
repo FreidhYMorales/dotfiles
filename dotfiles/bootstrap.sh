@@ -8,23 +8,16 @@
 #                                            handles hybrid setups like Intel+AMD laptops too)
 #   ./bootstrap.sh --no-gpu               — skip GPU driver install for ALL vendors, not just
 #                                            NVIDIA (VM with no real GPU, or manual driver install)
-#   ./bootstrap.sh --no-grub              — skip GRUB theme + config (e.g. systemd-boot)
-#   ./bootstrap.sh --grub-res=2560x1440   — GRUB theme at 2K resolution
-#   ./bootstrap.sh --grub-res=3840x2160   — GRUB theme at 4K resolution
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 SKIP_GPU=false
-SKIP_GRUB=false
-GRUB_RESOLUTION="1920x1080x32"
 
 for arg in "$@"; do
     case "$arg" in
     --no-gpu) SKIP_GPU=true ;;
-    --no-grub) SKIP_GRUB=true ;;
-    --grub-res=*) GRUB_RESOLUTION="${arg#--grub-res=}x32" ;;
     esac
 done
 
@@ -136,8 +129,8 @@ if [[ "$SKIP_GPU" == false ]]; then
 fi
 
 # ── 4a. CPU microcode ─────────────────────────────────────────────────────────
-# pacstrap leaves microcode out unless asked; GRUB picks it up on the
-# grub-mkconfig run in step 30.
+# pacstrap leaves microcode out unless asked; the microcode hook puts it
+# into the UKI the firmware boots.
 if grep -q GenuineIntel /proc/cpuinfo; then
     step "CPU microcode (Intel)"
     sudo pacman -S --needed --noconfirm intel-ucode
@@ -569,107 +562,6 @@ sudo systemctl enable ollama
 step "AI tools: herdr (terminal workspace manager for coding agents)"
 yay -S --needed --noconfirm herdr-bin
 
-# ── 30. GRUB theme + dual boot ───────────────────────────────────────────────
-if [[ "$SKIP_GRUB" == false ]]; then
-    step "GRUB: packages"
-    sudo pacman -S --needed --noconfirm grub efibootmgr os-prober
-
-    step "GRUB: Star Wars Posters theme"
-    GRUB_THEME_TMP="$(mktemp -d)"
-    git clone --depth=1 \
-        https://github.com/hashirsajid58200p/star-wars-posters-grub-theme \
-        "$GRUB_THEME_TMP"
-    THEME_DEST="/boot/grub/themes/StarWarsPosters"
-    sudo mkdir -p "$THEME_DEST"
-    sudo cp -r "$GRUB_THEME_TMP"/. "$THEME_DEST/"
-    rm -rf "$GRUB_THEME_TMP"
-
-    step "GRUB: configure theme + dual boot"
-    GRUB_DEFAULTS="/etc/default/grub"
-    # Theme + resolution (remove old entries first to avoid duplicates)
-    sudo sed -i '/^GRUB_THEME=/d' "$GRUB_DEFAULTS"
-    sudo sed -i '/^GRUB_GFXMODE=/d' "$GRUB_DEFAULTS"
-    printf 'GRUB_THEME="%s/theme.txt"\n' "$THEME_DEST" | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
-    printf 'GRUB_GFXMODE="%s"\n' "$GRUB_RESOLUTION" | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
-    # OS prober — detects Windows and other distros
-    if grep -q "^#\?GRUB_DISABLE_OS_PROBER" "$GRUB_DEFAULTS"; then
-        sudo sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=.*/GRUB_DISABLE_OS_PROBER=false/' "$GRUB_DEFAULTS"
-    else
-        echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a "$GRUB_DEFAULTS" >/dev/null
-    fi
-    # Always default to Arch (first menu entry — os-prober entries for other
-    # distros always land after it, 10_linux runs before 30_os-prober) on
-    # every boot, regardless of what was manually picked last time. Manually
-    # selecting another OS at the menu still boots it for that one time —
-    # GRUB just doesn't remember it afterward. `saved`+`GRUB_SAVEDEFAULT`
-    # (the previous setting) did remember it, which is exactly the annoyance
-    # of "tener que re-seleccionar Arch a cada rato" after booting into
-    # another OS once.
-    sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=0/' "$GRUB_DEFAULTS"
-    sudo sed -i '/^GRUB_SAVEDEFAULT/d' "$GRUB_DEFAULTS"
-    # 3s — enough to select Windows on dual boot, fast enough on single boot
-    sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' "$GRUB_DEFAULTS"
-    # Quiet boot + disable NMI watchdog (saves ~200ms, reduces kernel log spam)
-    sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog"/' "$GRUB_DEFAULTS"
-
-    step "Hibernation: resume= kernel param + mkinitcpio hook"
-    # Swap partition detected at run time (not hardcoded) — a real reinstall
-    # repartitions the disk, so any UUID baked in today would be stale on the
-    # next fresh install. Excludes zram (never a valid hibernation target —
-    # RAM-backed, gone on power loss) by only looking at "partition" swaps.
-    SWAP_PART="$(swapon --show=NAME,TYPE --noheadings | awk '$2 == "partition" {print $1; exit}')"
-    if [[ -n "$SWAP_PART" ]]; then
-        SWAP_UUID="$(blkid -s UUID -o value "$SWAP_PART")"
-        # mkinitcpio resume hook — must run after udev/block, before
-        # filesystems, so the resume device is available when checked.
-        if ! grep -qE '^HOOKS=.*\bresume\b' /etc/mkinitcpio.conf; then
-            sudo sed -i 's/^\(HOOKS=.*\)\bblock\b/\1block resume/' /etc/mkinitcpio.conf
-        fi
-        # GRUB path (what actually boots this machine — confirmed via
-        # `efibootmgr`, BootCurrent points at the "arch" grubx64.efi entry,
-        # not the leftover UKI mkinitcpio also builds).
-        if ! grep -q "resume=UUID=$SWAP_UUID" "$GRUB_DEFAULTS"; then
-            sudo sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"|GRUB_CMDLINE_LINUX_DEFAULT=\"\1 resume=UUID=$SWAP_UUID\"|" "$GRUB_DEFAULTS"
-        fi
-        # /etc/kernel/cmdline feeds the unused UKI at /boot/efi/EFI/Linux —
-        # not the active boot path, but kept in sync in case that ever
-        # changes (e.g. a future switch to systemd-boot).
-        if [[ -f /etc/kernel/cmdline ]] && ! grep -q "resume=UUID=$SWAP_UUID" /etc/kernel/cmdline; then
-            sudo sed -i "s/\$/ resume=UUID=$SWAP_UUID/" /etc/kernel/cmdline
-        fi
-        sudo mkinitcpio -P
-    else
-        echo "  → no se encontró una partición de swap real (solo zram) — se salta la config de hibernación"
-    fi
-
-    step "GRUB: regenerate config"
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
-fi
-
-step "GRUB: boot splash and LUKS kernel cmdline"
-# splash lets Plymouth draw (next step). On a LUKS root, sd-encrypt needs the
-# LUKS device and the mapping name; grub-mkconfig adds root= itself.
-# GRUB_CMDLINE_LINUX so recovery entries unlock too. Skipped with --no-grub.
-if [[ "${SKIP_GRUB:-false}" == false ]]; then
-    GRUB_DEFAULTS="${GRUB_DEFAULTS:-/etc/default/grub}"
-    CMDLINE_CHANGED=false
-    if ! sudo grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bsplash\b' "$GRUB_DEFAULTS"; then
-        sudo sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=".*\)"$/\1 splash"/' "$GRUB_DEFAULTS"
-        CMDLINE_CHANGED=true
-    fi
-    if root_on_luks && ! sudo grep -q 'rd\.luks\.name=' "$GRUB_DEFAULTS"; then
-        ROOT_SRC=$(findmnt -no SOURCE /)
-        ROOT_CHAIN=$(lsblk -sPno NAME,TYPE,FSTYPE,UUID "${ROOT_SRC%%\[*}")
-        CRYPT_NAME=$(awk -F'"' '$4 == "crypt" {print $2; exit}' <<<"$ROOT_CHAIN")
-        LUKS_UUID=$(awk -F'"' '$6 == "crypto_LUKS" {print $8; exit}' <<<"$ROOT_CHAIN")
-        sudo sed -i "s/^\(GRUB_CMDLINE_LINUX=\".*\)\"$/\1 rd.luks.name=$LUKS_UUID=$CRYPT_NAME\"/" "$GRUB_DEFAULTS"
-        CMDLINE_CHANGED=true
-    fi
-    if [[ "$CMDLINE_CHANGED" == true ]]; then
-        sudo grub-mkconfig -o /boot/grub/grub.cfg
-    fi
-fi
-
 step "Boot splash: Plymouth (bgrt) and a systemd initramfs"
 # Plymouth draws the stock bgrt splash (firmware logo) on every install; on a
 # LUKS root it also asks the passphrase, through sd-encrypt. The systemd
@@ -684,6 +576,48 @@ if root_on_luks; then
     INITRAMFS_HOOKS="${INITRAMFS_HOOKS/block/block sd-encrypt}"
 fi
 sudo sed -i "s/^HOOKS=.*/HOOKS=($INITRAMFS_HOOKS)/" /etc/mkinitcpio.conf
+
+step "Boot: kernel cmdline for the UKI"
+# The firmware boots the UKI directly (no boot menu), so /etc/kernel/cmdline
+# is the whole kernel command line, signed into the image with it. Rewritten
+# on every run from the running system: root by PARTUUID (by the mapping on
+# LUKS), zswap off because swap lives on zram, quiet boot plus the Plymouth
+# splash, resume to the real swap partition (never zram), and on LUKS the
+# device and mapping sd-encrypt opens.
+ROOT_SRC=$(findmnt -no SOURCE /)
+ROOT_SRC="${ROOT_SRC%%\[*}"
+LUKS_ARG=""
+if root_on_luks; then
+    ROOT_CHAIN=$(lsblk -sPno NAME,TYPE,FSTYPE,UUID "$ROOT_SRC")
+    CRYPT_NAME=$(awk -F'"' '$4 == "crypt" {print $2; exit}' <<<"$ROOT_CHAIN")
+    LUKS_UUID=$(awk -F'"' '$6 == "crypto_LUKS" {print $8; exit}' <<<"$ROOT_CHAIN")
+    KERNEL_ROOT="root=$ROOT_SRC"
+    LUKS_ARG=" rd.luks.name=$LUKS_UUID=$CRYPT_NAME"
+else
+    KERNEL_ROOT="root=PARTUUID=$(lsblk -no PARTUUID "$ROOT_SRC")"
+fi
+RESUME_ARG=""
+SWAP_PART=$(swapon --show=NAME,TYPE --noheadings | awk '$2 == "partition" && $1 !~ /zram/ {print $1; exit}')
+if [[ -n "$SWAP_PART" ]]; then
+    RESUME_ARG=" resume=UUID=$(sudo blkid -s UUID -o value "$SWAP_PART")"
+fi
+sudo mkdir -p /etc/kernel
+echo "$KERNEL_ROOT rw zswap.enabled=0 quiet loglevel=3 nowatchdog splash$RESUME_ARG$LUKS_ARG" |
+    sudo tee /etc/kernel/cmdline >/dev/null
+
+step "Boot: UKI from the firmware"
+# mkinitcpio builds the UKI on the ESP (the stock preset ships default_uki
+# commented) and the firmware boots it directly: no GRUB, no boot menu.
+# efibootmgr --create puts the new entry first in the boot order. The mkinitcpio
+# -P of the boot optimization step builds the image.
+sudo pacman -S --needed --noconfirm efibootmgr
+ESP=$(bootctl --print-esp-path)
+ESP_PART=$(findmnt -no SOURCE "$ESP")
+sudo sed -i "s|^#\?default_uki=.*|default_uki=\"$ESP/EFI/Linux/arch-linux.efi\"|" /etc/mkinitcpio.d/linux.preset
+if ! efibootmgr | awk -F'\t' '{sub(/^Boot[0-9A-F]+\*? /, "", $1)} $1 == "Arch Linux" {found = 1} END {exit !found}'; then
+    sudo efibootmgr --create --disk "/dev/$(lsblk -no PKNAME "$ESP_PART")" --part "$(lsblk -no PARTN "$ESP_PART")" \
+        --label "Arch Linux" --loader '\EFI\Linux\arch-linux.efi'
+fi
 
 # ── 31. Boot optimization ────────────────────────────────────────────────────
 step "Boot optimization: systemd services"

@@ -444,47 +444,6 @@ test_boot_splash_on_both_paths() {
         "$(boot_splash_result no)"
 }
 
-CMDLINE_STEP='GRUB: boot splash and LUKS kernel cmdline'
-
-cmdline_result() { # yes|no -> "<DEFAULT line>|<LINUX line>" after the cmdline step ran twice
-    # lsblk -P answers the device chain under /: the crypt mapping "root"
-    # on a crypto_LUKS partition (LUKS), or a plain ext4 partition.
-    local dir grub
-    dir=$(mktemp -d)
-    luks_sandbox "$dir" "$1"
-    if [[ $1 == yes ]]; then
-        cat >"$dir/bin/lsblk" <<'LSBLK'
-#!/usr/bin/env bash
-if [[ " $* " == *" -sPno "* ]]; then
-    echo 'NAME="root" TYPE="crypt" FSTYPE="ext4" UUID="aaaa-root"'
-    echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="crypto_LUKS" UUID="1111-luks"'
-    echo 'NAME="nvme0n1" TYPE="disk" FSTYPE="" UUID=""'
-else
-    printf 'crypt\npart\ndisk\n'
-fi
-LSBLK
-    fi
-    grub="$dir/root/etc/default/grub"
-    printf '%s\n' 'GRUB_DEFAULT=0' \
-        'GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog resume=UUID=5555-swap"' \
-        'GRUB_CMDLINE_LINUX=""' >"$grub"
-    run_step_with_detection "$dir" "$CMDLINE_STEP" >/dev/null
-    run_step_with_detection "$dir" "$CMDLINE_STEP" >/dev/null
-    printf '%s|%s\n' "$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' "$grub")" \
-        "$(grep '^GRUB_CMDLINE_LINUX=' "$grub" | tr -s ' ' | sd '=" ' '="')"
-    rm -rf "$dir"
-}
-
-test_kernel_cmdline_on_both_paths() {
-    # Both installs boot with the splash; only a LUKS root names its LUKS
-    # device and mapping for sd-encrypt. A re-run adds nothing twice.
-    local default='GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nowatchdog resume=UUID=5555-swap splash"'
-    assert_eq "LUKS install: splash plus the LUKS device and mapping" \
-        "$default|GRUB_CMDLINE_LINUX=\"rd.luks.name=1111-luks=root\"" "$(cmdline_result yes)"
-    assert_eq "plain install: splash only" \
-        "$default|GRUB_CMDLINE_LINUX=\"\"" "$(cmdline_result no)"
-}
-
 LOGIN_STEP='Login: SDDM autologin on a LUKS root'
 
 luks_login_result() { # yes|no -> one line per installed piece, "-" when absent
@@ -534,6 +493,197 @@ test_docs_describe_both_login_paths() {
         "$(rg -q 'bgrt' "$plan" && echo yes || echo no) $(rg -qi 'without LUKS' "$plan" && echo yes || echo no)"
     assert_eq "login plan promises no notch-themed splash" "" \
         "$(rg -n 'theme with the notch image' "$plan")"
+}
+
+UKI_CMDLINE_STEP='Boot: kernel cmdline for the UKI'
+
+uki_cmdline_result() { # yes|no swap|noswap -> /etc/kernel/cmdline after the step ran twice
+    # Fakes: findmnt names the root device, lsblk answers its PARTUUID and its
+    # device chain (crypt mapping "root" on a crypto_LUKS partition, or a
+    # plain partition), swapon lists a swap partition (or none), blkid its UUID.
+    local dir
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" "$1"
+    if [[ $1 == yes ]]; then
+        printf '#!/usr/bin/env bash\necho /dev/mapper/root\n' >"$dir/bin/findmnt"
+        cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *" -sPno "*) echo 'NAME="root" TYPE="crypt" FSTYPE="ext4" UUID="aaaa-root"'
+                 echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="crypto_LUKS" UUID="1111-luks"' ;;
+    *PARTUUID*) echo "" ;;
+    *) printf 'crypt\npart\ndisk\n' ;;
+esac
+LSBLK
+    else
+        cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PARTUUID*) echo pppp-part ;;
+    *" -sPno "*) echo 'NAME="nvme0n1p5" TYPE="part" FSTYPE="ext4" UUID="bbbb-root"' ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    fi
+    if [[ $2 == swap ]]; then
+        printf '#!/usr/bin/env bash\necho "/dev/zram0 partition"\necho "/dev/nvme0n1p6 partition"\n' >"$dir/bin/swapon"
+        printf '#!/usr/bin/env bash\necho zram-uuid\n' >"$dir/bin/zram-unused"
+        printf '#!/usr/bin/env bash\n[[ "${@: -1}" == /dev/nvme0n1p6 ]] && echo 5555-swap\n' >"$dir/bin/blkid"
+    else
+        printf '#!/usr/bin/env bash\necho "/dev/zram0 partition"\n' >"$dir/bin/swapon"
+        printf '#!/usr/bin/env bash\nexit 2\n' >"$dir/bin/blkid"
+    fi
+    chmod +x "$dir"/bin/*
+    run_step_with_detection "$dir" "$UKI_CMDLINE_STEP" >/dev/null
+    run_step_with_detection "$dir" "$UKI_CMDLINE_STEP" >/dev/null
+    cat "$dir/root/etc/kernel/cmdline" 2>/dev/null || echo missing
+    rm -rf "$dir"
+}
+
+test_uki_cmdline_on_both_paths() {
+    # The UKI carries the whole cmdline: root, rw, today's options (zswap off
+    # for zram, quiet boot), the splash, resume to the real swap partition
+    # (never zram) and, on LUKS only, the mapping sd-encrypt opens. A re-run
+    # writes the same line again.
+    local opts='rw zswap.enabled=0 quiet loglevel=3 nowatchdog splash'
+    assert_eq "plain install with swap" "root=PARTUUID=pppp-part $opts resume=UUID=5555-swap" \
+        "$(uki_cmdline_result no swap)"
+    assert_eq "LUKS install with swap" "root=/dev/mapper/root $opts resume=UUID=5555-swap rd.luks.name=1111-luks=root" \
+        "$(uki_cmdline_result yes swap)"
+    assert_eq "plain install without a swap partition" "root=PARTUUID=pppp-part $opts" \
+        "$(uki_cmdline_result no noswap)"
+}
+
+UKI_ENTRY_STEP='Boot: UKI from the firmware'
+
+uki_entry_result() { # entry-exists:yes|no -> "<default_uki line>|<efibootmgr --create calls>"
+    # Fakes: bootctl reports the ESP at /boot/efi, on nvme0n1 partition 1; the
+    # firmware lists GRUB only, or GRUB plus an "Arch Linux" entry.
+    local dir preset
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    printf '#!/usr/bin/env bash\necho /boot/efi\n' >"$dir/bin/bootctl"
+    printf '#!/usr/bin/env bash\n[[ "${@: -1}" == /boot/efi ]] && echo /dev/nvme0n1p1 || echo /dev/nvme0n1p5\n' >"$dir/bin/findmnt"
+    cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PKNAME*) echo nvme0n1 ;;
+    *PARTN*) echo 1 ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    {
+        echo '#!/usr/bin/env bash'
+        echo '[[ $# -gt 0 ]] && exit 0'
+        echo 'echo "BootOrder: 0004"'
+        printf 'printf "Boot0004* GRUB\\tHD(1,GPT,x)/\\\\EFI\\\\GRUB\\\\grubx64.efi\\n"\n'
+        [[ $1 == yes ]] && printf 'printf "Boot0006* Arch Linux\\tHD(1,GPT,x)/\\\\EFI\\\\Linux\\\\arch-linux.efi\\n"\n'
+    } >"$dir/bin/efibootmgr"
+    chmod +x "$dir"/bin/*
+    preset="$dir/root/etc/mkinitcpio.d/linux.preset"
+    mkdir -p "${preset%/*}"
+    printf '%s\n' "PRESETS=('default')" 'default_image="/boot/initramfs-linux.img"' \
+        '#default_uki="/efi/EFI/Linux/arch-linux.efi"' >"$preset"
+    run_step_with_detection "$dir" "$UKI_ENTRY_STEP" >/dev/null
+    printf '%s|%s\n' "$(rg '^#?default_uki=' "$preset")" \
+        "$(rg -F -- 'efibootmgr --create' "$dir/sudo.log" 2>/dev/null)"
+    rm -rf "$dir"
+}
+
+test_uki_preset_and_firmware_entry() {
+    # mkinitcpio builds the UKI on the ESP bootctl reports, and the firmware
+    # gets one "Arch Linux" entry for it (first in the boot order, which
+    # efibootmgr --create does); a second run creates no duplicate.
+    local uki='default_uki="/boot/efi/EFI/Linux/arch-linux.efi"'
+    assert_eq "no Arch entry yet: preset builds the UKI, firmware entry created" \
+        "$uki|efibootmgr --create --disk /dev/nvme0n1 --part 1 --label Arch Linux --loader \\EFI\\Linux\\arch-linux.efi" \
+        "$(uki_entry_result no)"
+    assert_eq "Arch entry already there: no second entry" "$uki|" "$(uki_entry_result yes)"
+}
+
+test_grub_gone() {
+    # Story 22: the firmware boots the UKI, so bootstrap installs no
+    # bootloader, writes no GRUB config and has no GRUB flags; efibootmgr
+    # stays, it creates the firmware entry.
+    assert_eq "bootstrap installs no grub" no "$(installs grub)"
+    assert_eq "bootstrap installs no os-prober" no "$(installs os-prober)"
+    assert_eq "bootstrap installs efibootmgr" yes "$(installs efibootmgr)"
+    assert_eq "bootstrap runs no grub-mkconfig or grub-install" no "$(runs 'grub-(mkconfig|install)')"
+    assert_eq "bootstrap writes no /etc/default/grub" no "$(runs 'GRUB_DEFAULTS|/etc/default/grub')"
+    assert_eq "bootstrap has no GRUB flags" no "$(runs '(--no-grub|--grub-res|SKIP_GRUB)')"
+}
+
+test_docs_describe_the_uki_boot() {
+    # Story 22: the firmware boots the UKI and bootstrap has no GRUB. The
+    # docs a reinstall follows (CLAUDE.md, the repo README, post-install.md)
+    # must not tell the reader to install or configure GRUB.
+    local stale
+    stale=$(rg -n -i 'grub-install|grub-mkconfig|no-grub|grub-res|GRUB_DEFAULT|Star Wars|os-prober' \
+        "$ROOT/CLAUDE.md" "$ROOT/README.md" "$ROOT/backup/references/post-install.md")
+    assert_eq "reinstall docs give no GRUB steps" "" "$stale"
+    assert_eq "CLAUDE.md describes the UKI firmware entry" yes \
+        "$(rg -q 'arch-linux\.efi' "$ROOT/CLAUDE.md" && rg -q 'efibootmgr' "$ROOT/CLAUDE.md" && echo yes || echo no)"
+}
+
+test_uki_resume_uuid_without_root() {
+    # bootstrap runs as the user, and blkid prints no UUID without root: a
+    # plain blkid wrote "resume=UUID=" with nothing after it on this machine.
+    # The fake blkid answers only when it runs through sudo.
+    local dir out
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PARTUUID*) echo pppp-part ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    printf '#!/usr/bin/env bash\necho "/dev/zram0 partition"\necho "/dev/nvme0n1p6 partition"\n' >"$dir/bin/swapon"
+    printf '#!/usr/bin/env bash\ntail -1 "%s/sudo.log" 2>/dev/null | rg -q "^blkid " && echo 5555-swap\nexit 0\n' "$dir" >"$dir/bin/blkid"
+    chmod +x "$dir"/bin/*
+    run_step_with_detection "$dir" "$UKI_CMDLINE_STEP" >/dev/null
+    out=$(rg -o 'resume=\S*' "$dir/root/etc/kernel/cmdline" 2>/dev/null)
+    rm -rf "$dir"
+    assert_eq "resume names the swap UUID read as root" "resume=UUID=5555-swap" "${out:-missing}"
+}
+
+test_uki_lands_on_the_reported_esp() {
+    # The ESP is whatever bootctl reports (a reinstall may mount it at /efi
+    # or /boot), never a fixed /boot/efi.
+    local dir preset
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    printf '#!/usr/bin/env bash\necho /efi\n' >"$dir/bin/bootctl"
+    printf '#!/usr/bin/env bash\n[[ "${@: -1}" == /efi ]] && echo /dev/nvme0n1p1 || echo /dev/nvme0n1p5\n' >"$dir/bin/findmnt"
+    cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PKNAME*) echo nvme0n1 ;;
+    *PARTN*) echo 1 ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    printf '#!/usr/bin/env bash\n[[ $# -gt 0 ]] && exit 0\necho "BootOrder: 0004"\n' >"$dir/bin/efibootmgr"
+    chmod +x "$dir"/bin/*
+    preset="$dir/root/etc/mkinitcpio.d/linux.preset"
+    mkdir -p "${preset%/*}"
+    printf '%s\n' "PRESETS=('default')" '#default_uki="/efi/EFI/Linux/arch-linux.efi"' >"$preset"
+    run_step_with_detection "$dir" "$UKI_ENTRY_STEP" >/dev/null
+    assert_eq "UKI built on the ESP bootctl reports" 'default_uki="/efi/EFI/Linux/arch-linux.efi"' \
+        "$(rg '^#?default_uki=' "$preset")"
+    rm -rf "$dir"
+}
+
+test_uki_rebuilt_after_its_cmdline_and_preset() {
+    # The firmware entry points at the UKI, so the image must be rebuilt
+    # after the cmdline and preset steps wrote what goes into it.
+    local cmdline_line preset_line build_line
+    cmdline_line=$(rg -n -F 'step "Boot: kernel cmdline for the UKI"' "$BOOTSTRAP" | cut -d: -f1)
+    preset_line=$(rg -n -F 'step "Boot: UKI from the firmware"' "$BOOTSTRAP" | cut -d: -f1)
+    build_line=$(rg -n '^sudo mkinitcpio -P$' "$BOOTSTRAP" | tail -1 | cut -d: -f1)
+    assert_eq "mkinitcpio -P runs after both UKI steps" yes \
+        "$([[ -n $build_line && $build_line -gt ${cmdline_line:-0} && $build_line -gt ${preset_line:-0} ]] && echo yes || echo "no (cmdline $cmdline_line, preset $preset_line, build ${build_line:-none})")"
 }
 
 tests=("$@")

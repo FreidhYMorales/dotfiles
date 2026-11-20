@@ -10,3 +10,8 @@ linux-firmware  # pacstrap
 mkinitcpio      # pacstrap (pulled in by linux)
 sudo            # pacstrap; bootstrap.sh itself needs it
 yay             # built from the AUR by bootstrap.sh's yay step (makepkg, not pacman -S)
+
+# Boot (story 22): the firmware boots the UKI; GRUB stays on this machine only
+# until the reinstall, as the F12 fallback entry
+grub            # GRUB fallback until the reinstall (story 22)
+os-prober       # GRUB fallback until the reinstall (story 22)
