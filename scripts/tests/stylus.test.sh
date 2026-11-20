@@ -95,6 +95,18 @@ test_notion_selection_readable() {
         "$(unreadable notion-matugen.user.css '--bg-selected --fg-default')"
 }
 
+test_github_youtube_pairs_readable() {
+    # These two already pair each filled surface with its on-* role; pin it.
+    assert_eq "github primary and danger buttons read at 4.5:1 on every scheme" none \
+        "$(unreadable github-matugen.user.css \
+            '--button-primary-bgColor-rest --button-primary-fgColor-rest' \
+            '--button-danger-bgColor-rest --button-danger-fgColor-rest')"
+    assert_eq "youtube primary and selected-chip colors read at 4.5:1 on every scheme" none \
+        "$(unreadable youtube-matugen.user.css \
+            '--yt-sys-color-baseline--primary --yt-sys-color-baseline--on-primary' \
+            '--yt-sys-color-baseline--primary-container --yt-sys-color-baseline--on-primary-container')"
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
