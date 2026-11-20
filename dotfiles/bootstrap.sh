@@ -396,6 +396,17 @@ step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
 
+step "Login: SDDM autologin on a LUKS root"
+# On a LUKS root the disk passphrase is the authentication: SDDM logs in once
+# per boot with no greeter and unlocks the keyring from that passphrase. A
+# plain root keeps the notch-lock greeter with its password (no autologin).
+# See docs/plans/dotfiles-audit/login-reinstall-plan.md.
+if root_on_luks; then
+    sudo install -Dm644 "$REPO_ROOT/system/sddm/sddm.conf.d/luks-autologin.conf" /etc/sddm.conf.d/luks-autologin.conf
+    sudo install -Dm644 "$REPO_ROOT/system/pam.d/sddm-autologin" /etc/pam.d/sddm-autologin
+    sudo install -Dm644 "$REPO_ROOT/system/systemd/sddm.service.d/luks.conf" /etc/systemd/system/sddm.service.d/luks.conf
+fi
+
 step "SDDM: enable service"
 sudo systemctl enable sddm
 

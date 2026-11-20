@@ -1,0 +1,19 @@
+#%PAM-1.0
+# The sddm package's sddm-autologin stack plus pam_systemd_loadkey, installed
+# by bootstrap.sh only when / sits on LUKS. pam_systemd_loadkey reads the LUKS
+# passphrase systemd-cryptsetup left in the kernel keyring and hands it to
+# pam_gnome_keyring, which unlocks the login keyring with it (keyring password
+# = LUKS passphrase). See docs/plans/dotfiles-audit/login-reinstall-plan.md.
+auth        required    pam_env.so
+auth        required    pam_faillock.so preauth
+auth        required    pam_shells.so
+auth        required    pam_nologin.so
+auth        required    pam_permit.so
+-auth       optional    pam_systemd_loadkey.so
+-auth       optional    pam_gnome_keyring.so
+-auth       optional    pam_kwallet5.so
+account     include     system-local-login
+password    include     system-local-login
+session     include     system-local-login
+-session    optional    pam_gnome_keyring.so auto_start
+-session    optional    pam_kwallet5.so auto_start
