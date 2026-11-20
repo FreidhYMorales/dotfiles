@@ -642,6 +642,18 @@ test_uki_preset_and_firmware_entry() {
     assert_eq "Arch entry already there: no second entry" "$uki|" "$(uki_entry_result yes)"
 }
 
+test_grub_gone() {
+    # Story 22: the firmware boots the UKI, so bootstrap installs no
+    # bootloader, writes no GRUB config and has no GRUB flags; efibootmgr
+    # stays, it creates the firmware entry.
+    assert_eq "bootstrap installs no grub" no "$(installs grub)"
+    assert_eq "bootstrap installs no os-prober" no "$(installs os-prober)"
+    assert_eq "bootstrap installs efibootmgr" yes "$(installs efibootmgr)"
+    assert_eq "bootstrap runs no grub-mkconfig or grub-install" no "$(runs 'grub-(mkconfig|install)')"
+    assert_eq "bootstrap writes no /etc/default/grub" no "$(runs 'GRUB_DEFAULTS|/etc/default/grub')"
+    assert_eq "bootstrap has no GRUB flags" no "$(runs '(--no-grub|--grub-res|SKIP_GRUB)')"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
