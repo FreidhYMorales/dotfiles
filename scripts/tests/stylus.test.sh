@@ -89,6 +89,12 @@ test_whatsapp_bubbles_readable() {
             '--WDS-systems-bubble-surface-incoming --WDS-content-default')"
 }
 
+test_notion_selection_readable() {
+    # Selected blocks and rows keep the default text color on --bg-selected.
+    assert_eq "selected text reads at 4.5:1 on every scheme" none \
+        "$(unreadable notion-matugen.user.css '--bg-selected --fg-default')"
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
