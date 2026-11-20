@@ -13,7 +13,7 @@
 /*
   HOW TO USE:
   1. Install the Stylus extension in Chromium (the webapps run there).
-  2. In Stylus, click "Import" and select this file.
+  2. Open this file in Chromium as a file:// URL; Stylus shows its install page: press Install (Reinstall to update).
   3. Load the matugen-vars extension (dotfiles/chromium-extension/) so pages get the --mat-* vars.
   4. Reload the Notion webapp — colors should match the current wallpaper palette.
 

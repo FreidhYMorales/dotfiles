@@ -95,9 +95,12 @@ Web apps launched via `webapp-launch` (`chromium --app=<url>`) use Chromium's ex
    - `chrome://extensions` → enable **Developer mode**
    - **Load unpacked** → select `dotfiles/chromium-extension/matugen-vars/`
    - The extension uses `"all_frames": true` — required for iframes like YouTube live chat to receive `--mat-*` vars.
-4. Import the userstyles for the sites you use as web apps:
-   - Stylus → Manage → Import
-   - Select each `*-matugen.user.css` from `dotfiles/stylus/`
+4. Install the userstyles for the sites you use as web apps:
+   - Open each `*-matugen.user.css` from `dotfiles/stylus/` in Chromium as a `file://` URL
+     (e.g. `file:///path/to/Configuraciones/dotfiles/stylus/whatsapp-matugen.user.css`)
+   - Stylus shows its install page: press **Install**
+   - To pick up an edited style later, open the same URL and press **Reinstall**
+     (the Import button on Stylus's Manage page does not update a style that is already installed)
 5. In Stylus → **Settings** → enable **"Check for updates automatically"** (for per-site style updates from the local server).
 
 > **YouTube**: See the YouTube note in step 6 — Cinematic Mode must be disabled in YouTube settings for the userstyle to work without visual artifacts.
