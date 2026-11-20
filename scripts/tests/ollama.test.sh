@@ -112,9 +112,16 @@ test_models_doc_has_igpu_vs_cpu() {
         "$(awk -v a="${igpu%% *}" -v b="${cpu%% *}" 'BEGIN { print (a + 0 > b + 0 && b + 0 > 0) ? "yes" : "no" }')"
 }
 
+test_docs_do_not_skip_gpu_on_thinkpad() {
+    # Story 12: --no-gpu skips vulkan-intel, so Ollama would fall back to the
+    # CPU; the ThinkPad reinstall must take the lspci auto-detect path.
+    assert_eq "CLAUDE.md does not advise --no-gpu on the ThinkPad" 0 \
+        "$(grep -i -- '--no-gpu' "$ROOT/CLAUDE.md" | grep -ciE 'usar en thinkpad|use on (the )?thinkpad')"
+}
+
 all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo test_live_models_doc
     test_bootstrap_installs_vulkan_backend test_repo_ships_igpu_dropin test_live_model_runs_on_igpu
-    test_models_doc_has_igpu_vs_cpu)
+    test_models_doc_has_igpu_vs_cpu test_docs_do_not_skip_gpu_on_thinkpad)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
