@@ -3,7 +3,7 @@
 @namespace    github.com/FreidhYMorales/dotfiles
 @version      2.0.0
 @description  Themes WhatsApp Web with the active matugen Material 3 palette.
-              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+              For the Chromium webapps; needs the matugen-vars extension for --mat-* vars.
 @author       deadlock
 @match        https://web.whatsapp.com/*
 @preprocessor default
@@ -11,9 +11,9 @@
 
 /*
   HOW TO USE:
-  1. Install Stylus extension in Zen Browser.
+  1. Install the Stylus extension in Chromium (the webapps run there).
   2. In Stylus, click "Import" and select this file.
-  3. Make sure the matugen post-hook has run at least once (creates userContent.css in Zen's chrome/).
+  3. Load the matugen-vars extension (dotfiles/chromium-extension/) so pages get the --mat-* vars.
   4. Enable dark mode in WhatsApp (Settings → Theme → Dark).
   5. Reload WhatsApp — colors should match the current wallpaper palette.
 

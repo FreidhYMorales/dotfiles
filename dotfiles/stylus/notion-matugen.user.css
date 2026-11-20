@@ -3,7 +3,7 @@
 @namespace    github.com/FreidhYMorales/dotfiles
 @version      1.0.0
 @description  Themes Notion with the active matugen Material 3 palette.
-              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+              For the Chromium webapps; needs the matugen-vars extension for --mat-* vars.
 @author       deadlock
 @match        https://www.notion.so/*
 @match        https://notion.so/*
@@ -12,10 +12,10 @@
 
 /*
   HOW TO USE:
-  1. Install Stylus extension in Zen Browser.
+  1. Install the Stylus extension in Chromium (the webapps run there).
   2. In Stylus, click "Import" and select this file.
-  3. Make sure the matugen post-hook has run at least once (creates userContent.css in Zen's chrome/).
-  4. Reload Notion in Zen — colors should match the current wallpaper palette.
+  3. Load the matugen-vars extension (dotfiles/chromium-extension/) so pages get the --mat-* vars.
+  4. Reload the Notion webapp — colors should match the current wallpaper palette.
 
   NOTE: This targets Notion in dark mode (.dark class on body).
   In Notion settings, enable "Dark mode" for these overrides to apply.
