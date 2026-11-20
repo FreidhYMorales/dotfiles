@@ -50,6 +50,23 @@ battery_gated() { # pkg -> yes|no: bootstrap.sh installs it only inside a BAT0 (
         END { print (hit ? "yes" : "no") }'
 }
 
+gates_of() { # word -> the if-conditions enclosing the bootstrap.sh line that installs or writes it
+    bootstrap_lines | awk -v w="$1" '
+        /^[[:space:]]*#/ { next }
+        /^[[:space:]]*if .*; fi$/ { next }
+        /^[[:space:]]*if / { stack[++n] = $0; next }
+        /^[[:space:]]*fi([[:space:]]|$)/ { n--; next }
+        /(pacman|yay) -S|tee / {
+            for (i = 1; i <= NF; i++) if ($i == w || index($i, w) == 1 && $i ~ /\.conf$/) {
+                for (j = 1; j <= n; j++) printf "%s;", stack[j]; print ""; exit
+            }
+        }'
+}
+
+gated_on() { # word pattern -> yes|no: an enclosing condition matches the pattern
+    [[ $(gates_of "$1" | grep -cE -- "$2") -gt 0 ]] && echo yes || echo no
+}
+
 test_live_devices_on_expected_driver() {
     # Story 17 audit, this ThinkPad X1 Carbon Gen 13 (Lunar Lake).
     assert_eq "iGPU (Arc 130V/140V) on xe" xe "$(pci_driver 'VGA compatible controller')"
@@ -93,8 +110,22 @@ test_no_legacy_i965_driver() {
         "$(pacman -Q libva-intel-driver &>/dev/null && echo yes || echo no)"
 }
 
+test_hardware_steps_gated() {
+    # Story 17 (criterion 2 as amended): hardware that varies between machines
+    # installs only when present; audio, Wi-Fi, Bluetooth and fwupd always do.
+    assert_eq "vulkan-intel only on an Intel GPU" yes "$(gated_on vulkan-intel 'HAS_INTEL" == true')"
+    assert_eq "intel-ucode only on an Intel CPU" yes "$(gated_on intel-ucode GenuineIntel)"
+    assert_eq "intel-npu-driver-bin only with an NPU" yes "$(gated_on intel-npu-driver-bin 'Processing accelerators.*NPU')"
+    assert_eq "battery thresholds only with a battery" yes "$(gated_on /etc/tmpfiles.d/battery-thresholds.conf 'power_supply/BAT0')"
+    local p
+    for p in sof-firmware iwd bluez fwupd; do
+        assert_eq "$p installs on every machine" "" "$(gates_of "$p")"
+    done
+}
+
 all_tests=(test_live_devices_on_expected_driver test_bootstrap_installs_device_packages
-    test_firmware_checks_enabled test_live_fwupd_refresh_timer_enabled test_no_legacy_i965_driver)
+    test_firmware_checks_enabled test_live_fwupd_refresh_timer_enabled test_no_legacy_i965_driver
+    test_hardware_steps_gated)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
