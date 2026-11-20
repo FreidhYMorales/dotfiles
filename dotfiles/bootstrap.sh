@@ -33,6 +33,15 @@ step() {
     echo "==> $*"
 }
 
+# True when / sits on a dm-crypt mapping, directly or under LVM. Autologin and
+# the LUKS initramfs/cmdline pieces only run then: autologin on an
+# unencrypted disk would be no authentication at all.
+root_on_luks() {
+    local src
+    src=$(findmnt -no SOURCE /)
+    [[ $'\n'$(lsblk -sno TYPE "${src%%\[*}" 2>/dev/null)$'\n' == *$'\n'crypt$'\n'* ]]
+}
+
 # Cache sudo credentials once and keep them alive for the full run
 sudo -v
 while true; do
