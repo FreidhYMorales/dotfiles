@@ -625,6 +625,29 @@ test_docs_describe_the_uki_boot() {
         "$(rg -q 'arch-linux\.efi' "$ROOT/CLAUDE.md" && rg -q 'efibootmgr' "$ROOT/CLAUDE.md" && echo yes || echo no)"
 }
 
+test_uki_resume_uuid_without_root() {
+    # bootstrap runs as the user, and blkid prints no UUID without root: a
+    # plain blkid wrote "resume=UUID=" with nothing after it on this machine.
+    # The fake blkid answers only when it runs through sudo.
+    local dir out
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PARTUUID*) echo pppp-part ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    printf '#!/usr/bin/env bash\necho "/dev/zram0 partition"\necho "/dev/nvme0n1p6 partition"\n' >"$dir/bin/swapon"
+    printf '#!/usr/bin/env bash\ntail -1 "%s/sudo.log" 2>/dev/null | rg -q "^blkid " && echo 5555-swap\nexit 0\n' "$dir" >"$dir/bin/blkid"
+    chmod +x "$dir"/bin/*
+    run_step_with_detection "$dir" "$UKI_CMDLINE_STEP" >/dev/null
+    out=$(rg -o 'resume=\S*' "$dir/root/etc/kernel/cmdline" 2>/dev/null)
+    rm -rf "$dir"
+    assert_eq "resume names the swap UUID read as root" "resume=UUID=5555-swap" "${out:-missing}"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
