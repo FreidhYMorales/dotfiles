@@ -9,15 +9,12 @@
 # skipped whenever fingerprint won. See
 # auditorias/autenticacion/README.md §3/§7.1 for the full writeup.
 #
-# Otherwise byte-for-byte identical to system-auth's own auth stack — the
-# only change is pam_fprintd.so: `sufficient` -> `optional`. Fingerprint can
-# no longer grant login by itself (whether it succeeds, fails, or times out
-# doesn't affect the outcome), but pam_unix.so right after it is `required`
-# and always runs — so the login keyring unlocks on every single login,
-# exactly like it already does today whenever password wins. Scoped to
-# SDDM only: system-auth itself (sudo, TTY login) is untouched, so those
-# keep today's fingerprint-OR-password behavior.
-auth        optional                    pam_fprintd.so          timeout=60
+# Otherwise byte-for-byte identical to system-auth's own auth stack, minus
+# pam_fprintd.so: the greeter takes the password only. A fingerprint could
+# never grant login here anyway, and waiting on the reader only delayed the
+# password; pam_unix.so always runs, so the login keyring unlocks on every
+# login. Scoped to SDDM only: system-auth itself (sudo, TTY login) is
+# untouched, so those keep fingerprint-OR-password.
 auth        required                    pam_faillock.so         preauth
 -auth       [success=2 default=ignore]  pam_systemd_home.so
 auth        [success=1 default=bad]     pam_unix.so             try_first_pass nullok
