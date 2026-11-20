@@ -30,6 +30,26 @@ notch-repo" "$actual"
     assert_eq "notch config points at the notch shell" "notch-repo/shell" "$(readlink "$QS/notch")"
 }
 
+# Lines in the current docs that still point at the old bar or its rollback.
+old_bar_refs() { # files...
+    rg -n -i -e 'quickshell/default' -e 'notch-cutover' -e 'rollback' -e 'old bar' \
+        -e 'modules/(bar|lock|launcher|dashboard|background)' -e 'Reuse map' "$@"
+}
+
+test_notch_docs_describe_the_notch_as_the_only_shell() {
+    # The notch repo's current docs (plans and ADRs are history) name no old
+    # bar or rollback, and the cutover/rollback script is gone with its tests.
+    local n="$QS/notch-repo" f left=""
+    assert_eq "notch docs point at no old bar or rollback" "" \
+        "$(cd "$n" && old_bar_refs AGENTS.md docs/development.md docs/architecture.md)"
+    for f in scripts/notch-cutover.sh tests/cutover.test.mjs; do
+        [[ -e "$n/$f" ]] && left+="$f "
+    done
+    assert_eq "cutover script and its tests are gone" "" "$left"
+    assert_eq "notch development docs run the shell with qs -c notch" "yes" \
+        "$(rg -q 'qs -c notch' "$n/docs/development.md" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
