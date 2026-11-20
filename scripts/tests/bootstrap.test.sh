@@ -266,6 +266,20 @@ test_repo_sddm_config_selects_notch_lock() {
         "$(grep -n 'themes/silent' "$conf")"
 }
 
+test_silent_theme_and_sync_helper_gone() {
+    # notch-lock replaced the silent theme (story 19): its files, its root
+    # sync helper and the NOPASSWD sudoers entry for it are not shipped or
+    # installed any more.
+    local left="" f
+    for f in system/sddm/themes/silent dotfiles/matugen/.config/matugen/sddm-theme-sync; do
+        [[ -e "$ROOT/$f" ]] && left+="$f "
+    done
+    assert_eq "silent theme and sync helper are not in the repo" "" "$left"
+    assert_eq "bootstrap installs no sddm-theme-sync helper" no "$(runs 'sddm-theme-sync')"
+    assert_eq "bootstrap writes no sudoers entry" no "$(runs '/etc/sudoers\.d')"
+    assert_eq "bootstrap installs no silent theme" no "$(runs 'themes/silent')"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
