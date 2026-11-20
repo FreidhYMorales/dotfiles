@@ -20,11 +20,10 @@ assert_eq() { # name expected actual
 test_package_ships_only_the_notch_config() {
     # Quickshell registers every directory under ~/.config/quickshell as a
     # config: the package holds the notch link, its submodule and the
-    # gitignore (.atl is local AI state), and no old bar.
+    # gitignore, and no old bar. .atl (local AI state) is not tracked.
     local actual
     actual=$(git -C "$QS" ls-files | awk -F/ '{print $1}' | LC_ALL=C sort -u)
-    assert_eq "package ships only the notch config" ".atl
-.gitignore
+    assert_eq "package ships only the notch config" ".gitignore
 notch
 notch-repo" "$actual"
     assert_eq "notch config points at the notch shell" "notch-repo/shell" "$(readlink "$QS/notch")"
