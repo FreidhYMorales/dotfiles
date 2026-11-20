@@ -4,6 +4,38 @@ Steps required after running `bootstrap.sh` + `deploy.sh` that bootstrap can't s
 
 ---
 
+## 0. Before and during the reinstall (unencrypted, archinstall)
+
+Plain install without LUKS (the LUKS reinstall is story 21, deferred). Partitioning only happens from the
+Arch live USB, before installing: `bootstrap.sh` runs afterwards, on the installed system, and adapts to
+what it finds (`root_on_luks()` picks the plain path; no autologin).
+
+Before booting the USB:
+
+- Push the dotfiles repo (`git status` clean, `git push`); the external disk keeps a copy anyway.
+- Back up anything outside `~/Files` you want to keep: `~/.ssh`, `~/.gnupg`, browser profiles, `~/Pictures/Wallpaper`.
+- `~/Files` (today `nvme0n1p7`, label `Files`) survives only if it is **not** formatted below.
+
+In `archinstall`:
+
+- **Disk: manual partitioning.** Keep the ESP (format it or not, mount at `/boot/efi` or `/boot`;
+  bootstrap asks `bootctl --print-esp-path`), a new ext4 root, and a **real swap partition** at least
+  the size of RAM (30 GiB here; today 32.6 GiB): hibernation resumes from it and bootstrap writes its
+  UUID into `resume=`. zram alone cannot hibernate. Mount the `Files` partition at
+  `/home/deadlock/Files` **without formatting**. The Debian, Fedora and openSUSE partitions can go.
+- **Encryption: none** (this path).
+- **Bootloader: efistub with unified kernel images**, if the archinstall version offers it, so no GRUB is
+  installed. Bootstrap rewrites `/etc/kernel/cmdline`, enables `default_uki` and creates the "Arch Linux"
+  firmware entry first in the boot order either way.
+- **Swap on zram: yes** (bootstrap keeps `zswap.enabled=0` for it; the swap partition is for hibernation).
+- **User: `deadlock`** (SDDM, the notch greeter data dir and the PAM files assume it), with sudo.
+- **Network: iwd** is enough to reach the internet; bootstrap sets up iwd + impala.
+
+After the first boot: connect to Wi-Fi, run `install.sh` (or `curl ... | bash`), reboot, then the steps below.
+Old firmware entries of the removed distros can be dropped with `sudo efibootmgr -b <num> -B`.
+
+---
+
 ## 1. Secrets and credentials
 
 ```bash
