@@ -595,6 +595,53 @@ test_uki_cmdline_on_both_paths() {
         "$(uki_cmdline_result no noswap)"
 }
 
+UKI_ENTRY_STEP='Boot: UKI from the firmware'
+
+uki_entry_result() { # entry-exists:yes|no -> "<default_uki line>|<efibootmgr --create calls>"
+    # Fakes: bootctl reports the ESP at /boot/efi, on nvme0n1 partition 1; the
+    # firmware lists GRUB only, or GRUB plus an "Arch Linux" entry.
+    local dir preset
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    printf '#!/usr/bin/env bash\necho /boot/efi\n' >"$dir/bin/bootctl"
+    printf '#!/usr/bin/env bash\n[[ "${@: -1}" == /boot/efi ]] && echo /dev/nvme0n1p1 || echo /dev/nvme0n1p5\n' >"$dir/bin/findmnt"
+    cat >"$dir/bin/lsblk" <<'LSBLK'
+#!/usr/bin/env bash
+case " $* " in
+    *PKNAME*) echo nvme0n1 ;;
+    *PARTN*) echo 1 ;;
+    *) printf 'part\ndisk\n' ;;
+esac
+LSBLK
+    {
+        echo '#!/usr/bin/env bash'
+        echo '[[ $# -gt 0 ]] && exit 0'
+        echo 'echo "BootOrder: 0004"'
+        printf 'printf "Boot0004* GRUB\\tHD(1,GPT,x)/\\\\EFI\\\\GRUB\\\\grubx64.efi\\n"\n'
+        [[ $1 == yes ]] && printf 'printf "Boot0006* Arch Linux\\tHD(1,GPT,x)/\\\\EFI\\\\Linux\\\\arch-linux.efi\\n"\n'
+    } >"$dir/bin/efibootmgr"
+    chmod +x "$dir"/bin/*
+    preset="$dir/root/etc/mkinitcpio.d/linux.preset"
+    mkdir -p "${preset%/*}"
+    printf '%s\n' "PRESETS=('default')" 'default_image="/boot/initramfs-linux.img"' \
+        '#default_uki="/efi/EFI/Linux/arch-linux.efi"' >"$preset"
+    run_step_with_detection "$dir" "$UKI_ENTRY_STEP" >/dev/null
+    printf '%s|%s\n' "$(rg '^#?default_uki=' "$preset")" \
+        "$(rg -F -- 'efibootmgr --create' "$dir/sudo.log" 2>/dev/null)"
+    rm -rf "$dir"
+}
+
+test_uki_preset_and_firmware_entry() {
+    # mkinitcpio builds the UKI on the ESP bootctl reports, and the firmware
+    # gets one "Arch Linux" entry for it (first in the boot order, which
+    # efibootmgr --create does); a second run creates no duplicate.
+    local uki='default_uki="/boot/efi/EFI/Linux/arch-linux.efi"'
+    assert_eq "no Arch entry yet: preset builds the UKI, firmware entry created" \
+        "$uki|efibootmgr --create --disk /dev/nvme0n1 --part 1 --label Arch Linux --loader \\EFI\\Linux\\arch-linux.efi" \
+        "$(uki_entry_result no)"
+    assert_eq "Arch entry already there: no second entry" "$uki|" "$(uki_entry_result yes)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
