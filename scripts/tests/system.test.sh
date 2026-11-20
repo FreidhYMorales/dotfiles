@@ -39,7 +39,25 @@ test_hook_dropped() {
     assert_eq "no system-sleep hook shipped or referenced" "none" "${refs:-none}"
 }
 
-all_tests=(test_live_sleep_inhibitor test_hook_dropped)
+PAM_DIR="${PAM_DIR:-/etc/pam.d}" # installed PAM services (override to point at a copy)
+
+auth_lines() { # file -> its auth lines, whitespace collapsed
+    grep -E '^-?auth' "$1" | tr -s ' \t' ' '
+}
+
+test_live_lockscreen_pam_stacks() {
+    # Lockscreen password: system-auth's own auth stack minus pam_fprintd, so a
+    # password attempt never waits on, nor is bypassed by, the reader.
+    # Lockscreen fingerprint: a single scan per conversation, nothing else.
+    local want got
+    want=$(auth_lines "$PAM_DIR/system-auth" | grep -v pam_fprintd)
+    got=$(auth_lines "$PAM_DIR/quickshell-password")
+    assert_eq "quickshell-password = system-auth auth without fingerprint" "$want" "$got"
+    assert_eq "quickshell-fprint is one fingerprint scan" \
+        "auth required pam_fprintd.so max-tries=1" "$(auth_lines "$PAM_DIR/quickshell-fprint")"
+}
+
+all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
