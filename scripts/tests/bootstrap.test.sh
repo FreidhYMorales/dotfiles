@@ -83,6 +83,17 @@ excluded_packages() { # -> package names in bootstrap-excluded.txt, sorted
     grep -v '^\s*\(#\|$\)' "$EXCLUDED" | awk '{print $1}' | sort -u
 }
 
+test_exclusions_have_reasons() {
+    # Each exclusion says why in a trailing comment, and none of them is also
+    # installed by bootstrap.sh (that would make the reason a lie).
+    local no_reason both
+    assert_eq "exclusion list has entries" yes "$([[ -n $(excluded_packages) ]] && echo yes || echo no)"
+    no_reason=$(grep -v '^\s*\(#\|$\)' "$EXCLUDED" | grep -v '^\S\+\s\+#\s*\S' | xargs)
+    assert_eq "exclusions without a reason" "" "$no_reason"
+    both=$(comm -12 <(excluded_packages) <(bootstrap_packages) | xargs)
+    assert_eq "exclusions that bootstrap.sh also installs" "" "$both"
+}
+
 test_live_every_explicit_package_accounted_for() {
     # Every package explicitly installed on this ThinkPad is either installed
     # by bootstrap.sh or listed in bootstrap-excluded.txt with a reason.
