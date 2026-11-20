@@ -29,7 +29,17 @@ test_live_sleep_inhibitor() {
     assert_eq "session holds a sleep delay inhibitor" "notch" "${held:-none}"
 }
 
-all_tests=(test_live_sleep_inhibitor)
+test_hook_dropped() {
+    # The root system-sleep hook is dead (systemd freezes user.slice while
+    # sleep hooks run, so its Quickshell IPC can never answer); the repo must
+    # neither ship it nor install or describe it.
+    local refs
+    refs=$(grep -rlE 'lock-before-sleep|system-sleep' "$SYSTEM" "$ROOT/dotfiles/bootstrap.sh" 2>/dev/null |
+        sed "s|$ROOT/||" | sort | tr '\n' ' ')
+    assert_eq "no system-sleep hook shipped or referenced" "none" "${refs:-none}"
+}
+
+all_tests=(test_live_sleep_inhibitor test_hook_dropped)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
