@@ -635,6 +635,30 @@ if [[ "$SKIP_GRUB" == false ]]; then
     sudo grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
+step "GRUB: boot splash and LUKS kernel cmdline"
+# splash lets Plymouth draw (next step). On a LUKS root, sd-encrypt needs the
+# LUKS device and the mapping name; grub-mkconfig adds root= itself.
+# GRUB_CMDLINE_LINUX so recovery entries unlock too. Skipped with --no-grub.
+if [[ "${SKIP_GRUB:-false}" == false ]]; then
+    GRUB_DEFAULTS="${GRUB_DEFAULTS:-/etc/default/grub}"
+    CMDLINE_CHANGED=false
+    if ! sudo grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bsplash\b' "$GRUB_DEFAULTS"; then
+        sudo sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=".*\)"$/\1 splash"/' "$GRUB_DEFAULTS"
+        CMDLINE_CHANGED=true
+    fi
+    if root_on_luks && ! sudo grep -q 'rd\.luks\.name=' "$GRUB_DEFAULTS"; then
+        ROOT_SRC=$(findmnt -no SOURCE /)
+        ROOT_CHAIN=$(lsblk -sPno NAME,TYPE,FSTYPE,UUID "${ROOT_SRC%%\[*}")
+        CRYPT_NAME=$(awk -F'"' '$4 == "crypt" {print $2; exit}' <<<"$ROOT_CHAIN")
+        LUKS_UUID=$(awk -F'"' '$6 == "crypto_LUKS" {print $8; exit}' <<<"$ROOT_CHAIN")
+        sudo sed -i "s/^\(GRUB_CMDLINE_LINUX=\".*\)\"$/\1 rd.luks.name=$LUKS_UUID=$CRYPT_NAME\"/" "$GRUB_DEFAULTS"
+        CMDLINE_CHANGED=true
+    fi
+    if [[ "$CMDLINE_CHANGED" == true ]]; then
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    fi
+fi
+
 step "Boot splash: Plymouth (bgrt) and a systemd initramfs"
 # Plymouth draws the stock bgrt splash (firmware logo) on every install; on a
 # LUKS root it also asks the passphrase, through sd-encrypt. The systemd
