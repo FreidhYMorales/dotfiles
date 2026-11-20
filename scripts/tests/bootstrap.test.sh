@@ -108,6 +108,44 @@ test_docs_name_only_current_things() {
         "$(grep -oE '^\| `[a-z0-9-]+` \|' "$ROOT/dotfiles/README.md" | tr -d '|` ' | sort -u | xargs)"
 }
 
+logind_step_restarts() { # session types... -> yes|no: the logind step restarts systemd-logind
+    # Runs bootstrap.sh's own logind step under its strict mode, with loginctl
+    # faked to report one session per given type and sudo only logging.
+    local dir types=("$@") i out
+    dir=$(mktemp -d)
+    mkdir -p "$dir/bin" "$dir/repo/system/logind/logind.conf.d"
+    touch "$dir/repo/system/logind/logind.conf.d/deadlock.conf"
+    {
+        echo '#!/usr/bin/env bash'
+        echo 'case "$1" in'
+        printf '  list-sessions) '
+        for i in "${!types[@]}"; do printf 'echo "%d 1000 deadlock seat0 1 user tty1 no -"; ' "$((i + 2))"; done
+        echo ';;'
+        echo '  show-session) case "$2" in'
+        for i in "${!types[@]}"; do printf '    %d) echo %s ;;\n' "$((i + 2))" "${types[$i]}"; done
+        echo '  esac ;;'
+        echo 'esac'
+    } >"$dir/bin/loginctl"
+    printf '#!/usr/bin/env bash\necho "$*" >>"%s/sudo.log"\n' "$dir" >"$dir/bin/sudo"
+    chmod +x "$dir/bin/loginctl" "$dir/bin/sudo"
+    awk '/^step "logind: power button config"/ {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP" >"$dir/step.sh"
+    PATH="$dir/bin:$PATH" REPO_ROOT="$dir/repo" bash -euo pipefail "$dir/step.sh" >/dev/null 2>&1
+    out=$(grep -c 'systemctl restart systemd-logind' "$dir/sudo.log" 2>/dev/null)
+    rm -rf "$dir"
+    [[ ${out:-0} -gt 0 ]] && echo yes || echo no
+}
+
+test_rerun_keeps_graphical_session() {
+    # Restarting logind under a running desktop drops the user to SDDM; on a
+    # fresh install with no graphical session it is safe and applies the conf.
+    assert_eq "logind is not restarted with a wayland session and a manager session" no \
+        "$(logind_step_restarts wayland unspecified)"
+    assert_eq "logind is not restarted with a manager session listed before the wayland one" no \
+        "$(logind_step_restarts unspecified wayland)"
+    assert_eq "logind is restarted with no graphical session (fresh install)" yes \
+        "$(logind_step_restarts tty unspecified)"
+}
+
 test_live_every_explicit_package_accounted_for() {
     # Every package explicitly installed on this ThinkPad is either installed
     # by bootstrap.sh or listed in bootstrap-excluded.txt with a reason.
