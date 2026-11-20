@@ -530,6 +530,11 @@ command -v agy &>/dev/null || curl -fsSL https://antigravity.google/cli/install.
 
 step "AI tools: Ollama"
 sudo pacman -S --needed --noconfirm ollama
+# Service tweaks from the repo (download.conf: one transfer stream per pull).
+# Models stay in the packaged default, /var/lib/ollama (see post-install.md).
+sudo mkdir -p /etc/systemd/system/ollama.service.d
+sudo cp "$REPO_ROOT"/system/systemd/ollama.service.d/*.conf /etc/systemd/system/ollama.service.d
+sudo systemctl daemon-reload
 sudo systemctl enable ollama
 
 step "AI tools: herdr (terminal workspace manager for coding agents)"
