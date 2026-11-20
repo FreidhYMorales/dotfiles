@@ -635,6 +635,21 @@ if [[ "$SKIP_GRUB" == false ]]; then
     sudo grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
+step "Boot splash: Plymouth (bgrt) and a systemd initramfs"
+# Plymouth draws the stock bgrt splash (firmware logo) on every install; on a
+# LUKS root it also asks the passphrase, through sd-encrypt. The systemd
+# hooks replace udev/keymap/consolefont/resume: sd-vconsole loads the TTY
+# font and keymap, and systemd resumes from hibernation by itself. The whole
+# HOOKS line is rewritten here, after the hibernation step, and the
+# mkinitcpio -P below rebuilds the images.
+sudo pacman -S --needed --noconfirm plymouth
+sudo plymouth-set-default-theme bgrt
+INITRAMFS_HOOKS="base systemd autodetect microcode modconf kms keyboard sd-vconsole plymouth block filesystems fsck"
+if root_on_luks; then
+    INITRAMFS_HOOKS="${INITRAMFS_HOOKS/block/block sd-encrypt}"
+fi
+sudo sed -i "s/^HOOKS=.*/HOOKS=($INITRAMFS_HOOKS)/" /etc/mkinitcpio.conf
+
 # ── 31. Boot optimization ────────────────────────────────────────────────────
 step "Boot optimization: systemd services"
 # systemd-networkd-wait-online blocks boot for 2+ min on desktop waiting for
