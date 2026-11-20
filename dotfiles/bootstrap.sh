@@ -674,7 +674,7 @@ yay -S --needed --noconfirm seclists burpsuite
 # ── Deploy dotfiles ───────────────────────────────────────────────────────────
 step "Deploying dotfiles"
 # Remove auto-generated files that would conflict with Stow symlinks.
-# These are created by tools installed above (OMZ → .zshrc, git → .gitconfig).
+# Any pre-existing copy (from /etc/skel or an earlier setup) blocks Stow.
 # On a fresh install there's nothing to preserve — our dotfiles replace them.
 rm -f \
     "$HOME/.zshrc" \
@@ -735,8 +735,6 @@ if [[ ! -f "$HOME/.local/state/quickshell/theme.json" ]]; then
     # Default theme state — dynamic:true so changing the wallpaper triggers matugen
     echo '{"mode":"scheme-content","isLight":false,"dynamic":true}' >"$HOME/.local/state/quickshell/theme.json"
 fi
-# weather-loc.json is NOT written here — get-location uses GeoClue2 (WiFi) automatically.
-# To pin a location manually: echo '{"loc":"lat,lon","city":"Name"}' > ~/.local/state/quickshell/weather-loc.json
 
 step "Post-install: matugen post-hook permissions"
 chmod +x "$HOME/.config/matugen/post-hook.sh"
