@@ -361,14 +361,6 @@ sudo pacman -S --needed --noconfirm btop fastfetch htop nvtop
 step "SDDM (display manager)"
 sudo pacman -S --needed --noconfirm sddm qt6-virtualkeyboard
 
-step "SDDM: install silent theme"
-SDDM_THEME_SRC="$REPO_ROOT/system/sddm/themes/silent"
-if [[ -d "$SDDM_THEME_SRC" ]]; then
-    sudo cp -r "$SDDM_THEME_SRC" /usr/share/sddm/themes/
-    sudo chown -R root:root /usr/share/sddm/themes/silent
-    sudo chmod -R a+rX /usr/share/sddm/themes/silent
-fi
-
 step "SDDM: install notch-lock theme"
 # The greeter is the notch shell's own SDDM theme. The notch publishes the
 # current wallpaper and palette to a shared data dir the user owns and the
@@ -394,18 +386,6 @@ echo "$SDDM_DATA_DIR" >"$HOME/.local/state/quickshell-notch/sddm-target.txt"
 step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
 sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
-
-step "SDDM: bootstrap default custom config (replaced on first matugen run)"
-# Skip on a re-run over an already-configured system — otherwise this
-# regresses the login theme back to stock colors until the next wallpaper
-# change (same persistence-loss pattern as FRESH_WALLPAPER_STATE below).
-if [[ -f /usr/share/sddm/themes/silent/configs/custom.conf ]]; then
-    echo "custom.conf already exists — leaving current SDDM theme in place"
-elif [[ -f "$SDDM_THEME_SRC/configs/default.conf" ]]; then
-    sudo cp "$SDDM_THEME_SRC/configs/default.conf" /usr/share/sddm/themes/silent/configs/custom.conf
-else
-    echo "Warning: $SDDM_THEME_SRC/configs/default.conf not found — theme wasn't installed above, skipping custom.conf bootstrap"
-fi
 
 step "SDDM: enable service"
 sudo systemctl enable sddm
@@ -788,25 +768,9 @@ chmod +x "$HOME/.config/matugen/post-hook.sh"
 step "Post-install: termfilechooser wrapper"
 chmod +x "$HOME/.config/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh"
 
-step "Post-install: SDDM theme sync helper + sudoers"
-SDDM_SYNC_SRC="$HOME/.config/matugen/sddm-theme-sync"
-if [[ -f "$SDDM_SYNC_SRC" ]]; then
-    sudo cp "$SDDM_SYNC_SRC" /usr/local/bin/sddm-theme-sync
-    sudo chown root:root /usr/local/bin/sddm-theme-sync
-    sudo chmod 755 /usr/local/bin/sddm-theme-sync
-fi
-SUDOERS_FILE="/etc/sudoers.d/sddm-theme-sync"
-if [[ ! -f "$SUDOERS_FILE" ]]; then
-    echo "$USER ALL=(root) NOPASSWD: /usr/local/bin/sddm-theme-sync" |
-        sudo tee "$SUDOERS_FILE" >/dev/null
-    sudo chmod 440 "$SUDOERS_FILE"
-fi
-
 step "Post-install: generate theme from default wallpaper"
-# The custom.conf bootstrapped above (step 24) is just the theme's stock
-# default until matugen actually runs once — same command ColoursEngine.qml
-# runs when a wallpaper is picked from the launcher, so first boot ends up
-# themed identically to a manual pick instead of staying on stock colors.
+# Runs matugen once on the default wallpaper so first boot is themed (kitty,
+# Hyprland, browsers) instead of staying on stock colors until the first pick.
 # Only on a real fresh install — see FRESH_WALLPAPER_STATE above — otherwise
 # this would re-theme everything back to the default wallpaper on a re-run.
 if [[ "$FRESH_WALLPAPER_STATE" == true ]]; then
