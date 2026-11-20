@@ -38,14 +38,12 @@ With flags:
 # auto-detects and installs the right drivers for whatever's present.
 curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/install.sh | bash -s -- --no-gpu
 
-# Skip GRUB theme (e.g. systemd-boot)
-curl -fsSL https://raw.githubusercontent.com/FreidhYMorales/dotfiles/main/install.sh | bash -s -- --no-grub
 ```
 
 ### Repo already on disk (external drive mounted)
 
 ```bash
-./install.sh [--no-gpu] [--no-grub]
+./install.sh [--no-gpu]
 ```
 
 The script detects whether the repo is already present, clones it if not, and hands off to `dotfiles/bootstrap.sh`.
@@ -82,7 +80,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 24. Network (iwd + impala) + Bluetooth (bluez + bluetui)
 25. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm) + dev tools (git-delta, hyperfine, tokei, watchexec, xh, sqlite, docker)
 26. AI tools (Claude Code, Gemini CLI, OpenCode, gentle-ai)
-27. GRUB + Star Wars Posters theme + dual boot *(skipped with `--no-grub`)*
+27. Boot: Plymouth `bgrt` splash on a systemd initramfs, the whole kernel cmdline in `/etc/kernel/cmdline`, and a firmware entry (`efibootmgr`) that boots the UKI directly, with no bootloader
 
 Ends by running `deploy.sh` (Stow), updating XDG dirs, rebuilding font cache, and installing Neovim/Yazi plugins.
 
@@ -129,10 +127,6 @@ chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_ed25519
 
 # 2. Restore GPG keys
 gpg --import ~/path/to/backup/gnupg/public-keys.asc
-
-# 3. GRUB install (machine-specific, run once)
-sudo grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
-sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
 ---

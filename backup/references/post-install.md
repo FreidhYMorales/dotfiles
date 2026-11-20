@@ -17,11 +17,11 @@ gh auth status
 
 ## 2. Machine-specific boot setup
 
-`bootstrap.sh` (paso 30) ya instala los paquetes de GRUB, aplica el tema, escribe `/etc/default/grub` y corre `grub-mkconfig`. Lo único que queda genuinamente manual es `grub-install` — depende del disco de cada máquina y no es seguro automatizarlo a ciegas:
+Nada manual: no hay bootloader. `bootstrap.sh` escribe el cmdline completo en `/etc/kernel/cmdline`, activa `default_uki` en `/etc/mkinitcpio.d/linux.preset` (UKI en `<ESP>/EFI/Linux/arch-linux.efi`, la ESP que reporta `bootctl --print-esp-path`) y crea la entrada "Arch Linux" del firmware con `efibootmgr`, primera en el orden de arranque (story 22). Verificar después del primer arranque:
 
 ```bash
-# Adjust device to your disk (e.g. /dev/nvme0n1, /dev/sda)
-sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB /dev/sdX
+efibootmgr          # BootCurrent = la entrada "Arch Linux"
+cat /proc/cmdline   # el cmdline de /etc/kernel/cmdline
 ```
 
 ```bash
