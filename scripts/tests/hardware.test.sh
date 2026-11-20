@@ -79,8 +79,14 @@ test_firmware_checks_enabled() {
     assert_eq "bootstrap enables fwupd-refresh.timer" yes "$(enables fwupd-refresh.timer)"
 }
 
+test_live_fwupd_refresh_timer_enabled() {
+    # Story 17: this machine checks for firmware updates like a fresh install would.
+    assert_eq "fwupd-refresh.timer enabled" enabled "$(systemctl is-enabled fwupd-refresh.timer 2>&1)"
+    assert_eq "fwupd-refresh.timer active" active "$(systemctl is-active fwupd-refresh.timer 2>&1)"
+}
+
 all_tests=(test_live_devices_on_expected_driver test_bootstrap_installs_device_packages
-    test_firmware_checks_enabled)
+    test_firmware_checks_enabled test_live_fwupd_refresh_timer_enabled)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
