@@ -417,9 +417,12 @@ sudo cp "$REPO_ROOT/system/logind/logind.conf.d/deadlock.conf" /etc/systemd/logi
 # a fresh install with no session yet. Detect an active wayland/x11 session
 # and skip the live restart when re-running on an already-installed desktop;
 # the conf.d file is already written and takes effect on the next reboot.
-if loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}' |
-    xargs -I{} loginctl show-session {} -p Type --value 2>/dev/null |
-    grep -qE '^(wayland|x11)$'; then
+# Types are collected first: `| grep -q` would exit on the first match and,
+# under pipefail, the SIGPIPE it leaves on the next session turns "found"
+# into "not found" — which restarted logind under a live desktop.
+SESSION_TYPES=$(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}' |
+    xargs -I{} loginctl show-session {} -p Type --value 2>/dev/null || true)
+if [[ $'\n'"$SESSION_TYPES"$'\n' =~ $'\n'(wayland|x11)$'\n' ]]; then
     echo "  → sesión gráfica activa detectada — se salta el restart en caliente (mataría la sesión). Aplica en el próximo reinicio."
 else
     sudo systemctl restart systemd-logind 2>/dev/null || true
