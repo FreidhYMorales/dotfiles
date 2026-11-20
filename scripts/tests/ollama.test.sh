@@ -68,7 +68,20 @@ test_live_models_doc() {
     assert_eq "post-install pulls every local model, with its size" none "${missing:-none}"
 }
 
-all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo test_live_models_doc)
+EXCLUDED="${EXCLUDED:-$ROOT/dotfiles/bootstrap-excluded.txt}"
+
+test_bootstrap_installs_vulkan_backend() {
+    # Story 12: without the Vulkan backend Ollama runs on the CPU only.
+    local n
+    n=$(awk '{ if (sub(/\\$/, "")) { buf = buf $0 " "; next } print buf $0; buf = "" }' "$BOOTSTRAP" |
+        grep -oE '(pacman|yay) -S --needed --noconfirm[^|;&]*' | tr -s ' ' '\n' | grep -cxF ollama-vulkan)
+    assert_eq "bootstrap installs ollama-vulkan" yes "$( ((n > 0)) && echo yes || echo no)"
+    assert_eq "ollama-vulkan not in the exclusion list" no \
+        "$( (($(grep -cE '^ollama-vulkan([[:space:]]|$)' "$EXCLUDED") > 0)) && echo yes || echo no)"
+}
+
+all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo test_live_models_doc
+    test_bootstrap_installs_vulkan_backend)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
