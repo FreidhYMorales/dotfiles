@@ -642,6 +642,18 @@ SystemMaxUse=50M
 RuntimeMaxUse=20M
 EOF
 
+step "Console font: Terminus 16x32 on the TTYs"
+# default8x16 is unreadable at 2880x1800. The consolefont hook (sd-vconsole
+# under systemd hooks) reads this file into the initramfs, so the font also
+# covers early boot; the mkinitcpio -P of the next step picks it up.
+VCONSOLE="${VCONSOLE:-/etc/vconsole.conf}"
+sudo pacman -S --needed --noconfirm terminus-font
+if grep -q '^FONT=' "$VCONSOLE" 2>/dev/null; then
+    sudo sed -i 's/^FONT=.*/FONT=ter-132b/' "$VCONSOLE"
+else
+    echo 'FONT=ter-132b' | sudo tee -a "$VCONSOLE" >/dev/null
+fi
+
 step "Boot optimization: mkinitcpio lz4 compression"
 # lz4 decompresses faster than zstd at the cost of slightly larger initramfs —
 # on SSD the decompression speed wins; kms hook handles Early KMS automatically
