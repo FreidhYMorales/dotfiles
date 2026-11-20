@@ -235,6 +235,27 @@ test_sddm_step_installs_notch_lock() {
     rm -rf "$dir"
 }
 
+test_sddm_step_rerun_keeps_installed_greeter() {
+    # On a re-run the theme and the staged greeter data are already there:
+    # the notch's installer refuses to replace a theme, so the step must leave
+    # both alone and let bootstrap go on instead of aborting under set -e.
+    local dir r
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    r="$dir/root"
+    mkdir -p "$r/usr/share/sddm/themes/notch-lock" "$r/var/lib/quickshell-notch-sddm"
+    echo installed >"$r/usr/share/sddm/themes/notch-lock/marker"
+    echo 'background=file:///var/lib/quickshell-notch-sddm/background-a' \
+        >"$r/var/lib/quickshell-notch-sddm/theme.conf.user"
+    assert_eq "re-run finishes the notch-lock step" REACHED_NEXT_STEP "$(run_bootstrap_step "$dir" "$SDDM_STEP")"
+    assert_eq "re-run keeps the installed theme" installed \
+        "$(cat "$r/usr/share/sddm/themes/notch-lock/marker" 2>/dev/null)"
+    assert_eq "re-run keeps the staged greeter config" \
+        'background=file:///var/lib/quickshell-notch-sddm/background-a' \
+        "$(cat "$r/var/lib/quickshell-notch-sddm/theme.conf.user" 2>/dev/null)"
+    rm -rf "$dir"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
