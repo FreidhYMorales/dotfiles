@@ -42,6 +42,14 @@ enables() { # unit -> yes|no: bootstrap.sh runs systemctl enable on it
     [[ $(bootstrap_lines | grep -v '^\s*#' | grep -cE -- "systemctl enable( --now)? $1( |$)") -gt 0 ]] && echo yes || echo no
 }
 
+battery_gated() { # pkg -> yes|no: bootstrap.sh installs it only inside a BAT0 (laptop) block
+    bootstrap_lines | awk -v pkg="$1" '
+        /^if .*power_supply\/BAT0/ { gated = 1 }
+        /^fi/ { gated = 0 }
+        gated && /(pacman|yay) -S/ { for (i = 1; i <= NF; i++) if ($i == pkg) hit = 1 }
+        END { print (hit ? "yes" : "no") }'
+}
+
 test_live_devices_on_expected_driver() {
     # Story 17 audit, this ThinkPad X1 Carbon Gen 13 (Lunar Lake).
     assert_eq "iGPU (Arc 130V/140V) on xe" xe "$(pci_driver 'VGA compatible controller')"
@@ -64,7 +72,15 @@ test_bootstrap_installs_device_packages() {
     done
 }
 
-all_tests=(test_live_devices_on_expected_driver test_bootstrap_installs_device_packages)
+test_firmware_checks_enabled() {
+    # Story 17: firmware update checks run on any machine, not only on laptops
+    # as a side effect of the battery threshold step.
+    assert_eq "fwupd is not installed only on laptops" no "$(battery_gated fwupd)"
+    assert_eq "bootstrap enables fwupd-refresh.timer" yes "$(enables fwupd-refresh.timer)"
+}
+
+all_tests=(test_live_devices_on_expected_driver test_bootstrap_installs_device_packages
+    test_firmware_checks_enabled)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
