@@ -280,6 +280,40 @@ test_silent_theme_and_sync_helper_gone() {
     assert_eq "bootstrap installs no silent theme" no "$(runs 'themes/silent')"
 }
 
+STATE_STEP='Post-install: default Quickshell state'
+
+state_step_fresh() { # dir -> runs the default-state step in the sandbox, prints FRESH_WALLPAPER_STATE
+    { awk -v t="step \"$STATE_STEP\"" '$0 == t {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo "$FRESH_WALLPAPER_STATE"'; } >"$1/step.sh"
+    HOME="$1/home" PATH="$1/bin:$PATH" bash -euo pipefail "$1/step.sh" 2>"$1/stderr" | tail -1
+}
+
+test_fresh_install_seeds_notch_state() {
+    # The notch reads its wallpaper and theme mode from its own state dir; a
+    # fresh install seeds both there (default wallpaper, content scheme, dark)
+    # and nothing in the old Quickshell state dir. A re-run keeps the pick.
+    local dir h n
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    h="$dir/home"
+    n="$h/.local/state/quickshell-notch"
+    mkdir -p "$h/.config/hypr/assets"
+    echo png >"$h/.config/hypr/assets/arch.png"
+    assert_eq "fresh install is detected" true "$(state_step_fresh "$dir")"
+    assert_eq "notch wallpaper seeded with the default" "$h/Pictures/Wallpaper/arch.png" \
+        "$(cat "$n/wallpaper.txt" 2>/dev/null)"
+    assert_eq "notch theme seeded dark content scheme" '{"mode":"scheme-content","variant":"dark"}' \
+        "$(cat "$n/theme.json" 2>/dev/null)"
+    assert_eq "old Quickshell state dir not created" no \
+        "$([[ -e $h/.local/state/quickshell ]] && echo yes || echo no)"
+    echo "$h/Pictures/Wallpaper/tiger.jpg" >"$n/wallpaper.txt"
+    echo '{"mode":"scheme-tonal-spot","variant":"light"}' >"$n/theme.json"
+    assert_eq "re-run is not a fresh install" false "$(state_step_fresh "$dir")"
+    assert_eq "re-run keeps the picked wallpaper" "$h/Pictures/Wallpaper/tiger.jpg" "$(cat "$n/wallpaper.txt")"
+    assert_eq "re-run keeps the picked theme" '{"mode":"scheme-tonal-spot","variant":"light"}' "$(cat "$n/theme.json")"
+    rm -rf "$dir"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
