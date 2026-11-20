@@ -536,7 +536,8 @@ command -v agy &>/dev/null || curl -fsSL https://antigravity.google/cli/install.
 
 step "AI tools: Ollama"
 sudo pacman -S --needed --noconfirm ollama ollama-vulkan
-# Service tweaks from the repo (download.conf: one transfer stream per pull).
+# Service tweaks from the repo (download.conf: one transfer stream per pull;
+# igpu.conf: OLLAMA_IGPU_ENABLE=1, else Ollama drops the Arc iGPU and runs on CPU).
 # Models stay in the packaged default, /var/lib/ollama (see post-install.md).
 sudo mkdir -p /etc/systemd/system/ollama.service.d
 sudo cp "$REPO_ROOT"/system/systemd/ollama.service.d/*.conf /etc/systemd/system/ollama.service.d
