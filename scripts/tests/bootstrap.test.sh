@@ -314,6 +314,18 @@ test_fresh_install_seeds_notch_state() {
     rm -rf "$dir"
 }
 
+test_docs_describe_the_notch_lock_greeter() {
+    # Story 19 replaced the silent theme with notch-lock and moved the
+    # first-boot state to the notch: the project docs must not describe the
+    # removed theme, its sudo helper or the old shell's wallpaper services.
+    local stale
+    stale=$(grep -noiE 'silent|sddm-theme-sync|custom\.conf|qs-current|Wallpapers\.qml|ColoursEngine' \
+        "$ROOT/CLAUDE.md" "$ROOT/system/sddm/README.md")
+    assert_eq "docs name no silent theme, sync helper or old wallpaper services" "" "$stale"
+    assert_eq "SDDM README describes notch-lock" yes \
+        "$(grep -q 'notch-lock' "$ROOT/system/sddm/README.md" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
