@@ -713,6 +713,19 @@ sudo mkdir -p /etc/kernel
 echo "$KERNEL_ROOT rw zswap.enabled=0 quiet loglevel=3 nowatchdog splash$RESUME_ARG$LUKS_ARG" |
     sudo tee /etc/kernel/cmdline >/dev/null
 
+step "Boot: UKI from the firmware"
+# mkinitcpio builds the UKI on the ESP (the stock preset ships default_uki
+# commented) and the firmware boots it directly: no GRUB, no boot menu.
+# efibootmgr --create puts the new entry first in the boot order. The mkinitcpio
+# -P of the boot optimization step builds the image.
+ESP=$(bootctl --print-esp-path)
+ESP_PART=$(findmnt -no SOURCE "$ESP")
+sudo sed -i "s|^#\?default_uki=.*|default_uki=\"$ESP/EFI/Linux/arch-linux.efi\"|" /etc/mkinitcpio.d/linux.preset
+if ! efibootmgr | awk -F'\t' '{sub(/^Boot[0-9A-F]+\*? /, "", $1)} $1 == "Arch Linux" {found = 1} END {exit !found}'; then
+    sudo efibootmgr --create --disk "/dev/$(lsblk -no PKNAME "$ESP_PART")" --part "$(lsblk -no PARTN "$ESP_PART")" \
+        --label "Arch Linux" --loader '\EFI\Linux\arch-linux.efi'
+fi
+
 # ── 31. Boot optimization ────────────────────────────────────────────────────
 step "Boot optimization: systemd services"
 # systemd-networkd-wait-online blocks boot for 2+ min on desktop waiting for
