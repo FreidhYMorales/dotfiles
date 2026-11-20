@@ -182,6 +182,59 @@ test_live_every_explicit_package_accounted_for() {
     assert_eq "explicit packages neither in bootstrap nor excluded" "" "$missing"
 }
 
+SDDM_STEP='SDDM: install notch-lock theme'
+
+sddm_sandbox() { # dir -> fake sudo that runs commands with /usr/share, /var/lib and /etc under dir/root
+    # Ownership flags are logged but dropped (no root here); everything else
+    # really runs, so the notch's own installer copies the theme.
+    mkdir -p "$1/bin" "$1/root/usr/share/sddm/themes" "$1/root/var/lib" "$1/home"
+    cat >"$1/bin/sudo" <<SUDO
+#!/usr/bin/env bash
+echo "\$*" >>"$1/sudo.log"
+args=()
+while [[ \$# -gt 0 ]]; do
+    case "\$1" in
+        -o|-g) shift 2; continue ;;
+    esac
+    a="\$1"; a="\${a//\/usr\/share\//$1/root/usr/share/}"; a="\${a//\/var\/lib\//$1/root/var/lib/}"; a="\${a//\/etc\//$1/root/etc/}"
+    args+=("\$a"); shift
+done
+exec "\${args[@]}"
+SUDO
+    chmod +x "$1/bin/sudo"
+}
+
+run_bootstrap_step() { # dir step-title -> runs that bootstrap.sh step in the sandbox, prints the last line
+    { awk -v t="step \"$2\"" '$0 == t {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo REACHED_NEXT_STEP'; } >"$1/step.sh"
+    HOME="$1/home" USER=deadlock PATH="$1/bin:$PATH" SCRIPT_DIR="$ROOT/dotfiles" REPO_ROOT="$ROOT" \
+        bash -euo pipefail "$1/step.sh" 2>"$1/stderr" | tail -1
+}
+
+test_sddm_step_installs_notch_lock() {
+    # A fresh install gets the live setup: the notch-lock theme from the notch
+    # submodule, its theme.conf.user linked to a shared data dir the user
+    # owns and the sddm group reads (setgid, 2750), and the notch told to
+    # publish the greeter wallpaper there.
+    local dir r
+    dir=$(mktemp -d)
+    sddm_sandbox "$dir"
+    r="$dir/root"
+    assert_eq "notch-lock step finishes" REACHED_NEXT_STEP "$(run_bootstrap_step "$dir" "$SDDM_STEP")"
+    assert_eq "notch-lock theme installed" yes \
+        "$([[ -f $r/usr/share/sddm/themes/notch-lock/Main.qml ]] && echo yes || echo no)"
+    assert_eq "theme.conf.user links into the shared data dir" \
+        "$r/var/lib/quickshell-notch-sddm/theme.conf.user" \
+        "$(readlink "$r/usr/share/sddm/themes/notch-lock/theme.conf.user")"
+    assert_eq "shared data dir is setgid and closed to others" 2750 \
+        "$(stat -c %a "$r/var/lib/quickshell-notch-sddm" 2>/dev/null)"
+    assert_eq "shared data dir is owned by the user, group sddm" yes \
+        "$(grep -qE 'install .*-o deadlock -g sddm -m 2750 /var/lib/quickshell-notch-sddm' "$dir/sudo.log" 2>/dev/null && echo yes || echo no)"
+    assert_eq "notch publishes the greeter to the shared data dir" /var/lib/quickshell-notch-sddm \
+        "$(cat "$dir/home/.local/state/quickshell-notch/sddm-target.txt" 2>/dev/null)"
+    rm -rf "$dir"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
