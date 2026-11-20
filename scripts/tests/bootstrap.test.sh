@@ -342,6 +342,18 @@ test_sddm_step_greeter_config_readable_only_by_sddm() {
     rm -rf "$dir"
 }
 
+test_reference_docs_describe_the_notch_pipeline() {
+    # The repo README and the matugen pipeline reference (a read-first doc in
+    # CLAUDE.md) must not describe the removed silent theme, its sudo helper,
+    # the old Quickshell state dir or the old shell's theming service.
+    local stale
+    stale=$(grep -noiE 'silent|sddm-theme-sync|custom\.conf|qs-current|local/state/quickshell/|ColoursEngine' \
+        "$ROOT/README.md" "$ROOT/backup/references/matugen-pipeline-reference.md")
+    assert_eq "reference docs name no silent theme, sync helper or old shell state" "" "$stale"
+    assert_eq "matugen reference describes the notch-lock greeter" yes \
+        "$(grep -q 'notch-lock' "$ROOT/backup/references/matugen-pipeline-reference.md" && echo yes || echo no)"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
