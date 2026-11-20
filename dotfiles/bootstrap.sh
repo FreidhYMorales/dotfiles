@@ -157,14 +157,6 @@ if [[ "$SHELL" != "$(which zsh)" ]]; then
     sudo usermod --shell "$(which zsh)" "$USER"
 fi
 
-step "Oh My Zsh"
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    RUNZSH=no CHSH=no sh -c \
-        "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-fi
-
-yay -S --needed --noconfirm zsh-theme-powerlevel10k
-
 step "Zsh plugins"
 # .zshrc sources these from /usr/share/zsh/plugins; fzf-tab has no package in
 # the official repos, so it is cloned to ~/.local/share/zsh/plugins.
@@ -227,8 +219,8 @@ step "Screen recording"
 yay -S --needed --noconfirm gpu-screen-recorder-git
 
 # ── 15. Theming ───────────────────────────────────────────────────────────────
-step "Theming (matugen + spicetify)"
-yay -S --needed --noconfirm matugen spicetify-cli spotify
+step "Theming (matugen)"
+yay -S --needed --noconfirm matugen
 
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
