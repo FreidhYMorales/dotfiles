@@ -138,8 +138,10 @@ test_live_hibernate_prereqs() {
     swaps=$(swapon --show=NAME --noheadings | xargs -r lsblk -no UUID 2>/dev/null)
     assert_eq "resume= names an active swap" "yes" \
         "$([[ -n $resume ]] && grep -qx "$resume" <<<"$swaps" && echo yes || echo "no (resume=${resume:-unset})")"
-    assert_eq "mkinitcpio runs the resume hook" "yes" \
-        "$(grep -E '^HOOKS=' /etc/mkinitcpio.conf | grep -qw resume && echo yes || echo no)"
+    # The busybox resume hook, or the systemd hook (story 20), which resumes
+    # by itself from resume= on the cmdline.
+    assert_eq "the initramfs can resume (resume or systemd hook)" "yes" \
+        "$(grep -E '^HOOKS=' /etc/mkinitcpio.conf | grep -qwE 'resume|systemd' && echo yes || echo no)"
     assert_eq "only s2idle is available" "[s2idle]" "$(</sys/power/mem_sleep)"
     assert_eq "lid close on battery and AC" "suspend-then-hibernate suspend-then-hibernate" \
         "$(grep -E '^HandleLidSwitch(ExternalPower)?=' "$SYSTEM/logind/logind.conf.d/deadlock.conf" | cut -d= -f2 | tr '\n' ' ' | sed 's/ $//')"
