@@ -1,4 +1,0 @@
-module qs.components.controls
-ArcMeter         1.0 ArcMeter.qml
-SegmentedMeter   1.0 SegmentedMeter.qml
-Toggle           1.0 Toggle.qml
