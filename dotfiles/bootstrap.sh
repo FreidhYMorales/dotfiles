@@ -117,12 +117,21 @@ if [[ "$SKIP_GPU" == false ]]; then
     if [[ "$HAS_INTEL" == true ]]; then
         step "GPU: Intel"
         sudo pacman -S --needed --noconfirm \
-            mesa vulkan-intel intel-media-driver libva-intel-driver
+            mesa vulkan-intel intel-media-driver libva-intel-driver \
+            lib32-vulkan-intel vulkan-tools
     fi
 
     if [[ "$HAS_NVIDIA" == false && "$HAS_AMD" == false && "$HAS_INTEL" == false ]]; then
         echo "No recognized GPU found — skipping GPU drivers"
     fi
+fi
+
+# ── 4a. CPU microcode ─────────────────────────────────────────────────────────
+# pacstrap leaves microcode out unless asked; GRUB picks it up on the
+# grub-mkconfig run in step 30.
+if grep -q GenuineIntel /proc/cpuinfo; then
+    step "CPU microcode (Intel)"
+    sudo pacman -S --needed --noconfirm intel-ucode
 fi
 
 # ── 4b. NPU (Intel AI Boost — Lunar Lake / Core Ultra 2xxV and newer) ─────────
@@ -169,7 +178,7 @@ step "CLI tools"
 sudo pacman -S --needed --noconfirm \
     eza bat fd ripgrep fzf sd duf jq lazygit github-cli starship zellij \
     rsync caligula aria2 7zip tealdeer procs dust qrencode poppler \
-    pacman-contrib transmission-cli atuin
+    pacman-contrib transmission-cli atuin tree wget unrar man-db
 sudo systemctl enable paccache.timer
 # The zsh not-found handler looks commands up with `pacman -F`; the timer
 # (pacman-contrib) keeps the files database fresh after this first download.
@@ -198,7 +207,7 @@ step "Audio (PipeWire + MPD)"
 # Remove known conflicting packages so pacman doesn't pause asking for confirmation
 sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
-    pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber \
+    pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber alsa-utils \
     mpd mpd-mpris ncmpcpp wiremix sof-firmware playerctl
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
@@ -229,7 +238,7 @@ yay -S --needed --noconfirm matugen
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
 yay -S --needed --noconfirm vesktop zen-browser-bin chromium obsidian nordzy-cursors nordzy-hyprcursors nwg-displays
-sudo pacman -S --needed --noconfirm mpv yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh gnome-keyring libsecret steam
+sudo pacman -S --needed --noconfirm mpv cava gimp yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh coin-or-mp gnome-keyring libsecret steam
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
@@ -241,6 +250,7 @@ sudo pacman -S --needed --noconfirm \
 step "System utils"
 sudo pacman -S --needed --noconfirm \
     upower curl xdg-utils xdg-terminal-exec xdg-user-dirs ntfs-3g power-profiles-daemon \
+    dosfstools exfatprogs ntfsprogs gptfdisk \
     geoclue python-gobject
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
@@ -339,7 +349,7 @@ fi
 
 # ── 23. System info ───────────────────────────────────────────────────────────
 step "System info"
-sudo pacman -S --needed --noconfirm btop fastfetch htop
+sudo pacman -S --needed --noconfirm btop fastfetch htop nvtop
 
 # ── 24. SDDM ─────────────────────────────────────────────────────────────────
 step "SDDM (display manager)"
@@ -437,7 +447,8 @@ yay -S --needed --noconfirm xdg-desktop-portal-termfilechooser-hunkyburrito-git
 
 # ── 27. Network & Bluetooth TUIs ─────────────────────────────────────────────
 step "Network (iwd + impala)"
-sudo pacman -S --needed --noconfirm iwd
+# wireless-regdb: regulatory domain, so iwd uses the right channels and power
+sudo pacman -S --needed --noconfirm iwd wireless-regdb
 yay -S --needed --noconfirm impala
 sudo systemctl enable iwd
 
@@ -468,13 +479,29 @@ sudo pacman -S --needed --noconfirm pnpm
 
 step "Dev tools"
 sudo pacman -S --needed --noconfirm \
-    git-delta hyperfine tokei watchexec xh sqlite direnv
+    git-delta hyperfine tokei watchexec xh sqlite direnv \
+    shellcheck shfmt actionlint gitleaks act trivy osv-scanner mise typst ast-grep go-yq
+# Backups (engram-backup) and the DOTFILES IA tooling (pi-box) need these
+sudo pacman -S --needed --noconfirm restic rclone socat
+
+step "Dev: devices (Android + Arduino)"
+sudo pacman -S --needed --noconfirm android-tools arduino-cli
+yay -S --needed --noconfirm arduino-ide-bin
 
 step "Dev: Docker"
 sudo pacman -S --needed --noconfirm docker docker-compose
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
 yay -S --needed --noconfirm lazydocker
+
+step "Virtualization (libvirt/QEMU) + remote desktop"
+# Lab VMs (kali, metasploitable, windows server) under virt-manager; dnsmasq
+# serves libvirt's default NAT network. freerdp/tigervnc reach the VMs and
+# other machines; anydesk for remote support.
+sudo pacman -S --needed --noconfirm libvirt qemu-desktop virt-manager dnsmasq freerdp tigervnc
+sudo systemctl enable libvirtd
+sudo usermod -aG libvirt "$USER"
+yay -S --needed --noconfirm anydesk-bin
 
 # ── 29. AI tools ─────────────────────────────────────────────────────────────
 # Previously commented out: these used to abort the whole bootstrap run and
@@ -639,7 +666,8 @@ fi
 # conflicts on -Syu).
 step "Cybersecurity"
 sudo pacman -S --needed --noconfirm \
-    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool bandwhich
+    nmap wireshark-qt tcpdump hashcat john metasploit binwalk perl-image-exiftool bandwhich \
+    cfr mingw-w64-gcc
 sudo usermod -aG wireshark "$USER"
 yay -S --needed --noconfirm seclists burpsuite
 
