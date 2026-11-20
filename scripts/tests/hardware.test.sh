@@ -85,8 +85,16 @@ test_live_fwupd_refresh_timer_enabled() {
     assert_eq "fwupd-refresh.timer active" active "$(systemctl is-active fwupd-refresh.timer 2>&1)"
 }
 
+test_no_legacy_i965_driver() {
+    # Story 17: libva-intel-driver (i965) only drives Intel GPUs up to Gen 9;
+    # Lunar Lake's Arc iGPU uses intel-media-driver (iHD).
+    assert_eq "bootstrap does not install libva-intel-driver" no "$(installs libva-intel-driver)"
+    assert_eq "libva-intel-driver not installed here" no \
+        "$(pacman -Q libva-intel-driver &>/dev/null && echo yes || echo no)"
+}
+
 all_tests=(test_live_devices_on_expected_driver test_bootstrap_installs_device_packages
-    test_firmware_checks_enabled test_live_fwupd_refresh_timer_enabled)
+    test_firmware_checks_enabled test_live_fwupd_refresh_timer_enabled test_no_legacy_i965_driver)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
