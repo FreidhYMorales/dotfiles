@@ -86,6 +86,22 @@ test_font_reaches_initramfs() {
         "$(grep -E '^HOOKS=' "$MKINITCPIO_CONF" | grep -qwE 'consolefont|sd-vconsole' && echo yes || echo no)"
 }
 
+LIVE_VCONSOLE="${LIVE_VCONSOLE:-/etc/vconsole.conf}"
+INITRAMFS="${INITRAMFS:-/boot/initramfs-linux.img}"
+
+test_live_console_font() {
+    # This ThinkPad runs what bootstrap sets. The initramfs is root-only, so
+    # "the font is in it" is checked as "it was rebuilt after vconsole.conf
+    # last changed".
+    assert_eq "live vconsole.conf names Terminus 16x32" "$FONT_LINE" \
+        "$(grep '^FONT=' "$LIVE_VCONSOLE" 2>/dev/null || echo missing)"
+    assert_eq "terminus-font installed" yes "$(pacman -Q terminus-font >/dev/null 2>&1 && echo yes || echo no)"
+    assert_eq "ter-132b font file present" yes \
+        "$([[ -e /usr/share/kbd/consolefonts/ter-132b.psf.gz ]] && echo yes || echo no)"
+    assert_eq "initramfs rebuilt after vconsole.conf changed" yes \
+        "$([[ $(stat -c %Y "$INITRAMFS" 2>/dev/null || echo 0) -ge $(stat -c %Y "$LIVE_VCONSOLE" 2>/dev/null || echo 9999999999) ]] && echo yes || echo no)"
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
