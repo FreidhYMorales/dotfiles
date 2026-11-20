@@ -33,7 +33,8 @@ notch-repo" "$actual"
 # Lines in the current docs that still point at the old bar or its rollback.
 old_bar_refs() { # files...
     rg -n -i -e 'quickshell/default' -e 'notch-cutover' -e 'rollback' -e 'old bar' \
-        -e 'modules/(bar|lock|launcher|dashboard|background)' -e 'Reuse map' "$@"
+        -e 'modules/(bar|lock|launcher|dashboard|background)' -e 'Reuse map' \
+        -e 'RecorderWidget' -e 'Horizontal top flotante' -e 'quickshell-vision' "$@"
 }
 
 test_notch_docs_describe_the_notch_as_the_only_shell() {
