@@ -685,6 +685,34 @@ if root_on_luks; then
 fi
 sudo sed -i "s/^HOOKS=.*/HOOKS=($INITRAMFS_HOOKS)/" /etc/mkinitcpio.conf
 
+step "Boot: kernel cmdline for the UKI"
+# The firmware boots the UKI directly (no boot menu), so /etc/kernel/cmdline
+# is the whole kernel command line, signed into the image with it. Rewritten
+# on every run from the running system: root by PARTUUID (by the mapping on
+# LUKS), zswap off because swap lives on zram, quiet boot plus the Plymouth
+# splash, resume to the real swap partition (never zram), and on LUKS the
+# device and mapping sd-encrypt opens.
+ROOT_SRC=$(findmnt -no SOURCE /)
+ROOT_SRC="${ROOT_SRC%%\[*}"
+LUKS_ARG=""
+if root_on_luks; then
+    ROOT_CHAIN=$(lsblk -sPno NAME,TYPE,FSTYPE,UUID "$ROOT_SRC")
+    CRYPT_NAME=$(awk -F'"' '$4 == "crypt" {print $2; exit}' <<<"$ROOT_CHAIN")
+    LUKS_UUID=$(awk -F'"' '$6 == "crypto_LUKS" {print $8; exit}' <<<"$ROOT_CHAIN")
+    KERNEL_ROOT="root=$ROOT_SRC"
+    LUKS_ARG=" rd.luks.name=$LUKS_UUID=$CRYPT_NAME"
+else
+    KERNEL_ROOT="root=PARTUUID=$(lsblk -no PARTUUID "$ROOT_SRC")"
+fi
+RESUME_ARG=""
+SWAP_PART=$(swapon --show=NAME,TYPE --noheadings | awk '$2 == "partition" && $1 !~ /zram/ {print $1; exit}')
+if [[ -n "$SWAP_PART" ]]; then
+    RESUME_ARG=" resume=UUID=$(blkid -s UUID -o value "$SWAP_PART")"
+fi
+sudo mkdir -p /etc/kernel
+echo "$KERNEL_ROOT rw zswap.enabled=0 quiet loglevel=3 nowatchdog splash$RESUME_ARG$LUKS_ARG" |
+    sudo tee /etc/kernel/cmdline >/dev/null
+
 # ── 31. Boot optimization ────────────────────────────────────────────────────
 step "Boot optimization: systemd services"
 # systemd-networkd-wait-online blocks boot for 2+ min on desktop waiting for
