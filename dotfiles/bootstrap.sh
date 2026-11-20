@@ -535,7 +535,7 @@ step "AI tools: Antigravity CLI (agy)"
 command -v agy &>/dev/null || curl -fsSL https://antigravity.google/cli/install.sh | bash
 
 step "AI tools: Ollama"
-sudo pacman -S --needed --noconfirm ollama
+sudo pacman -S --needed --noconfirm ollama ollama-vulkan
 # Service tweaks from the repo (download.conf: one transfer stream per pull).
 # Models stay in the packaged default, /var/lib/ollama (see post-install.md).
 sudo mkdir -p /etc/systemd/system/ollama.service.d
