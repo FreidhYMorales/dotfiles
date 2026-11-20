@@ -24,6 +24,8 @@
 17. [x] d50fc84 As the owner, I want this ThinkPad's hardware, drivers and firmware (CPU microcode, xe iGPU, NPU, audio, Wi-Fi/Bluetooth, power, fwupd) audited against the bootstrap so that every device runs on the right driver and config after a reinstall.
 12. [x] fffe980 As the owner, I want local inference to use the Intel NPU/iGPU so that models run fast without draining the battery. Requires: #11, #17
 13. [ ] As the owner, I want boot to go LUKS passphrase -> Plymouth -> SDDM autologin -> Hyprland so that I type one password and never see a black screen (see login-reinstall-plan.md).
-14. [ ] As the owner, I want the notch shell cutover finished so that the new Quickshell fully replaces the old bar.
+14. [-] split → #18, #19
 15. [x] d767bb7 As the owner, I want the Stylus userstyles to cover every surface of the sites I use so that no page keeps stock colors after a wallpaper change. Requires: #05
 16. [x] 4f3d472 As the owner, I want a larger console font on the plain TTYs (no TTY replacement) so that text is readable on the 2K screen before any desktop starts.
+18. [x] fc1ba55 As the owner, I want the old bar removed and the notch logout clean so that only the notch shell is left on this machine.
+19. [ ] As the owner, I want bootstrap.sh and the matugen post-hook to target the notch (its state dir and the notch-lock SDDM theme) so that a fresh install reproduces this machine. Requires: #18
