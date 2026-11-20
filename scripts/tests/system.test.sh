@@ -92,8 +92,31 @@ test_sddm_pam_password_only() {
         "auth:pam_unix.so -auth:pam_gnome_keyring.so -session:pam_gnome_keyring.so " "$mods"
 }
 
+# Repo file -> installed copy, for every system/ file in live use.
+declare -A INSTALLED=(
+    [logind/logind.conf.d/deadlock.conf]=/etc/systemd/logind.conf.d/deadlock.conf
+    [systemd/sleep.conf.d/deadlock.conf]=/etc/systemd/sleep.conf.d/deadlock.conf
+    [udev/rules.d/90-power-profile-ac.rules]=/etc/udev/rules.d/90-power-profile-ac.rules
+    [udev/rules.d/92-mute-leds.rules]=/etc/udev/rules.d/92-mute-leds.rules
+    [pam.d/quickshell-password]=/etc/pam.d/quickshell-password
+    [pam.d/quickshell-fprint]=/etc/pam.d/quickshell-fprint
+    [pam.d/sddm]=/etc/pam.d/sddm
+    [sddm/sddm.conf.d/deadlock.conf]=/etc/sddm.conf.d/deadlock.conf
+)
+
+test_live_matches_repo() {
+    # What runs as root is what the repo says: every installed copy is
+    # byte-identical to its repo file.
+    local src drift=()
+    for src in "${!INSTALLED[@]}"; do
+        cmp -s "$SYSTEM/$src" "${INSTALLED[$src]}" || drift+=("${INSTALLED[$src]}")
+    done
+    assert_eq "installed system/ files match the repo (8 checked)" \
+        "8 none" "${#INSTALLED[@]} $(printf '%s\n' "${drift[@]}" | sort | tr '\n' ' ' | sed 's/ $//;s/^$/none/')"
+}
+
 all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks
-    test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only)
+    test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only test_live_matches_repo)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
