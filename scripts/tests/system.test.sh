@@ -7,7 +7,7 @@
 set -uo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
-SYSTEM="$ROOT/system"
+SYSTEM="${SYSTEM_DIR:-$ROOT/system}" # override to point at a copy
 failures=0
 
 assert_eq() { # name expected actual
@@ -115,8 +115,22 @@ test_live_matches_repo() {
         "8 none" "${#INSTALLED[@]} $(printf '%s\n' "${drift[@]}" | sort | tr '\n' ' ' | sed 's/ $//;s/^$/none/')"
 }
 
+test_comments_reference_existing_paths() {
+    # A comment that sends the reader to a repo file must point at one that
+    # exists; a dangling pointer means the comment describes old behaviour.
+    local refs missing=() ref
+    mapfile -t refs < <(grep -rhoE '(dotfiles|system|auditorias|docs)/[A-Za-z0-9._/-]*[A-Za-z0-9_]' \
+        "$SYSTEM" --exclude-dir=themes | sort -u)
+    for ref in "${refs[@]}"; do
+        [[ -e $ROOT/$ref ]] || missing+=("$ref")
+    done
+    assert_eq "system/ comments only name existing repo paths (${#refs[@]} found)" \
+        "none" "${missing[*]:-none}"
+}
+
 all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks
-    test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only test_live_matches_repo)
+    test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only test_live_matches_repo
+    test_comments_reference_existing_paths)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
