@@ -153,6 +153,26 @@ test_rerun_keeps_graphical_session() {
         "$(logind_step_restarts tty unspecified)"
 }
 
+yazi_step_finishes() { # ya-exit-code -> yes|no: the yazi plugins step lets bootstrap go on
+    local dir status
+    dir=$(mktemp -d)
+    mkdir -p "$dir/bin"
+    printf '#!/usr/bin/env bash\nexit %d\n' "$1" >"$dir/bin/ya"
+    chmod +x "$dir/bin/ya"
+    { awk '/^step "Post-install: yazi plugins"/ {on = 1; next} on && /^step / {exit} on' "$BOOTSTRAP"
+      echo 'echo REACHED_NEXT_STEP'; } >"$dir/step.sh"
+    status=$(PATH="$dir/bin:$PATH" bash -euo pipefail "$dir/step.sh" 2>/dev/null | tail -1)
+    rm -rf "$dir"
+    [[ $status == REACHED_NEXT_STEP ]] && echo yes || echo no
+}
+
+test_yazi_plugin_failure_does_not_abort() {
+    # A failed plugin fetch (network, corrupt cache) must not cut off the
+    # post-install steps that follow it (MPD, web apps, Quickshell state).
+    assert_eq "bootstrap goes on after ya pkg install fails" yes "$(yazi_step_finishes 1)"
+    assert_eq "bootstrap goes on after ya pkg install succeeds" yes "$(yazi_step_finishes 0)"
+}
+
 test_live_every_explicit_package_accounted_for() {
     # Every package explicitly installed on this ThinkPad is either installed
     # by bootstrap.sh or listed in bootstrap-excluded.txt with a reason.
