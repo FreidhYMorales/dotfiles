@@ -71,6 +71,21 @@ test_rerun_changes_nothing() {
     rm -f "$f"
 }
 
+MKINITCPIO_CONF="${MKINITCPIO_CONF:-/etc/mkinitcpio.conf}"
+
+test_font_reaches_initramfs() {
+    # The font only shows in early boot (and story 13's LUKS prompt) if the
+    # initramfs is rebuilt after vconsole.conf names it, with a hook that
+    # reads that file.
+    local step_line rebuild_line
+    step_line=$(grep -n '^step "Console font' "$BOOTSTRAP" | head -1 | cut -d: -f1)
+    rebuild_line=$(awk -v from="${step_line:-0}" 'NR > from && /^[[:space:]]*sudo mkinitcpio -P/ {print NR; exit}' "$BOOTSTRAP")
+    assert_eq "an initramfs rebuild follows the console font step" yes \
+        "$([[ -n $step_line && -n $rebuild_line ]] && echo yes || echo no)"
+    assert_eq "live HOOKS read vconsole.conf (consolefont or sd-vconsole)" yes \
+        "$(grep -E '^HOOKS=' "$MKINITCPIO_CONF" | grep -qwE 'consolefont|sd-vconsole' && echo yes || echo no)"
+}
+
 tests=("$@")
 [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(declare -F | awk '{print $3}' | grep '^test_')
 for t in "${tests[@]}"; do
