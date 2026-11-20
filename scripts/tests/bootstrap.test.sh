@@ -7,6 +7,7 @@ set -uo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
 BOOTSTRAP="${BOOTSTRAP:-$ROOT/dotfiles/bootstrap.sh}"
+EXCLUDED="${EXCLUDED:-$ROOT/dotfiles/bootstrap-excluded.txt}"
 failures=0
 
 assert_eq() { # name expected actual
@@ -75,6 +76,20 @@ test_story_packages_installed() {
     assert_eq "bootstrap enables the mpd-mpris user service" yes \
         "$(runs 'systemctl --user enable .*mpd-mpris')"
     assert_eq "bootstrap installs xdg-terminal-exec" yes "$(installs xdg-terminal-exec)"
+}
+
+excluded_packages() { # -> package names in bootstrap-excluded.txt, sorted
+    [[ -f "$EXCLUDED" ]] || return 0
+    grep -v '^\s*\(#\|$\)' "$EXCLUDED" | awk '{print $1}' | sort -u
+}
+
+test_live_every_explicit_package_accounted_for() {
+    # Every package explicitly installed on this ThinkPad is either installed
+    # by bootstrap.sh or listed in bootstrap-excluded.txt with a reason.
+    local missing
+    missing=$(comm -23 <(pacman -Qqe | sort -u) \
+        <(sort -u <(bootstrap_packages) <(excluded_packages)) | xargs)
+    assert_eq "explicit packages neither in bootstrap nor excluded" "" "$missing"
 }
 
 tests=("$@")
