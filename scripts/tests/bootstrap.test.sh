@@ -94,6 +94,20 @@ test_exclusions_have_reasons() {
     assert_eq "exclusions that bootstrap.sh also installs" "" "$both"
 }
 
+test_docs_name_only_current_things() {
+    # Stories 01, 05 and 08 removed Oh My Zsh (and its p10k prompt), spicetify
+    # and get-location: no bootstrap comment, install.sh or dotfiles README
+    # may still describe them as part of the setup.
+    local stale
+    stale=$(grep -ohiE 'oh-my-zsh|\bOMZ\b|p10k|powerlevel10k|spicetify|spotify|get-location' \
+        "$BOOTSTRAP" "$ROOT/install.sh" "$ROOT/dotfiles/README.md" | sort -u | xargs)
+    assert_eq "removed things still named in bootstrap.sh, install.sh, dotfiles/README.md" "" "$stale"
+    # The README's package table lists exactly the Stow packages in dotfiles/.
+    assert_eq "dotfiles/README.md package table matches dotfiles/" \
+        "$(find "$ROOT/dotfiles" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | xargs)" \
+        "$(grep -oE '^\| `[a-z0-9-]+` \|' "$ROOT/dotfiles/README.md" | tr -d '|` ' | sort -u | xargs)"
+}
+
 test_live_every_explicit_package_accounted_for() {
     # Every package explicitly installed on this ThinkPad is either installed
     # by bootstrap.sh or listed in bootstrap-excluded.txt with a reason.
