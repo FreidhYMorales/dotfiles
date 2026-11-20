@@ -13,6 +13,13 @@ stack with `pam_systemd_loadkey` and the `sddm.service` drop-in. Without
 LUKS there is no autologin: the notch-lock greeter asks for the password.
 Story 21 is the reinstall itself (partitioning, Secure Boot, UKI).
 
+Owner decision (2026-11-20): the reinstall drops GRUB on every install,
+LUKS or not. The firmware boots the (signed) UKI directly through an
+efibootmgr entry and its cmdline lives in `/etc/kernel/cmdline` (story 22);
+the other distros go away, and a future dual boot comes from another
+distro's GRUB detecting Arch. The GRUB items in the Secure Boot checklist
+below are superseded by that.
+
 ## Problem
 
 Every display manager (SDDM, greetd, GDM, ly, LightDM) runs the login screen
