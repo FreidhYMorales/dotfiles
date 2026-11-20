@@ -76,7 +76,7 @@ The script detects whether the repo is already present, clones it if not, and ha
 18. System utils (upower, ntfs-3g, power-profiles-daemon)
 19. Fonts (Iosevka Term Nerd, Noto, Red Hat)
 20. System info (btop, fastfetch)
-21. SDDM + silent theme (with default custom config until matugen runs)
+21. SDDM + the notch-lock greeter (the notch shell's SDDM theme, fed by the notch)
 22. logind — power button: ignore short press, long press = poweroff
 23. xdg-desktop-portal-termfilechooser (yazi as file picker)
 24. Network (iwd + impala) + Bluetooth (bluez + bluetui)
@@ -113,7 +113,6 @@ Ends by running `deploy.sh` (Stow), updating XDG dirs, rebuilding font cache, an
 │   └── xdg-portal/       ← xdg-desktop-portal config
 └── system/               ← sudo-level configs (not Stow)
     └── sddm/
-        ├── themes/silent/    ← SDDM theme
         └── sddm.conf.d/      ← SDDM drop-in config
 ```
 
@@ -158,5 +157,4 @@ matugen reads the current wallpaper and generates a Material You palette. A post
 
 ## License
 
-Personal dotfiles — use what's useful, no warranty implied.  
-The [SDDM silent theme](https://github.com/silentxxx/sddm-silent) retains its original license.
+Personal dotfiles — use what's useful, no warranty implied.

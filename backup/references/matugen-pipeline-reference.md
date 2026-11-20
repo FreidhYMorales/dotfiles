@@ -50,9 +50,9 @@ Tokens que expone `colors.json` (snake_case, ej. `surface_container`), accesible
 ### Arquitectura
 
 ```
-Quickshell (launcher >wallpaper / >theme)
+Notch shell (launcher wallpaper / theme views)
     ↓
-ColoursEngine.qml._runMatugen()
+notch shell/services/Theme.qml (matugen job)
     ↓ matugen image <wallpaper> --type <mode> --mode dark/light --prefer saturation --quiet
     ↓
 ~/.config/matugen/config.toml — 8 templates activos procesados en paralelo:
@@ -66,7 +66,7 @@ ColoursEngine.qml._runMatugen()
     └── obsidian-theme.css        → ~/.config/matugen/output/obsidian-theme.css
     (gtk3/gtk4 templates comentados — GTK theming desactivado, ver CLAUDE.md)
     ↓
-ColoursEngine.qml.matugenProc.onExited (exitCode === 0)
+Theme.qml, after matugen exits 0
     ↓
 ~/.config/matugen/post-hook.sh
     ├── kitten @ set-colors --all ~/.config/kitty/matugen-theme.conf  (live, via socket)
@@ -74,17 +74,14 @@ ColoursEngine.qml.matugenProc.onExited (exitCode === 0)
     ├── hyprctl reload                                                  (live, recarga colors.lua)
     ├── cp zen-matugen.css → ~/.config/zen/<active-profile>/chrome/    (próximo inicio browser)
     │   + crea userChrome.css si no existe
-    ├── hyprpaper — reescribe ~/.config/hypr/hyprpaper.conf con path actual
-    │   Si wallpaper es video: extrae primer frame con ffmpeg a
-    │   ~/.local/state/quickshell/hyprpaper-frame.jpg (full quality, -q:v 2)
-    │   Reinicia proceso: pkill hyprpaper && sleep 0.3 && hyprpaper &
     ├── gsettings set org.gnome.desktop.interface color-scheme — GTK/Electron/Zen (light/dark)
     ├── LibreOffice — patch estático de registrymodifications.xcu (con LO cerrado)
-    ├── Obsidian — copia obsidian-theme.css a cada vault (leídos dinámicamente de obsidian.json)
-    └── SDDM silent theme — genera configs/custom.conf con colores matugen
-        Copia wallpaper a backgrounds/qs-current.<ext> via
-        sudo /usr/local/bin/sddm-theme-sync (NOPASSWD, /etc/sudoers.d/sddm-theme-sync)
-        Lee primary/on_primary de colors.json con python3 (no jq — ver gotcha abajo)
+    └── Obsidian — copia obsidian-theme.css a cada vault (leídos dinámicamente de obsidian.json)
+
+hyprpaper y el greeter SDDM no pasan por el post-hook: el propio notch escribe
+~/.local/state/quickshell-notch/hyprpaper.conf y publica wallpaper + paleta al
+greeter notch-lock en /var/lib/quickshell-notch-sddm/ (grupo sddm, 2750; ver
+system/sddm/README.md). Sin helper root ni sudoers.
 ```
 
 ### Gotcha crítico: `run_hook` no funciona en matugen 4.1.0
@@ -125,14 +122,6 @@ for s in p.sections():
 | Obsidian | Próximo inicio del vault (tema "Quickshell" debe estar seleccionado a mano una vez) | CSS copiado por vault |
 | Zen Browser (Stylus vars) | ~1s (Chromium) / próximo inicio (Zen nativo) | ver `post-install.md` |
 | Zellij | Próxima sesión nueva | KDL en themes/ auto-descubierto |
-| hyprpaper | Inmediato | reescribe hyprpaper.conf + reinicia proceso |
-| SDDM | Próximo login | copia wallpaper + genera custom.conf vía helper sudo |
+| hyprpaper | Inmediato | el notch reescribe su hyprpaper.conf |
+| SDDM (notch-lock) | Próximo login | el notch publica wallpaper + paleta a /var/lib/quickshell-notch-sddm |
 | fastfetch / ncmpcpp | Automático — usan nombres ANSI que kitty ya remapeó |
-
-### Helper privilegiado SDDM
-
-`/usr/local/bin/sddm-theme-sync` — script root-owned instalado por `bootstrap.sh`.
-- Valida: wallpaper existe, dest_name es `qs-current.<ext>` (previene path traversal), conf existe
-- Borra `qs-current.*` anterior, copia nuevo wallpaper, sobreescribe `configs/custom.conf`
-- Sudoers: `/etc/sudoers.d/sddm-theme-sync` — `deadlock ALL=(root) NOPASSWD: /usr/local/bin/sddm-theme-sync`
-- Fuente en dotfiles: `dotfiles/matugen/.config/matugen/sddm-theme-sync`
