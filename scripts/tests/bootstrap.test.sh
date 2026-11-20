@@ -354,6 +354,40 @@ test_reference_docs_describe_the_notch_pipeline() {
         "$(grep -q 'notch-lock' "$ROOT/backup/references/matugen-pipeline-reference.md" && echo yes || echo no)"
 }
 
+root_on_luks_says() { # findmnt-source "lsblk -s types" -> yes|no from bootstrap.sh's root_on_luks
+    # findmnt and lsblk are faked: findmnt reports the given root source and
+    # lsblk lists the given device types only for the bracket-free device.
+    local dir out
+    dir=$(mktemp -d)
+    mkdir -p "$dir/bin"
+    printf '#!/usr/bin/env bash\necho "%s"\n' "$1" >"$dir/bin/findmnt"
+    printf '#!/usr/bin/env bash\n[[ "${@: -1}" == "%s" ]] && printf "%%b\\n" "%s"\n' "${1%%\[*}" "$2" >"$dir/bin/lsblk"
+    chmod +x "$dir/bin/findmnt" "$dir/bin/lsblk"
+    { awk '/^root_on_luks\(\) \{/ {on = 1} on {print} on && /^\}/ {exit}' "$BOOTSTRAP"
+      echo 'root_on_luks && echo yes || echo no'; } >"$dir/fn.sh"
+    out=$(PATH="$dir/bin:$PATH" bash -euo pipefail "$dir/fn.sh" 2>/dev/null)
+    rm -rf "$dir"
+    echo "${out:-missing}"
+}
+
+test_root_on_luks_detection() {
+    # Every encryption-only step (autologin, sd-encrypt, rd.luks) hangs on
+    # this answer; a wrong yes would give an unencrypted machine autologin.
+    assert_eq "root on a LUKS mapping is encrypted" yes "$(root_on_luks_says /dev/mapper/root 'crypt\npart\ndisk')"
+    assert_eq "root on LVM inside LUKS is encrypted" yes "$(root_on_luks_says /dev/mapper/vg-root 'lvm\ncrypt\npart\ndisk')"
+    assert_eq "btrfs subvolume on LUKS is encrypted" yes "$(root_on_luks_says '/dev/mapper/root[/@]' 'crypt\npart\ndisk')"
+    assert_eq "root on a plain partition is not encrypted" no "$(root_on_luks_says /dev/nvme0n1p5 'part\ndisk')"
+}
+
+test_live_root_is_not_on_luks() {
+    # This ThinkPad's root is a plain ext4 partition today: the real tools
+    # must take the plain path (no autologin).
+    local out
+    out=$({ awk '/^root_on_luks\(\) \{/ {on = 1} on {print} on && /^\}/ {exit}' "$BOOTSTRAP"
+            echo 'root_on_luks && echo yes || echo no'; } | bash -euo pipefail 2>/dev/null)
+    assert_eq "this machine takes the plain path" no "${out:-missing}"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
