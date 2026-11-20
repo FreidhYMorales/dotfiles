@@ -15,7 +15,7 @@ A fully automated setup for a fresh Arch install — one command and everything 
 | Terminal | Kitty |
 | Editor | Neovim |
 | File manager | Yazi |
-| Shell | zsh + Oh My Zsh |
+| Shell | zsh (pacman plugins + fzf-tab, no framework) |
 | Color pipeline | matugen |
 | Dotfile manager | GNU Stow |
 
@@ -52,13 +52,14 @@ The script detects whether the repo is already present, clones it if not, and ha
 
 ## What bootstrap does
 
-27 steps, fully non-interactive:
+Fully non-interactive, in this order:
 
+0. pacman config, locale and timezone, `/etc/hosts` entry for the hostname
 1. Base tools (`git`, `base-devel`, `stow`, `unzip`)
 2. yay (AUR helper)
 3. Hyprland + Wayland stack + hyprpaper
-4. GPU drivers — auto-detects NVIDIA / AMD / Intel (including hybrids) *(skipped with `--no-gpu`)*
-5. zsh, Kitty, fish, Oh My Zsh + plugins
+4. GPU drivers — auto-detects NVIDIA / AMD / Intel (including hybrids) *(skipped with `--no-gpu`)*, CPU microcode, Intel NPU driver when the device is present
+5. zsh (autosuggestions, syntax highlighting, completions, fzf-tab), Kitty, fish, zoxide
 6. CLI tools (eza, bat, fd, ripgrep, fzf, lazygit, zellij, starship, rsync, aria2, p7zip, tealdeer, procs, dust, qrencode, poppler, gping…)
 7. Neovim + Node.js, Python, Go, Rust, luarocks
 8. Yazi + all previewers (imagemagick, ffmpeg, ffmpegthumbnailer, mediainfo…)
@@ -68,19 +69,24 @@ The script detects whether the repo is already present, clones it if not, and ha
 12. Notifications + brightness (libnotify, swayosd, brightnessctl)
 13. OCR (tesseract)
 14. Screen recording (gpu-screen-recorder — AUR)
-15. Theming (matugen, spicetify, spotify)
-16. Apps (vesktop, zen-browser, mpv, libreoffice, nwg-displays)
+15. Theming (matugen)
+16. Apps (vesktop, zen-browser, chromium, obsidian, mpv, gimp, libreoffice, steam, nwg-displays…)
 17. Quickshell + Qt5/Qt6 Wayland
-18. System utils (upower, ntfs-3g, power-profiles-daemon)
-19. Fonts (Iosevka Term Nerd, Noto, Red Hat)
-20. System info (btop, fastfetch)
-21. SDDM + the notch-lock greeter (the notch shell's SDDM theme, fed by the notch)
-22. logind — power button: ignore short press, long press = poweroff
-23. xdg-desktop-portal-termfilechooser (yazi as file picker)
-24. Network (iwd + impala) + Bluetooth (bluez + bluetui)
-25. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm) + dev tools (git-delta, hyperfine, tokei, watchexec, xh, sqlite, docker)
-26. AI tools (Claude Code, Gemini CLI, OpenCode, gentle-ai)
-27. Boot: Plymouth `bgrt` splash on a systemd initramfs, the whole kernel cmdline in `/etc/kernel/cmdline`, and a firmware entry (`efibootmgr`) that boots the UKI directly, with no bootloader
+18. System utils (upower, ntfs-3g, power-profiles-daemon), fwupd, and on laptops a 75/80% battery charge threshold and the PCIe ASPM policy
+19. Firewall (ufw: deny incoming, allow outgoing)
+20. zram (compressed swap)
+21. Mirror ranking
+22. Fonts (Iosevka Term Nerd, Noto, Red Hat) + monochrome icon theme
+23. System info (btop, fastfetch)
+24. SDDM + the notch-lock greeter (the notch shell's SDDM theme, fed by the notch)
+25. logind — power button handled by Hyprland, lid suspends natively
+26. xdg-desktop-portal-termfilechooser (yazi as file picker)
+27. Network (iwd + impala) + Bluetooth (bluez + bluetui)
+28. Languages (Lua, Java/Maven, C++/Clang/CMake, Python extras, pnpm) + dev tools (git-delta, hyperfine, tokei, watchexec, xh, sqlite, docker)
+29. AI tools (Claude Code, OpenCode, Antigravity CLI via their native installers; Ollama; herdr)
+30. Boot: Plymouth `bgrt` splash on a systemd initramfs, the whole kernel cmdline in `/etc/kernel/cmdline`, and a firmware entry (`efibootmgr`) that boots the UKI directly, with no bootloader
+31. Boot optimization (masks `systemd-networkd-wait-online`, socket-activated cups)
+32. Cybersecurity tools (nmap, wireshark, hashcat, john, metasploit, seclists, burpsuite…)
 
 Ends by running `deploy.sh` (Stow), updating XDG dirs, rebuilding font cache, and installing Neovim/Yazi plugins.
 
