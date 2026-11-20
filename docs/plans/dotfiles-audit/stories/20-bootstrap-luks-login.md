@@ -2,7 +2,7 @@
 
 ## Story
 
-20. As the owner, I want bootstrap.sh to set up Plymouth, SDDM autologin and the LUKS-unlocked keyring only when root is on LUKS so that a reinstall with or without encryption both end in a working login (see login-reinstall-plan.md).
+20. As the owner, I want bootstrap.sh to set up the Plymouth splash on every install, and SDDM autologin with the LUKS-unlocked keyring only when root is on LUKS, so that a reinstall with or without encryption both end in a working login (see login-reinstall-plan.md).
 
 ## Acceptance criteria
 
