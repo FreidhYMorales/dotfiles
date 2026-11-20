@@ -27,6 +27,21 @@ sysfs_driver() { # /sys/class/<path> -> module name of its device driver
     basename "$(readlink -f "/sys/class/$1/device/driver/module" 2>/dev/null)"
 }
 
+bootstrap_lines() { # -> bootstrap.sh with backslash continuations joined
+    awk '{ if (sub(/\\$/, "")) { buf = buf $0 " "; next } print buf $0; buf = "" }' "$BOOTSTRAP"
+}
+
+installs() { # pkg -> yes|no: bootstrap.sh installs it with pacman or yay
+    # grep -c, not grep -q: under pipefail an early-exiting grep -q kills the
+    # writer with SIGPIPE and turns a match into "no".
+    [[ $(bootstrap_lines | grep -oE '(pacman|yay) -S --needed --noconfirm[^|;&]*' |
+        tr -s ' ' '\n' | grep -cxF -- "$1") -gt 0 ]] && echo yes || echo no
+}
+
+enables() { # unit -> yes|no: bootstrap.sh runs systemctl enable on it
+    [[ $(bootstrap_lines | grep -v '^\s*#' | grep -cE -- "systemctl enable( --now)? $1( |$)") -gt 0 ]] && echo yes || echo no
+}
+
 test_live_devices_on_expected_driver() {
     # Story 17 audit, this ThinkPad X1 Carbon Gen 13 (Lunar Lake).
     assert_eq "iGPU (Arc 130V/140V) on xe" xe "$(pci_driver 'VGA compatible controller')"
@@ -37,7 +52,19 @@ test_live_devices_on_expected_driver() {
     assert_eq "thinkpad_acpi loaded" yes "$([[ -d /sys/module/thinkpad_acpi ]] && echo yes || echo no)"
 }
 
-all_tests=(test_live_devices_on_expected_driver)
+test_bootstrap_installs_device_packages() {
+    # Story 17: what each device needs on a fresh install of this ThinkPad.
+    local p u
+    for p in intel-ucode vulkan-intel intel-media-driver intel-npu-driver-bin sof-firmware \
+        iwd wireless-regdb bluez power-profiles-daemon fwupd; do
+        assert_eq "bootstrap installs $p" yes "$(installs "$p")"
+    done
+    for u in iwd bluetooth power-profiles-daemon; do
+        assert_eq "bootstrap enables $u" yes "$(enables "$u")"
+    done
+}
+
+all_tests=(test_live_devices_on_expected_driver test_bootstrap_installs_device_packages)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
