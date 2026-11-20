@@ -31,18 +31,15 @@ test_bootstrap_installs_dropins() {
             awk '{print ($1 > 0) ? "yes" : "no"}')"
 }
 
-STORY12_DROPINS="igpu.conf" # device/acceleration settings: story 12 decides them
-
 test_live_dropins_match_repo() {
     # Every drop-in this machine runs Ollama with is in the repo, byte for
-    # byte, and the repo ships nothing the machine does not run - except the
-    # acceleration drop-ins left to story 12.
+    # byte, and the repo ships nothing the machine does not run. Story 12
+    # folded in igpu.conf, which story 11 had left out.
     local live repo f diffs=""
-    live=$(find "$LIVE_DROPINS" -maxdepth 1 -name '*.conf' -printf '%f\n' 2>/dev/null |
-        grep -vxF "$STORY12_DROPINS" | sort | tr '\n' ' ')
+    live=$(find "$LIVE_DROPINS" -maxdepth 1 -name '*.conf' -printf '%f\n' 2>/dev/null | sort | tr '\n' ' ')
     repo=$(find "$REPO_DROPINS" -maxdepth 1 -name '*.conf' -printf '%f\n' 2>/dev/null | sort | tr '\n' ' ')
-    assert_eq "live drop-ins (minus story 12's) = repo drop-ins" "download.conf " "$live"
-    assert_eq "repo drop-ins" "download.conf " "$repo"
+    assert_eq "live drop-ins = repo drop-ins" "download.conf igpu.conf " "$live"
+    assert_eq "repo drop-ins" "download.conf igpu.conf " "$repo"
     for f in $repo; do
         cmp -s "$LIVE_DROPINS/$f" "$REPO_DROPINS/$f" || diffs+="$f "
     done
@@ -80,8 +77,15 @@ test_bootstrap_installs_vulkan_backend() {
         "$( (($(grep -cE '^ollama-vulkan([[:space:]]|$)' "$EXCLUDED") > 0)) && echo yes || echo no)"
 }
 
+test_repo_ships_igpu_dropin() {
+    # Story 12: Ollama drops integrated GPUs unless OLLAMA_IGPU_ENABLE=1
+    # ("dropping integrated GPU; to enable, set OLLAMA_IGPU_ENABLE=1").
+    assert_eq "repo igpu.conf enables the integrated GPU" 'Environment="OLLAMA_IGPU_ENABLE=1"' \
+        "$(grep -h '^Environment=' "$REPO_DROPINS/igpu.conf" 2>/dev/null || echo missing)"
+}
+
 all_tests=(test_bootstrap_installs_dropins test_live_dropins_match_repo test_live_models_doc
-    test_bootstrap_installs_vulkan_backend)
+    test_bootstrap_installs_vulkan_backend test_repo_ships_igpu_dropin)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
