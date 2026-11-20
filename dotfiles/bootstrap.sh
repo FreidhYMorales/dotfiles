@@ -117,7 +117,7 @@ if [[ "$SKIP_GPU" == false ]]; then
     if [[ "$HAS_INTEL" == true ]]; then
         step "GPU: Intel"
         sudo pacman -S --needed --noconfirm \
-            mesa vulkan-intel intel-media-driver libva-intel-driver \
+            mesa vulkan-intel intel-media-driver \
             lib32-vulkan-intel vulkan-tools
     fi
 
@@ -255,12 +255,18 @@ sudo pacman -S --needed --noconfirm \
 yay -S --needed --noconfirm gum
 sudo systemctl enable power-profiles-daemon
 
+# ── 18a. Firmware updates (fwupd / LVFS) ─────────────────────────────────────
+# The timer only refreshes the LVFS metadata so `fwupdmgr get-updates` sees
+# new firmware; nothing is flashed without running `fwupdmgr update` by hand.
+step "Firmware updates (fwupd)"
+sudo pacman -S --needed --noconfirm fwupd
+sudo systemctl enable fwupd-refresh.timer
+
 # ── 18b. Battery charge threshold (laptops only) ────────────────────────────
 # Caps charging at 75-80% to slow battery wear — skipped on machines with no
 # battery (BAT0 absent, e.g. desktops). auditorias/paquetes/README.md §1.1.
 if [[ -d /sys/class/power_supply/BAT0 ]]; then
     step "Battery charge threshold (BAT0 75/80%)"
-    sudo pacman -S --needed --noconfirm fwupd
     sudo tee /etc/tmpfiles.d/battery-thresholds.conf >/dev/null <<'EOF'
 w /sys/class/power_supply/BAT0/charge_control_start_threshold - - - - 75
 w /sys/class/power_supply/BAT0/charge_control_end_threshold - - - - 80
