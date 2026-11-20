@@ -82,8 +82,18 @@ test_live_sudo_tty_fprint_or_password() {
         "$(auth_lines "$PAM_DIR/system-auth" | awk '$3 == "pam_fprintd.so" {print $2}')"
 }
 
+test_sddm_pam_password_only() {
+    # The SDDM greeter takes the password only (no fingerprint) and hands it
+    # to the keyring, so every login unlocks it.
+    local f="$SYSTEM/pam.d/sddm" mods
+    mods=$(grep -E '^-?(auth|session)' "$f" | tr -s ' \t' ' ' | sed 's/\[[^]]*\]/bracket/' |
+        grep -E 'pam_(fprintd|unix|gnome_keyring)\.so' | awk '{print $1 ":" $3}' | tr '\n' ' ')
+    assert_eq "SDDM: password then keyring, no fingerprint" \
+        "auth:pam_unix.so -auth:pam_gnome_keyring.so -session:pam_gnome_keyring.so " "$mods"
+}
+
 all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks
-    test_live_sudo_tty_fprint_or_password)
+    test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"
     "$t"
