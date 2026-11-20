@@ -256,6 +256,16 @@ test_sddm_step_rerun_keeps_installed_greeter() {
     rm -rf "$dir"
 }
 
+test_repo_sddm_config_selects_notch_lock() {
+    # The repo config bootstrap copies to /etc/sddm.conf.d is the one that
+    # picks the greeter: notch-lock, with no import path into the silent theme.
+    local conf="$ROOT/system/sddm/sddm.conf.d/deadlock.conf"
+    assert_eq "repo SDDM config selects notch-lock" "Current=notch-lock" \
+        "$(grep -E '^Current=' "$conf")"
+    assert_eq "repo SDDM config names no silent theme path" "" \
+        "$(grep -n 'themes/silent' "$conf")"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
