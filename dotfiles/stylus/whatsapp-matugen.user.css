@@ -72,7 +72,7 @@
 
     /* Message bubbles */
     --WDS-systems-bubble-surface-incoming:     var(--mat-surface-container)                         !important;
-    --WDS-systems-bubble-surface-outgoing:     var(--mat-primary-container)                         !important;
+    --WDS-systems-bubble-surface-outgoing:     var(--mat-secondary-container)                       !important;
     --WDS-systems-bubble-content-deemphasized: var(--mat-on-surface-variant)                        !important;
     --WDS-systems-bubble-surface-overlay:      var(--mat-surface-container-low)                     !important;
     --WDS-systems-bubble-surface-system:       var(--mat-surface-container-low)                     !important;
