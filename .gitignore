@@ -47,3 +47,7 @@ Thumbs.db
 *~
 *.swp
 *.swo
+
+# nwg-displays writes these next to hyprland.lua; the real monitor config is monitors.lua
+dotfiles/hypr/.config/hypr/monitors.conf
+dotfiles/hypr/.config/hypr/workspaces.conf
