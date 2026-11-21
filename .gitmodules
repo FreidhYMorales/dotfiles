@@ -6,3 +6,7 @@
 	path = ia/ai-dotfiles
 	url = https://github.com/FreidhYMorales/ai-dotfiles.git
 	branch = main
+[submodule "ia/local-models-npu"]
+	path = ia/local-models-npu
+	url = https://github.com/FreidhYMorales/local-models-npu.git
+	branch = main
