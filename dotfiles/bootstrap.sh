@@ -76,6 +76,12 @@ grep -q "$HOSTNAME_VALUE" /etc/hosts ||
 step "Base tools"
 sudo pacman -S --needed --noconfirm git base-devel stow unzip
 
+step "AI dotfiles submodule"
+# The stowed .gitconfig points core.hooksPath at ia/ai-dotfiles/git-hooks;
+# without this checkout every git commit runs without hooks.
+[[ -d "$REPO_ROOT/ia/ai-dotfiles/git-hooks" ]] ||
+    git -C "$REPO_ROOT" submodule update --init -- ia/ai-dotfiles
+
 # ── 2. AUR helper ────────────────────────────────────────────────────────────
 step "yay"
 if ! command -v yay &>/dev/null; then

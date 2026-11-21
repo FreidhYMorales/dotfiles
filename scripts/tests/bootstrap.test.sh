@@ -686,6 +686,16 @@ test_uki_rebuilt_after_its_cmdline_and_preset() {
         "$([[ -n $build_line && $build_line -gt ${cmdline_line:-0} && $build_line -gt ${preset_line:-0} ]] && echo yes || echo "no (cmdline $cmdline_line, preset $preset_line, build ${build_line:-none})")"
 }
 
+test_ai_dotfiles_submodule_before_deploy() {
+    # The stowed .gitconfig sets core.hooksPath inside ia/ai-dotfiles, so a
+    # fresh clone must have that submodule checked out before deploy.sh runs.
+    local init_line deploy_line
+    init_line=$(rg -n '^\s*git -C "\$REPO_ROOT" submodule update --init -- ia/ai-dotfiles$' "$BOOTSTRAP" | head -1 | cut -d: -f1)
+    deploy_line=$(rg -n -F '"$SCRIPT_DIR/deploy.sh"' "$BOOTSTRAP" | head -1 | cut -d: -f1)
+    assert_eq "bootstrap inits ia/ai-dotfiles before deploy.sh" yes \
+        "$([[ -n $init_line && -n $deploy_line && $init_line -lt $deploy_line ]] && echo yes || echo "no (init ${init_line:-none}, deploy ${deploy_line:-none})")"
+}
+
 tests=("$@")
 if [[ ${#tests[@]} -eq 0 ]]; then
     mapfile -t tests < <(declare -F | awk '$3 ~ /^test_/ {print $3}')
