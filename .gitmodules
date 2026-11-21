@@ -2,3 +2,7 @@
 	path = dotfiles/quickshell/.config/quickshell/notch-repo
 	url = https://github.com/FreidhYMorales/quickshell-notch.git
 	branch = main
+[submodule "ia/ai-dotfiles"]
+	path = ia/ai-dotfiles
+	url = https://github.com/FreidhYMorales/ai-dotfiles.git
+	branch = main
