@@ -741,6 +741,10 @@ fi
 step "Post-install: MPD service"
 systemctl --user enable --now mpd mpd-mpris
 
+step "Post-install: matugen server"
+systemctl --user daemon-reload
+systemctl --user enable --now matugen-server.service
+
 step "Post-install: restore web apps"
 webapp-restore || echo "Warning: webapp-restore failed — run it manually later"
 

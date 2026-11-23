@@ -75,16 +75,24 @@ spicetify backup apply
 
 ---
 
-## 4. matugen server (Stylus auto-update for Chromium)
+## 4. matugen server (Stylus palette for Chromium)
 
-The systemd user service is deployed by Stow with the matugen package, but needs to be enabled once:
+Bootstrap deploys the systemd user service and enables/starts it automatically.
+Check it if Chromium web apps do not receive the palette:
 
 ```bash
-systemctl --user daemon-reload
+systemctl --user status matugen-server.service
+curl http://localhost:9119/version
+```
+
+For an existing install where the service is stopped:
+
+```bash
 systemctl --user enable --now matugen-server.service
 ```
 
-Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for Stylus in Chromium to auto-update `--mat-*` vars when the wallpaper changes.
+Serves `~/.config/matugen/output/` at `http://localhost:9119`. Required for
+Chromium's `matugen-vars` extension to inject and live-update `--mat-*` vars.
 
 ---
 

@@ -91,15 +91,26 @@ When only JS files change (logic updates), no reload is needed — the extension
 
 ## Required: matugen-server running
 
-The extension polls `http://localhost:9119/version`. If the server is not running, polling fails silently and no live updates happen. Make sure the service is active:
+The bootstrap enables and starts `matugen-server.service` automatically. The
+extension polls `http://localhost:9119/version` and fetches the generated CSS
+from `http://localhost:9119/matugen-vars.css`. If the server is not running,
+the extension has no palette variables to inject and polling fails silently.
+Check the service:
 
 ```bash
 systemctl --user status matugen-server.service
-# If dead:
-systemctl --user start matugen-server.service
+curl http://localhost:9119/version
 ```
 
-See `post-install.md` step 5 for one-time setup.
+For an existing install where it is stopped:
+
+```bash
+systemctl --user enable --now matugen-server.service
+```
+
+If the extension was installed or started while the server was stopped, reload
+it once in `chrome://extensions` after starting the server so it fetches the
+initial palette.
 
 ---
 

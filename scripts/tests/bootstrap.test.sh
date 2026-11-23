@@ -85,6 +85,15 @@ test_story_packages_installed() {
     assert_eq "bootstrap installs xdg-terminal-exec" yes "$(installs xdg-terminal-exec)"
 }
 
+test_matugen_server_enabled() {
+    # Chromium's matugen-vars extension fetches palette CSS from this user
+    # service; deploy it before enabling and starting the unit.
+    assert_eq "bootstrap reloads user systemd units" yes \
+        "$(runs 'systemctl --user daemon-reload')"
+    assert_eq "bootstrap enables and starts matugen-server" yes \
+        "$(runs 'systemctl --user enable --now matugen-server\.service')"
+}
+
 excluded_packages() { # -> package names in bootstrap-excluded.txt, sorted
     [[ -f "$EXCLUDED" ]] || return 0
     grep -v '^\s*\(#\|$\)' "$EXCLUDED" | awk '{print $1}' | sort -u

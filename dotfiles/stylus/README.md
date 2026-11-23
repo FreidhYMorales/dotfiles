@@ -9,15 +9,19 @@ These styles follow your wallpaper in real time — every time matugen regenerat
 ## How it works
 
 ```
-wallpaper → matugen → colors.json → userContent.css → --mat-* CSS vars
-                                                           ↓
-                                        Stylus userstyles use var(--mat-*)
+wallpaper → matugen → --mat-* CSS vars → Stylus site styles
+                         ├─ Zen: userContent.css in active profile
+                         └─ Chromium: matugen-vars extension
 ```
 
 1. **matugen** generates a Material 3 palette from the current wallpaper.
-2. A template outputs `~/.config/matugen/output/zen-matugen.css` with `--mat-*` custom properties.
-3. Zen Browser loads this file via `chrome/userContent.css`, injecting `--mat-*` into every page's `:root`.
-4. Each userstyle here overrides site-specific design tokens with `var(--mat-*)`.
+2. Zen gets the variables through `userContent.css` in its active profile;
+   Chromium web apps get them from the `matugen-vars` extension.
+3. The Stylus styles here map each site's colors to `var(--mat-*)`.
+
+Bootstrap enables and starts `matugen-server.service` for Chromium's live
+palette updates. Browser extensions and per-site Stylus styles are still
+one-time manual installs.
 
 ---
 
@@ -123,17 +127,46 @@ wallpaper → matugen → colors.json → userContent.css → --mat-* CSS vars
 
 ---
 
-## Stylus import flow
+## Installation
 
-1. Install [Stylus](https://github.com/openstyles/stylus) in Zen Browser.
-2. In Stylus settings, ensure **"Specify regexp separately"** is enabled if using `regexp()` matchers.
-3. For each file: open Stylus → **Write new style** → paste the file content → save.
-   Or use Stylus's **Import** feature to bulk-import all files.
-4. Ensure your Zen Browser has `chrome/userContent.css` configured to load the matugen output file:
-   ```css
-   @import url("file:///home/youruser/.config/matugen/output/zen-matugen.css");
-   ```
-5. Regenerate the palette: pick a new wallpaper in the Quickshell launcher (`>wallpaper`). Sites theme automatically on next load.
+The bootstrap deploys the matugen templates and automatically enables
+`matugen-server.service`. It does not install browser extensions or import
+userstyles; do those once in each browser that needs them.
+
+### Zen Browser
+
+1. Install [Stylus](https://github.com/openstyles/stylus) from Firefox Add-ons.
+2. In `about:config`, verify
+   `toolkit.legacyUserProfileCustomizations.stylesheets` is `true` (the
+   matugen post-hook sets this on first run).
+3. Install the site styles you use: open each `*-matugen.user.css` from this
+   directory in Zen and choose **Install** on Stylus's page.
+4. Regenerate the palette with `~/.config/matugen/post-hook.sh` or change the
+   wallpaper in the Quickshell launcher, then restart Zen once so it loads the
+   generated `userContent.css` in its active profile.
+
+### Chromium web apps (WhatsApp, YouTube, etc.)
+
+1. Install Stylus from the Chrome Web Store in Chromium.
+2. Open `chrome://extensions` → Stylus → **Details** and enable **Allow access
+   to file URLs**.
+3. Open `chrome://extensions`, turn on **Developer mode**, choose **Load
+   unpacked**, and select
+   `dotfiles/chromium-extension/matugen-vars/`.
+4. Install the needed site styles: open each `*-matugen.user.css` here as a
+   `file://` URL and press **Install** in Stylus. Use **Reinstall** after
+   manually editing a style.
+5. If you installed or started the extension while the matugen server was
+   stopped, reload **matugen vars** once in `chrome://extensions` after starting
+   the server so it fetches the initial palette.
+
+The extension gets variables from `http://localhost:9119/matugen-vars.css`.
+Check the service with `systemctl --user status matugen-server.service` or
+`curl http://localhost:9119/version`.
+
+For both browsers, enable dark mode in each site so the dark-theme selectors
+match. For YouTube, also turn off **Ambient mode** under Settings → Playback
+and performance to avoid an untinted cinematic gradient.
 
 ---
 
@@ -147,7 +180,7 @@ Template:
 @namespace    github.com/FreidhYMorales/dotfiles
 @version      2.0.0
 @description  Themes Site with the active matugen Material 3 palette.
-              Requires userContent.css in Zen's chrome/ to inject --mat-* vars.
+              Requires matugen --mat-* variables (Zen userContent.css or Chromium extension).
 @author       deadlock
 @match        https://example.com/*
 @preprocessor default
