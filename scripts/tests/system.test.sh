@@ -68,17 +68,20 @@ auth_chain() { # service -> the auth modules it runs, following includes, in ord
     done < <(auth_lines "$PAM_DIR/$1" | sed 's/\[[^]]*\]/bracket/')
 }
 
-test_live_sudo_tty_fprint_or_password() {
-    # sudo and a TTY login accept the fingerprint or the password: a
-    # sufficient pam_fprintd runs before pam_unix in both chains.
-    local svc chain got=()
-    for svc in sudo login; do
-        chain=$(auth_chain "$svc" | grep -E '^pam_(fprintd|unix)\.so$' | tr '\n' ' ')
-        got+=("$svc: $chain")
-    done
-    assert_eq "sudo and login try fingerprint, then password" \
-        "sudo: pam_fprintd.so pam_unix.so |login: pam_fprintd.so pam_unix.so " "$(IFS='|'; echo "${got[*]}")"
-    assert_eq "system-auth fingerprint is sufficient" "sufficient" \
+test_live_sudo_fprint_or_password() {
+    # sudo accepts the fingerprint or the password: its own service runs a
+    # sufficient pam_fprintd before system-auth's pam_unix. A TTY login stays
+    # password-only on purpose — a sufficient fingerprint there would skip
+    # pam_unix and leave the login keyring locked.
+    local sudo_chain login_chain
+    sudo_chain=$(auth_chain sudo | grep -E '^pam_(fprintd|unix)\.so$' | tr '\n' ' ')
+    login_chain=$(auth_chain login | grep -E '^pam_(fprintd|unix)\.so$' | tr '\n' ' ')
+    assert_eq "sudo tries fingerprint, then password" \
+        "pam_fprintd.so pam_unix.so " "$sudo_chain"
+    assert_eq "a TTY login is password-only" "pam_unix.so " "$login_chain"
+    assert_eq "sudo's fingerprint is sufficient" "sufficient" \
+        "$(auth_lines "$PAM_DIR/sudo" | awk '$3 == "pam_fprintd.so" {print $2}')"
+    assert_eq "system-auth carries no fingerprint" "" \
         "$(auth_lines "$PAM_DIR/system-auth" | awk '$3 == "pam_fprintd.so" {print $2}')"
 }
 
@@ -101,6 +104,7 @@ declare -A INSTALLED=(
     [pam.d/quickshell-password]=/etc/pam.d/quickshell-password
     [pam.d/quickshell-fprint]=/etc/pam.d/quickshell-fprint
     [pam.d/sddm]=/etc/pam.d/sddm
+    [pam.d/sudo]=/etc/pam.d/sudo
     [sddm/sddm.conf.d/deadlock.conf]=/etc/sddm.conf.d/deadlock.conf
 )
 
@@ -111,8 +115,8 @@ test_live_matches_repo() {
     for src in "${!INSTALLED[@]}"; do
         cmp -s "$SYSTEM/$src" "${INSTALLED[$src]}" || drift+=("${INSTALLED[$src]}")
     done
-    assert_eq "installed system/ files match the repo (8 checked)" \
-        "8 none" "${#INSTALLED[@]} $(printf '%s\n' "${drift[@]}" | sort | tr '\n' ' ' | sed 's/ $//;s/^$/none/')"
+    assert_eq "installed system/ files match the repo (9 checked)" \
+        "9 none" "${#INSTALLED[@]} $(printf '%s\n' "${drift[@]}" | sort | tr '\n' ' ' | sed 's/ $//;s/^$/none/')"
 }
 
 test_comments_reference_existing_paths() {
@@ -150,7 +154,7 @@ test_live_hibernate_prereqs() {
 }
 
 all_tests=(test_live_sleep_inhibitor test_hook_dropped test_live_lockscreen_pam_stacks
-    test_live_sudo_tty_fprint_or_password test_sddm_pam_password_only test_live_matches_repo
+    test_live_sudo_fprint_or_password test_sddm_pam_password_only test_live_matches_repo
     test_comments_reference_existing_paths test_live_hibernate_prereqs)
 for t in "${@:-${all_tests[@]}}"; do
     echo "$t"

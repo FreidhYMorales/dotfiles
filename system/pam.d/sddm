@@ -13,8 +13,8 @@
 # pam_fprintd.so: the greeter takes the password only. A fingerprint could
 # never grant login here anyway, and waiting on the reader only delayed the
 # password; pam_unix.so always runs, so the login keyring unlocks on every
-# login. Scoped to SDDM only: system-auth itself (sudo, TTY login) is
-# untouched, so those keep fingerprint-OR-password.
+# login. Scoped to SDDM only: system-auth itself (su, TTY login) is untouched
+# and carries no fingerprint; sudo adds it in its own service (system/pam.d/sudo).
 auth        required                    pam_faillock.so         preauth
 -auth       [success=2 default=ignore]  pam_systemd_home.so
 auth        [success=1 default=bad]     pam_unix.so             try_first_pass nullok

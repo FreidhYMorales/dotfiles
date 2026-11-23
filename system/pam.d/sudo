@@ -1,0 +1,11 @@
+#%PAM-1.0
+# Fingerprint or password for sudo only. system-auth is deliberately left
+# alone: su and a TTY login share it, and a `sufficient` fingerprint there
+# would skip pam_unix and leave the login keyring locked. timeout=4 leaves
+# room to place the finger before falling back to the password.
+# See auditorias/autenticacion/README.md §11.
+auth		sufficient	pam_fprintd.so		timeout=4
+auth		include		system-auth
+account		include		system-auth
+session		include		system-auth
+session		optional	pam_systemd.so class=none

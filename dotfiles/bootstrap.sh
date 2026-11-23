@@ -421,11 +421,17 @@ sudo systemctl enable sddm
 #                      system "passwd" service, which still runs
 #                      pam_fprintd first and would silently delay/bypass
 #                      the ">security" fingerprint-enabled toggle
+#   sudo               the only place a system command accepts the
+#                      fingerprint. system-auth stays untouched on purpose:
+#                      su and a TTY login share it, and a `sufficient`
+#                      fingerprint there would skip pam_unix and leave the
+#                      login keyring locked
 step "Fingerprint authentication: install fprintd + PAM services"
 sudo pacman -S --needed --noconfirm fprintd
 sudo cp "$REPO_ROOT/system/pam.d/sddm" /etc/pam.d/sddm
 sudo cp "$REPO_ROOT/system/pam.d/quickshell-fprint" /etc/pam.d/quickshell-fprint
 sudo cp "$REPO_ROOT/system/pam.d/quickshell-password" /etc/pam.d/quickshell-password
+sudo cp "$REPO_ROOT/system/pam.d/sudo" /etc/pam.d/sudo
 
 # TPM2 / Secure Boot prep — not wired into anything yet. Pre-staged tooling
 # for a planned future migration to TPM2-backed disk unlock + Secure Boot.
