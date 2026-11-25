@@ -198,4 +198,5 @@ keybind(mainMod .. " + SPACE", exec(qsIpc .. " launcher toggle"), descrip("Toggl
 keybind(mainMod .. " + D", exec(qsIpc .. " controlcenter open"), descrip("Open Control Center"))
 keybind(mainMod .. " + N", exec(qsIpc .. " controlcenter notifications"), descrip("Open Notifications"))
 keybind(mainMod .. " + ALT + C", exec(qsIpc .. " expanded toggle"), descrip("Toggle Expanded Notch"))
+keybind("ALT + C", exec(qsIpc .. " expanded calendar"), descrip("Toggle Calendar"))
 keybind("CTRL + ALT + DELETE", exec(qsIpc .. " power open"), descrip("Open Power Menu"))
