@@ -75,6 +75,66 @@ test_pacman_files_database() {
         "$(runs 'systemctl enable .*pacman-filesdb-refresh\.timer')"
 }
 
+test_pacman_sync_performs_full_upgrade() {
+    # Arch does not support refreshing package databases without upgrading the
+    # installed system; bootstrap installs packages immediately afterwards.
+    assert_eq "bootstrap performs a full upgrade when syncing repositories" yes \
+        "$(runs 'pacman -Syu')"
+    assert_eq "bootstrap does not perform a database-only sync" no \
+        "$(runs 'pacman -Sy([[:space:]]|$)')"
+}
+
+test_sensitive_configs_use_staged_atomic_replacements() {
+    # PAM/SDDM files must be fully staged on the destination filesystem before
+    # replacing the live path, so a failed copy cannot truncate the active file.
+    assert_eq "SDDM config replacement is staged" yes \
+        "$(runs 'install .*deadlock\.conf.*\.bootstrap-new')"
+    assert_eq "PAM config replacement is staged" yes \
+        "$(runs 'install .*system/pam\.d/.* .*\.bootstrap-new')"
+    assert_eq "staged config files are renamed into place" yes \
+        "$(runs 'mv -f .*\.bootstrap-new')"
+}
+
+test_yay_build_uses_and_cleans_unique_temp_directory() {
+    # A failed/interrupted AUR build must not leave or trust a shared /tmp/yay.
+    local dir status clone_path
+    dir=$(mktemp -d)
+    mkdir -p "$dir/bin" "$dir/tmp" "$dir/root"
+    for tool in bash mkdir mktemp rm; do ln -s "$(command -v "$tool")" "$dir/bin/$tool"; done
+    cat >"$dir/bin/git" <<'GIT'
+#!/usr/bin/env bash
+printf '%s\n' "$3" >"$TMPDIR/cloned-to"
+mkdir -p "$3"
+GIT
+    cat >"$dir/bin/makepkg" <<'MAKEPKG'
+#!/usr/bin/env bash
+printf '%s\n' "$PWD" >"$TMPDIR/built-in"
+exit "${MAKEPKG_STATUS:-0}"
+MAKEPKG
+    chmod +x "$dir/bin/git" "$dir/bin/makepkg"
+
+    status=0
+    TMPDIR="$dir/tmp" PATH="$dir/bin" HOME="$dir/home" bash -euo pipefail -c \
+        "$(awk 'index($0, "step ") == 1 && index($0, "yay") > 0 {on = 1; next} on && index($0, "step ") == 1 {exit} on' "$BOOTSTRAP")" \
+        >/dev/null 2>&1 || status=$?
+    clone_path=$(<"$dir/tmp/cloned-to")
+    assert_eq "yay clone uses a unique temporary path" yes \
+        "$([[ $clone_path != /tmp/yay && -d $dir/tmp && $clone_path == "$dir/tmp/"* ]] && echo yes || echo no)"
+    assert_eq "successful yay build cleans its temporary directory" no \
+        "$([[ -e $clone_path ]] && echo yes || echo no)"
+
+    status=0
+    MAKEPKG_STATUS=1 TMPDIR="$dir/tmp" PATH="$dir/bin" HOME="$dir/home" bash -euo pipefail -c \
+        "$(awk 'index($0, "step ") == 1 && index($0, "yay") > 0 {on = 1; next} on && index($0, "step ") == 1 {exit} on' "$BOOTSTRAP")" \
+        >/dev/null 2>"$dir/stderr" || status=$?
+    clone_path=$(<"$dir/tmp/cloned-to")
+    assert_eq "failed yay build returns failure" 1 "$status"
+    [[ $status -eq 1 ]] || printf '       stderr: %s\n' "$(<"$dir/stderr")"
+    assert_eq "failed yay build cleans its temporary directory" no \
+        "$([[ -e ${clone_path%/yay} ]] && echo yes || echo no)"
+    rm -rf "$dir"
+}
+
 test_story_packages_installed() {
     # Story 06: mpd-mpris exposes mpd to playerctl and the shell's media
     # widgets as a user service. Story 07: xdg-terminal-exec opens
@@ -83,6 +143,19 @@ test_story_packages_installed() {
     assert_eq "bootstrap enables the mpd-mpris user service" yes \
         "$(runs 'systemctl --user enable .*mpd-mpris')"
     assert_eq "bootstrap installs xdg-terminal-exec" yes "$(installs xdg-terminal-exec)"
+}
+
+test_reinstall_app_inventory_is_accounted_for() {
+    local pkg
+    for pkg in cups cups-pk-helper system-config-printer gst-plugin-pipewire \
+        steam prismlauncher epic-games-launcher-bin; do
+        assert_eq "bootstrap installs $pkg" yes "$(installs "$pkg")"
+    done
+
+    for pkg in ggml-sycl ggml-vulkan intel-compute-runtime llama-cpp ghostscript libpulse yay-debug; do
+        assert_eq "inventory excludes $pkg with a reason" yes \
+            "$(grep -qE "^${pkg}[[:space:]]+#.+$" "$EXCLUDED" && echo yes || echo no)"
+    done
 }
 
 test_matugen_server_enabled() {
@@ -489,6 +562,37 @@ autologin: -
 keyring auth: -
 sddm.service: -" \
         "$(luks_login_result no)"
+}
+
+test_plain_login_rerun_removes_stale_luks_autologin() {
+    local dir r
+    dir=$(mktemp -d)
+    luks_sandbox "$dir" no
+    r="$dir/root"
+    mkdir -p "$r/etc/sddm.conf.d" "$r/etc/pam.d" "$r/etc/systemd/system/sddm.service.d"
+    touch "$r/etc/sddm.conf.d/luks-autologin.conf"
+    touch "$r/etc/pam.d/sddm-autologin"
+    touch "$r/etc/systemd/system/sddm.service.d/luks.conf"
+    touch "$r/etc/sddm.conf.d/custom.conf" "$r/etc/pam.d/sddm"
+    touch "$r/etc/systemd/system/sddm.service.d/other.conf"
+    printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$*" >>"%s/systemctl.log"\n' "$dir" >"$dir/bin/systemctl"
+    chmod +x "$dir/bin/systemctl"
+
+    run_step_with_detection "$dir" "$LOGIN_STEP" >/dev/null
+
+    assert_eq "plain rerun removes SDDM autologin override" no \
+        "$([[ -e $r/etc/sddm.conf.d/luks-autologin.conf ]] && echo yes || echo no)"
+    assert_eq "plain rerun removes LUKS autologin PAM service" no \
+        "$([[ -e $r/etc/pam.d/sddm-autologin ]] && echo yes || echo no)"
+    assert_eq "plain rerun removes SDDM LUKS drop-in" no \
+        "$([[ -e $r/etc/systemd/system/sddm.service.d/luks.conf ]] && echo yes || echo no)"
+    assert_eq "plain rerun preserves unrelated SDDM and PAM config" yes \
+        "$([[ -e $r/etc/sddm.conf.d/custom.conf && -e $r/etc/pam.d/sddm ]] && echo yes || echo no)"
+    assert_eq "plain rerun preserves other SDDM service drop-ins" yes \
+        "$([[ -e $r/etc/systemd/system/sddm.service.d/other.conf ]] && echo yes || echo no)"
+    assert_eq "plain rerun reloads systemd units" daemon-reload \
+        "$(rg -x 'daemon-reload' "$dir/systemctl.log" 2>/dev/null)"
+    rm -rf "$dir"
 }
 
 test_docs_describe_both_login_paths() {

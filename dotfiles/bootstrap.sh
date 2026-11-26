@@ -54,7 +54,7 @@ grep -q "^ILoveCandy" /etc/pacman.conf ||
 
 step "pacman: enable multilib (32-bit libs — required by Steam)"
 sudo sed -i '/^#\[multilib\]$/,/^#Include = \/etc\/pacman.d\/mirrorlist$/ s/^#//' /etc/pacman.conf
-sudo pacman -Sy
+sudo pacman -Syu
 
 # ── 0b. Locale & timezone ─────────────────────────────────────────────────────
 step "Locale (en_US.UTF-8) + timezone (America/Guatemala)"
@@ -85,8 +85,13 @@ step "AI dotfiles submodule"
 # ── 2. AUR helper ────────────────────────────────────────────────────────────
 step "yay"
 if ! command -v yay &>/dev/null; then
-    git clone https://aur.archlinux.org/yay.git /tmp/yay
-    (cd /tmp/yay && makepkg -si --noconfirm)
+    (
+        aur_build_dir=$(mktemp -d)
+        trap 'rm -rf "$aur_build_dir"' EXIT
+        git clone https://aur.archlinux.org/yay.git "$aur_build_dir/yay"
+        cd "$aur_build_dir/yay"
+        makepkg -si --noconfirm
+    )
 fi
 
 # ── 3. Hyprland / Wayland ────────────────────────────────────────────────────
@@ -215,7 +220,7 @@ step "Audio (PipeWire + MPD)"
 # Remove known conflicting packages so pacman doesn't pause asking for confirmation
 sudo pacman -R --noconfirm pulseaudio pulseaudio-bluetooth pipewire-media-session jack jack2 2>/dev/null || true
 sudo pacman -S --needed --noconfirm \
-    pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber alsa-utils \
+    pipewire pipewire-pulse pipewire-alsa pipewire-jack gst-plugin-pipewire wireplumber alsa-utils \
     mpd mpd-mpris ncmpcpp wiremix sof-firmware playerctl
 
 # ── 10. Screenshot & screen tools ────────────────────────────────────────────
@@ -245,8 +250,8 @@ yay -S --needed --noconfirm matugen
 
 # ── 16. Apps ─────────────────────────────────────────────────────────────────
 step "Apps"
-yay -S --needed --noconfirm vesktop zen-browser-bin chromium obsidian nordzy-cursors nordzy-hyprcursors nwg-displays
-sudo pacman -S --needed --noconfirm mpv cava gimp yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh coin-or-mp gnome-keyring libsecret steam
+yay -S --needed --noconfirm vesktop zen-browser-bin chromium obsidian nordzy-cursors nordzy-hyprcursors nwg-displays epic-games-launcher-bin
+sudo pacman -S --needed --noconfirm mpv cava gimp yt-dlp swayimg zathura zathura-pdf-poppler libreoffice-fresh coin-or-mp gnome-keyring libsecret steam prismlauncher cups cups-pk-helper system-config-printer
 
 # ── 17. Quickshell ────────────────────────────────────────────────────────────
 step "Quickshell"
@@ -393,7 +398,8 @@ echo "$SDDM_DATA_DIR" >"$HOME/.local/state/quickshell-notch/sddm-target.txt"
 
 step "SDDM: write config"
 sudo mkdir -p /etc/sddm.conf.d
-sudo cp "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/
+sudo install -Dm644 "$REPO_ROOT/system/sddm/sddm.conf.d/deadlock.conf" /etc/sddm.conf.d/deadlock.conf.bootstrap-new
+sudo mv -f /etc/sddm.conf.d/deadlock.conf.bootstrap-new /etc/sddm.conf.d/deadlock.conf
 
 step "Login: SDDM autologin on a LUKS root"
 # On a LUKS root the disk passphrase is the authentication: SDDM logs in once
@@ -401,9 +407,25 @@ step "Login: SDDM autologin on a LUKS root"
 # plain root keeps the notch-lock greeter with its password (no autologin).
 # See docs/plans/dotfiles-audit/login-reinstall-plan.md.
 if root_on_luks; then
-    sudo install -Dm644 "$REPO_ROOT/system/sddm/sddm.conf.d/luks-autologin.conf" /etc/sddm.conf.d/luks-autologin.conf
-    sudo install -Dm644 "$REPO_ROOT/system/pam.d/sddm-autologin" /etc/pam.d/sddm-autologin
-    sudo install -Dm644 "$REPO_ROOT/system/systemd/sddm.service.d/luks.conf" /etc/systemd/system/sddm.service.d/luks.conf
+    sudo install -Dm644 "$REPO_ROOT/system/sddm/sddm.conf.d/luks-autologin.conf" /etc/sddm.conf.d/luks-autologin.conf.bootstrap-new
+    sudo mv -f /etc/sddm.conf.d/luks-autologin.conf.bootstrap-new /etc/sddm.conf.d/luks-autologin.conf
+    sudo install -Dm644 "$REPO_ROOT/system/pam.d/sddm-autologin" /etc/pam.d/sddm-autologin.bootstrap-new
+    sudo mv -f /etc/pam.d/sddm-autologin.bootstrap-new /etc/pam.d/sddm-autologin
+    sudo install -Dm644 "$REPO_ROOT/system/systemd/sddm.service.d/luks.conf" /etc/systemd/system/sddm.service.d/luks.conf.bootstrap-new
+    sudo mv -f /etc/systemd/system/sddm.service.d/luks.conf.bootstrap-new /etc/systemd/system/sddm.service.d/luks.conf
+else
+    # A machine can be reinstalled or reconfigured from LUKS to plain root.
+    # Remove only these LUKS-specific files; do not restart SDDM in a live
+    # graphical session. Reloading the unit cache is safe and affects its next
+    # start.
+    if sudo test -e /etc/sddm.conf.d/luks-autologin.conf ||
+        sudo test -e /etc/pam.d/sddm-autologin ||
+        sudo test -e /etc/systemd/system/sddm.service.d/luks.conf; then
+        sudo rm -f /etc/sddm.conf.d/luks-autologin.conf \
+            /etc/pam.d/sddm-autologin \
+            /etc/systemd/system/sddm.service.d/luks.conf
+        sudo systemctl daemon-reload
+    fi
 fi
 
 step "SDDM: enable service"
@@ -428,10 +450,10 @@ sudo systemctl enable sddm
 #                      login keyring locked
 step "Fingerprint authentication: install fprintd + PAM services"
 sudo pacman -S --needed --noconfirm fprintd
-sudo cp "$REPO_ROOT/system/pam.d/sddm" /etc/pam.d/sddm
-sudo cp "$REPO_ROOT/system/pam.d/quickshell-fprint" /etc/pam.d/quickshell-fprint
-sudo cp "$REPO_ROOT/system/pam.d/quickshell-password" /etc/pam.d/quickshell-password
-sudo cp "$REPO_ROOT/system/pam.d/sudo" /etc/pam.d/sudo
+for pam_service in sddm quickshell-fprint quickshell-password sudo; do
+    sudo install -Dm644 "$REPO_ROOT/system/pam.d/$pam_service" "/etc/pam.d/$pam_service.bootstrap-new"
+    sudo mv -f "/etc/pam.d/$pam_service.bootstrap-new" "/etc/pam.d/$pam_service"
+done
 
 # TPM2 / Secure Boot prep — not wired into anything yet. Pre-staged tooling
 # for a planned future migration to TPM2-backed disk unlock + Secure Boot.

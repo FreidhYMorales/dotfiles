@@ -15,3 +15,15 @@ yay             # built from the AUR by bootstrap.sh's yay step (makepkg, not pa
 # until the reinstall, as the F12 fallback entry
 grub            # GRUB fallback until the reinstall (story 22)
 os-prober       # GRUB fallback until the reinstall (story 22)
+
+# Local inference engines are managed by ia/local-models-npu; only needed for
+# real benchmark runs, not the dotfiles bootstrap or its test suite.
+ggml-sycl               # local-models-npu benchmark engine
+ggml-vulkan             # local-models-npu benchmark engine
+intel-compute-runtime   # local-models-npu SYCL engine runtime
+llama-cpp               # local-models-npu benchmark engine
+
+# Resolved or built as part of packages already installed by bootstrap.sh.
+ghostscript     # dependency of graphviz pulled in through mediainfo
+libpulse        # runtime dependency pulled in by desktop/audio applications
+yay-debug       # split debug package built alongside yay by makepkg
